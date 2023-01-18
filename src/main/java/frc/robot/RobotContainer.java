@@ -4,10 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Subsystems.Intake;
+import frc.robot.subsystems.Claw;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -18,6 +20,7 @@ import frc.robot.Subsystems.Intake;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   Intake intake = new Intake();
+  private final Claw claw = new Claw();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -46,6 +49,10 @@ public class RobotContainer {
                 controller::getRightY,
                 ()-> controller.getHID().getBButtonPressed()
           )
+    );
+    claw.setDefaultCommand(
+          claw.manualCommand(
+                ()-> controller.getAButton())
     );
   }
 
