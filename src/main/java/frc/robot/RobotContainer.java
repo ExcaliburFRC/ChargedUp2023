@@ -4,10 +4,12 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.drivetrain.Swerve;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -17,12 +19,16 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
+  public final Swerve swerve = new Swerve();
+
+  public final SendableChooser<Double> speedChooser = new SendableChooser<>();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  private final CommandXboxController controller = new CommandXboxController(0);
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /**
+   * The container for the robot. Contains subsystems, OI devices, and commands.
+   */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
@@ -38,6 +44,21 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    speedChooser.addOption("fullSpeed", 1.0);
+    speedChooser.addOption("75%", 0.75);
+    speedChooser.addOption("50%", 0.5);
+    speedChooser.setDefaultOption("slow", 0.2);
+    SmartDashboard.putData(speedChooser);
+
+    swerve.setDefaultCommand(swerve.driveSwerveCommand(
+          () -> controller.getLeftX(),
+          () -> controller.getLeftY(),
+          () -> -controller.getRightX(),
+          () -> controller.getRightTriggerAxis() < 0.1)
+    );
+
+    controller.leftBumper().onTrue(swerve.resetGyroCommand());
+    controller.rightBumper().onTrue(swerve.resetModulesCommand());
   }
 
   /**
@@ -48,4 +69,5 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
     return null;
+  }
 }
