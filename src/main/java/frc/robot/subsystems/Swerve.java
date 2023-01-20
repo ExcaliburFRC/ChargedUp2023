@@ -102,6 +102,10 @@ public class Swerve extends SubsystemBase {
     return Rotation2d.fromDegrees(getDegrees());
   }
 
+  public Command resetGyroCommand() {
+    return new InstantCommand(this::resetGyro);
+  }
+
   public Command resetModulesCommand() {
     return new FunctionalCommand(
           () -> {
@@ -123,37 +127,6 @@ public class Swerve extends SubsystemBase {
                 .and(swerveModules[BACK_RIGHT].isReset)
                 .getAsBoolean(),
           this);
-  }
-
-  @Override
-  public void periodic() {
-    ll.updateFromAprilTagPose(odometry::addVisionMeasurement);
-    odometry.update(
-          getRotation2d(),
-          new SwerveModulePosition[]{
-                swerveModules[FRONT_LEFT].getPosition(),
-                swerveModules[FRONT_RIGHT].getPosition(),
-                swerveModules[BACK_LEFT].getPosition(),
-                swerveModules[BACK_RIGHT].getPosition()
-          });
-    field.setRobotPose(odometry.getEstimatedPosition());
-    SmartDashboard.putData(field);
-  }
-
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    builder.clearProperties();
-    builder.setSmartDashboardType("Subsystem");
-
-    builder.addDoubleProperty("FL angle", swerveModules[FRONT_LEFT]::getResetRad, null);
-    builder.addDoubleProperty("FR angle", swerveModules[FRONT_RIGHT]::getResetRad, null);
-    builder.addDoubleProperty("BL angle", swerveModules[BACK_LEFT]::getResetRad, null);
-    builder.addDoubleProperty("BR angle", swerveModules[BACK_RIGHT]::getResetRad, null);
-
-    builder.addDoubleProperty("FL pos", swerveModules[FRONT_LEFT]::getAbsPos, null);
-    builder.addDoubleProperty("FR pos", swerveModules[FRONT_RIGHT]::getAbsPos, null);
-    builder.addDoubleProperty("BL pos", swerveModules[BACK_LEFT]::getAbsPos, null);
-    builder.addDoubleProperty("BR pos", swerveModules[BACK_RIGHT]::getAbsPos, null);
   }
 
   public Command driveSwerveCommand(
@@ -202,8 +175,35 @@ public class Swerve extends SubsystemBase {
     swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
   }
 
-  public Command resetGyroCommand() {
-    return new InstantCommand(this::resetGyro);
+  @Override
+  public void periodic() {
+    ll.updateFromAprilTagPose(odometry::addVisionMeasurement);
+    odometry.update(
+          getRotation2d(),
+          new SwerveModulePosition[]{
+                swerveModules[FRONT_LEFT].getPosition(),
+                swerveModules[FRONT_RIGHT].getPosition(),
+                swerveModules[BACK_LEFT].getPosition(),
+                swerveModules[BACK_RIGHT].getPosition()
+          });
+    field.setRobotPose(odometry.getEstimatedPosition());
+    SmartDashboard.putData(field);
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    builder.clearProperties();
+    builder.setSmartDashboardType("Subsystem");
+
+    builder.addDoubleProperty("FL angle", swerveModules[FRONT_LEFT]::getResetRad, null);
+    builder.addDoubleProperty("FR angle", swerveModules[FRONT_RIGHT]::getResetRad, null);
+    builder.addDoubleProperty("BL angle", swerveModules[BACK_LEFT]::getResetRad, null);
+    builder.addDoubleProperty("BR angle", swerveModules[BACK_RIGHT]::getResetRad, null);
+
+    builder.addDoubleProperty("FL pos", swerveModules[FRONT_LEFT]::getAbsPos, null);
+    builder.addDoubleProperty("FR pos", swerveModules[FRONT_RIGHT]::getAbsPos, null);
+    builder.addDoubleProperty("BL pos", swerveModules[BACK_LEFT]::getAbsPos, null);
+    builder.addDoubleProperty("BR pos", swerveModules[BACK_RIGHT]::getAbsPos, null);
   }
 
   private void resetEncoders() {
