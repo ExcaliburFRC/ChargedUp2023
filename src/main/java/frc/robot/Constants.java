@@ -28,6 +28,10 @@ public final class Constants {
 
     public static final int k_FWD_CHANNEL = 0;
     public static final int k_REV_CHANNEL = 0;
+
+    public static final int BEAMBREAK_CHANNEL = 0;
+    public static final int BUTTON_CHANNEL = 0;
+
   }
 
     public static final class SwerveConstants {
