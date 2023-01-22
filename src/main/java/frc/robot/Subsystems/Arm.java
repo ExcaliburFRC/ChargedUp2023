@@ -19,7 +19,8 @@ public class Arm extends SubsystemBase {
     private final CANSparkMax lengthMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
     private final RelativeEncoder angleEncoder;
     private final RelativeEncoder lengthEncoder;
-    private final DutyCycleEncoder absAngleEncoder;
+
+    private final DutyCycleEncoder absAngleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_CHANNEL);;
 
     private final DigitalInput upperLimitSwitch = new DigitalInput(UPPER_LIMIT_SWITCH_ID);
     private final DigitalInput lowerLimitSwitch = new DigitalInput(LOWER_LIMIT_SWITCH_ID);
@@ -37,19 +38,14 @@ public class Arm extends SubsystemBase {
         angleEncoder = angleMotor.getEncoder();
         lengthEncoder = lengthMotor.getEncoder();
 
-        angleEncoder.setPositionConversionFactor(2 * Math.PI);
-        angleEncoder.setVelocityConversionFactor(RPM_TO_RAD_PER_SEC);
+        angleEncoder.setPositionConversionFactor(360); // degrees
+        angleEncoder.setVelocityConversionFactor(RPM_TO_ROT_PER_SEC); // rpm/rot's
 
         lengthEncoder.setPositionConversionFactor(ROT_TO_METER);
         lengthEncoder.setVelocityConversionFactor(RPM_TO_METER_PER_SEC);
 
-        absAngleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_CHANNEL);
 
         resetAngle();
-    }
-
-    public void resetAngle() {
-        angleEncoder.setPosition(2 * Math.PI * absAngleEncoder.getAbsolutePosition());
     }
 
     public Command manualCommand(DoubleSupplier angleJoystick, DoubleSupplier lengthJoystick) {
@@ -62,5 +58,9 @@ public class Arm extends SubsystemBase {
 
     public double getLengthMeter() {
         return MINIMAL_LENGTH_METERS + lengthEncoder.getPosition();
+    }
+
+    public void resetAngle() {
+        angleEncoder.setPosition(0);
     }
 }

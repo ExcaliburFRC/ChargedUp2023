@@ -118,11 +118,10 @@ public final class Constants {
   public static final int UPPER_LIMIT_SWITCH_ID = 0;
   public static final int LOWER_LIMIT_SWITCH_ID = 0;
   public static final int ABS_ANGLE_ENCODER_CHANNEL = 0;
-  public static final double RPM_TO_RAD_PER_SEC = 0;
-  public static final double ROT_TO_RAD = 0;
-  public static final double ROT_TO_METER = 0;
-  public static final double RPM_TO_METER_PER_SEC = 0;
-  public static final double MINIMAL_LENGTH_METERS = 0;
+  public static final double RPM_TO_ROT_PER_SEC = 0; // rot/sec
+  public static final double ROT_TO_METER = 0; // rot/m
+  public static final double RPM_TO_METER_PER_SEC = 0; // rpm/ms
+  public static final double MINIMAL_LENGTH_METERS = 0; // m
 
     }
 }
