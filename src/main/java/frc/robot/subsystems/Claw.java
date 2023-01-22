@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.Subsystems;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -28,4 +28,5 @@ public class Claw extends SubsystemBase {
           new InstantCommand(piston::toggle),
           ()-> piston.get().equals(DoubleSolenoid.Value.kOff));
   }
+
 }
