@@ -29,7 +29,6 @@ public class Claw extends SubsystemBase {
                     piston.set(DoubleSolenoid.Value.kForward);
             if (!toOpen.getAsBoolean()&&!isClawOpened.getAsBoolean())
                 piston.set(DoubleSolenoid.Value.kReverse);
-
         }, this);
     }
 
