@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.Subsystems;
 
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
