@@ -13,37 +13,39 @@ import static frc.robot.Constants.ClawConstants.*;
 
 public class Claw extends SubsystemBase {
     private final DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.REVPH, FORWARD_CHANNEL, REVERSE_CHANNEL);
-    private final Trigger isClawOpened = new Trigger(()-> piston.get().equals(DoubleSolenoid.Value.kReverse));
+
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
+    private final DigitalInput button = new DigitalInput(BUTTON_CHANNEL);
+
+
+    private final Trigger isClawOpened = new Trigger(()-> piston.get().equals(DoubleSolenoid.Value.kReverse));
     private final Trigger bbTrigger = new Trigger(beambreak::get);
-    private final DigitalInput button = new DigitalInput(BUTTON_CHANEL);
     private final Trigger clawFull = new Trigger(()-> !button.get());
 
-    public Claw() {
-    }
+    public Claw(){}
 
     public Command manualCommand(BooleanSupplier toOpen) {
         return new RunCommand(() -> {
-            if (toOpen.getAsBoolean()) {
-                if (piston.get().equals(DoubleSolenoid.Value.kReverse))
+            if (toOpen.getAsBoolean()&&isClawOpened.getAsBoolean())
                     piston.set(DoubleSolenoid.Value.kForward);
-            }
+            if (!toOpen.getAsBoolean()&&!isClawOpened.getAsBoolean())
+                piston.set(DoubleSolenoid.Value.kReverse);
+
         }, this);
     }
 
     public Command toggleCommand() {
         return new ConditionalCommand(
-                new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kForward)),
-                new InstantCommand(piston::toggle),
+                new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kForward),this),
+                new InstantCommand(piston::toggle,this),
                 () -> piston.get().equals(DoubleSolenoid.Value.kOff));
     }
 
     public Command autoClawCommand() {
         return Commands.run(
                 () -> {
-                    if (bbTrigger.getAsBoolean() && isClawOpened.getAsBoolean()) {
+                    if (bbTrigger.getAsBoolean() && isClawOpened.getAsBoolean())
                         piston.set(DoubleSolenoid.Value.kForward);
-                    }
                 },
                 this);
     }
