@@ -16,6 +16,7 @@ import static frc.robot.Constants.ArmConstants.*;
 public class Arm extends SubsystemBase {
     private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
     private final CANSparkMax lengthMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+    
     private final RelativeEncoder angleEncoder;
     private final RelativeEncoder lengthEncoder;
 
