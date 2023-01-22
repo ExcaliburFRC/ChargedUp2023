@@ -29,6 +29,9 @@ public class Arm extends SubsystemBase {
     private final Trigger armFullyClosedTrigger = new Trigger(()-> !lowerLimitSwitch.get());
 
     public Arm() {
+    angleMotor.restoreFactoryDefualts();
+    lengthMotor.restoreFactoryDefualts();
+    
         angleMotor.setInverted(false); //TODO: check
         lengthMotor.setInverted(false); //TODO: check
 
