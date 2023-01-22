@@ -32,6 +32,9 @@ public final class Constants {
     public static final int BEAMBREAK_CHANNEL = 0;
     public static final int BUTTON_CHANNEL = 0;
 
+    public static final int GAME_PIECE_THRESHOLD = 93; // (blue)
+    public static final int DISTANCE_THRESHOLD = 0; //TODO: find
+
   }
 
     public static final class SwerveConstants {

@@ -7,9 +7,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.Claw;
-import frc.robot.subsystems.Dj;
-import frc.robot.subsystems.Intake;
+import frc.robot.Subsystems.Claw;
+import frc.robot.Subsystems.Spindexer;
+import frc.robot.Subsystems.Intake;
 import frc.robot.drive.Swerve;
 
 /**
@@ -23,7 +23,7 @@ public class RobotContainer {
   private final Intake intake = new Intake();
   private final Claw claw = new Claw();
   private final Swerve swerve = new Swerve();
-  private final Dj dj = new Dj();
+  private final Spindexer spindexer = new Spindexer();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -62,8 +62,8 @@ public class RobotContainer {
                 controller.rightTrigger(0.1).negate()
           ));
 
-    dj.setDefaultCommand(
-          dj.straightenConeCommand());
+    spindexer.setDefaultCommand(
+          spindexer.straightenGamePieceCommand());
   }
 
   /**
