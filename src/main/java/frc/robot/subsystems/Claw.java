@@ -35,7 +35,7 @@ public class Claw extends SubsystemBase {
     public Command toggleCommand() {
         return new ConditionalCommand(
                 new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kForward),this),
-                new InstantCommand(piston::toggle,this),
+                new InstantCommand(piston::toggle, this),
                 () -> piston.get().equals(DoubleSolenoid.Value.kOff));
     }
 
