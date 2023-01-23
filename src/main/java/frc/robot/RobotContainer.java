@@ -46,7 +46,7 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    controller.a().onTrue(claw.toggleCommand());
+    controller.b().onTrue(claw.autoClawCommand());
 
     intake.setDefaultCommand(
           intake.manualCommand(
