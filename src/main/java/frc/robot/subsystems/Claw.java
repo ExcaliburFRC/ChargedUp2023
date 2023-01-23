@@ -17,22 +17,23 @@ public class Claw extends SubsystemBase {
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
     private final DigitalInput button = new DigitalInput(BUTTON_CHANNEL);
 
-    private final Trigger isClawOpened = new Trigger(()-> piston.get().equals(DoubleSolenoid.Value.kReverse));
-    private final Trigger bbTrigger = new Trigger(beambreak::get);
-    private final Trigger clawFull = new Trigger(()-> !button.get());
+    private final Trigger isClawOpenedTrigger = new Trigger(() -> piston.get().equals(DoubleSolenoid.Value.kReverse));
+    private final Trigger beambreakDetectedTrigger = new Trigger(() -> !beambreak.get());
+    private final Trigger clawFullTrigger = new Trigger(() -> !button.get());
 
-    public Claw(){}
+    public Claw() {
+    }
 
     public Command manualCommand(BooleanSupplier toOpen) {
         return new RunCommand(() -> {
-            if (toOpen.getAsBoolean()&&isClawOpened.getAsBoolean())
-                    piston.set(DoubleSolenoid.Value.kForward);
-            if (!toOpen.getAsBoolean()&&!isClawOpened.getAsBoolean())
+            if (toOpen.getAsBoolean() && isClawOpenedTrigger.getAsBoolean())
+                piston.set(DoubleSolenoid.Value.kForward);
+            if (!toOpen.getAsBoolean() && !isClawOpenedTrigger.getAsBoolean())
                 piston.set(DoubleSolenoid.Value.kReverse);
         }, this);
     }
 
-    public Command toggleCommand() {
+    public Command togglePistonCommand() {
         return new ConditionalCommand(
                 new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kForward), this),
                 new InstantCommand(piston::toggle, this),
@@ -40,24 +41,31 @@ public class Claw extends SubsystemBase {
     }
 
     public Command autoClawCommand() {
-        return Commands.run(
+        return new ConditionalCommand(
+                autoCloseCommand(),
+                openClawCommand(),
+                clawFullTrigger);
+    }
+
+    private RunCommand autoCloseCommand() {
+        return new RunCommand(
                 () -> {
-                    if (bbTrigger.getAsBoolean() && isClawOpened.getAsBoolean())
+                    if (beambreakDetectedTrigger.getAsBoolean() && isClawOpenedTrigger.getAsBoolean())
                         piston.set(DoubleSolenoid.Value.kForward);
-                },
-                this);
+                });
     }
 
-    public Command openClawCommand(){
-        return new InstantCommand(()-> piston.set(DoubleSolenoid.Value.kReverse), this);
+    private Command openClawCommand() {
+        return new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kReverse), this);
     }
 
-    public Command closeClawCommand(){
-        return new InstantCommand(()-> piston.set(DoubleSolenoid.Value.kForward), this);
+    private Command closeClawCommand() {
+        return new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kForward), this);
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addBooleanProperty("claw full", clawFull, null);
+        builder.addBooleanProperty("claw full", clawFullTrigger, null);
+        builder.addBooleanProperty("claw beam-break", beambreakDetectedTrigger, null);
     }
 }

@@ -45,8 +45,6 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-//    controller.a().onTrue(claw.toggleCommand());
-
     intake.setDefaultCommand(
           intake.manualCommand(
                 controller::getLeftY,
@@ -62,9 +60,7 @@ public class RobotContainer {
                 controller.rightTrigger(0.1).negate()
           ));
 
-    controller.rightBumper().whileTrue(claw.autoClawCommand());
-    controller.leftBumper().whileTrue(claw.openClawCommand());
-
+    controller.rightBumper().onTrue(claw.autoClawCommand());
   }
 
   /**
