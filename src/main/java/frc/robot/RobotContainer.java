@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Subsystems.Claw;
 import frc.robot.Subsystems.Intake;
 import frc.robot.Drivetrain.Swerve;
+import frc.robot.Subsystems.Spindexer;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,6 +21,7 @@ import frc.robot.Drivetrain.Swerve;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Intake intake = new Intake();
+  private final Spindexer spindexer = new Spindexer();
   private final Claw claw = new Claw();
   private final Swerve swerve = new Swerve();
 
@@ -49,9 +51,11 @@ public class RobotContainer {
     intake.setDefaultCommand(
           intake.manualCommand(
                 controller::getLeftY,
-                controller::getRightY,
                 ()-> controller.getHID().getBButtonPressed()
           ));
+
+    spindexer.setDefaultCommand(
+          spindexer.straightenGamePieceCommand());
 
     swerve.setDefaultCommand(
           swerve.driveSwerveCommand(
