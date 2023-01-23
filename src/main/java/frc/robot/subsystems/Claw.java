@@ -24,13 +24,8 @@ public class Claw extends SubsystemBase {
     public Claw() {
     }
 
-    public Command manualCommand(BooleanSupplier toOpen) {
-        return new RunCommand(() -> {
-            if (toOpen.getAsBoolean() && isClawOpenedTrigger.getAsBoolean())
-                piston.set(DoubleSolenoid.Value.kForward);
-            if (!toOpen.getAsBoolean() && !isClawOpenedTrigger.getAsBoolean())
-                piston.set(DoubleSolenoid.Value.kReverse);
-        }, this);
+    public Command manualCommand(BooleanSupplier toggle) {
+        return togglePistonCommand();
     }
 
     public Command togglePistonCommand() {
