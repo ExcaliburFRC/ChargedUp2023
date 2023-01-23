@@ -17,8 +17,8 @@ public class Spindexer extends SubsystemBase {
   private final DigitalInput beamBreaker = new DigitalInput(BEAMBREAK_CHANNEL);
   private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
 
-  private final Trigger beamBreakDetected = new Trigger(beamBreaker::get);
-  private final Trigger buttonDetected = new Trigger(button::get);
+  private final Trigger beamBreakDetectedTrigger = new Trigger(()-> !beamBreaker.get());
+  private final Trigger buttonDetectedTrigger = new Trigger(()-> !button.get());
 
   public gamePiece currentPiece;
 
@@ -58,15 +58,15 @@ public class Spindexer extends SubsystemBase {
   private Command handleConeCommand(){
     return new SequentialCommandGroup(
           setSpindexerMotor(0.3)
-                .until(buttonDetected),
+                .until(buttonDetectedTrigger),
           new ConditionalCommand(
                 setSpindexerMotor(-0.3).withTimeout(0.3), //TODO: check the minimal time for successful straighten
                 new InstantCommand(),
-                beamBreakDetected),
+                beamBreakDetectedTrigger),
           setSpindexerMotor(0.3),
           new InstantCommand(()-> {currentPiece = gamePiece.CONE;}),
           new WaitCommand(0.3),
-          new WaitUntilCommand(buttonDetected.negate()));
+          new WaitUntilCommand(buttonDetectedTrigger.negate()));
   }
 
   private Command setSpindexerMotor(double speed) {
