@@ -115,5 +115,7 @@ public final class Constants {
     public final class ClawConstants {
       public static final int FORWARD_CHANNEL = 0;
       public static final int REVERSE_CHANNEL = 0;
+      public static final int BEAMBREAK_CHANNEL = 0;
+      public static final int BUTTON_CHANNEL = 0;
     }
   }
