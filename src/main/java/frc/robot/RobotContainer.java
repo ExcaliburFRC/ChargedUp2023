@@ -48,10 +48,12 @@ public class RobotContainer {
   private void configureBindings() {
     controller.a().onTrue(claw.toggleCommand());
 
+    controller.y().toggleOnTrue(intake.toggleIntakeCommand());
+
     intake.setDefaultCommand(
           intake.manualCommand(
                 controller::getLeftY,
-                ()-> controller.getHID().getBButtonPressed()
+                () -> controller.getHID().getBButtonPressed()
           ));
 
     spindexer.setDefaultCommand(

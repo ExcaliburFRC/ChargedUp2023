@@ -34,4 +34,38 @@ public class Intake extends SubsystemBase {
           },
           this);
   }
+
+  public Command openPiston() {
+    return new RunCommand(() -> {
+      piston.set(DoubleSolenoid.Value.kForward);
+    }, this);
+  }
+
+  public Command closePiston() {
+    return new RunCommand(() -> {
+      piston.set(DoubleSolenoid.Value.kReverse);
+    },this);
+  }
+
+  public Command openIntake() {
+    return new RunCommand(() -> {
+      intakeMotor.set(0.5);
+      openPiston();
+    }, this);
+  }
+
+  public Command closeIntake() {
+    return new RunCommand(() -> {
+      intakeMotor.set(0);
+      closePiston();
+    }, this);
+  }
+
+  public Command toggleIntakeCommand(){
+    return new FunctionalCommand(
+          this::openPiston,
+          ()-> intakeMotor.set(0.3),
+          (__) -> closePiston(),
+          ()-> false);
+  }
 }
