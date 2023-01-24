@@ -1,4 +1,4 @@
-package frc.robot.Drivetrain;
+package frc.robot.drivetrain;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.controller.PIDController;
@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
-import frc.robot.Utiliy.Limelight;
+import frc.robot.utiliy.Limelight;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
