@@ -57,8 +57,7 @@ public class Spindexer extends SubsystemBase {
 
   private Command handleConeCommand(){
     return new SequentialCommandGroup(
-            setSpindexerMotor(0.3)
-                    .until(buttonDetectedTrigger),
+            new WaitUntilCommand(buttonDetectedTrigger),
             new ConditionalCommand(
                     setSpindexerMotor(-0.3).withTimeout(0.3), //TODO: check the minimal time for successful straighten
                     new InstantCommand(),
@@ -70,7 +69,7 @@ public class Spindexer extends SubsystemBase {
   }
 
   private Command setSpindexerMotor(double speed) {
-    return new RunCommand(() -> spindexer.set(speed), this);
+    return new InstantCommand(() -> spindexer.set(speed), this);
   }
 
   public enum gamePiece {
