@@ -196,6 +196,8 @@ public class Swerve extends SubsystemBase {
     builder.addDoubleProperty("FR pos", swerveModules[FRONT_RIGHT]::getAbsPos, null);
     builder.addDoubleProperty("BL pos", swerveModules[BACK_LEFT]::getAbsPos, null);
     builder.addDoubleProperty("BR pos", swerveModules[BACK_RIGHT]::getAbsPos, null);
+
+    SmartDashboard.putData("field", field);
   }
 
   private void resetEncoders() {

@@ -21,7 +21,7 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
   public static class IntakeConstants {
     public static final int k_INTAKE_MOTOR_ID = 0;
-    public static final int k_DJ_MOTOR_ID = 0;
+    public static final int k_SPINDEXER_MOTOR_ID = 0;
 
     public static final int k_INTAKE_MOTOR_CURRENT_LIMIT = 0;
     public static final int k_DJ_MOTOR_CURRENT_LIMIT = 0;
