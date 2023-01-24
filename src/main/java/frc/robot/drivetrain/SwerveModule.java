@@ -1,4 +1,4 @@
-package frc.robot.Drivetrain;
+package frc.robot.drivetrain;
 
 import com.revrobotics.*;
 import edu.wpi.first.math.controller.PIDController;
