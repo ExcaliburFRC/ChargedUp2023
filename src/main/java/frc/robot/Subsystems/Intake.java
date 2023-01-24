@@ -35,38 +35,38 @@ public class Intake extends SubsystemBase {
             this);
   }
 
-  public Command openPiston() {
+  public Command openPistonCommand() {
     return new RunCommand(() -> {
       piston.set(DoubleSolenoid.Value.kForward);
     }, this);
   }
 
-  public Command closePiston() {
+  public Command closePistonCommand() {
     return new RunCommand(() -> {
       piston.set(DoubleSolenoid.Value.kReverse);
     },this);
   }
 
-  public Command openIntake() {
+  public Command openIntakeCommand() {
     return new RunCommand(() -> {
       intakeMotor.set(0.5);
-      openPiston();
+      openPistonCommand();
     }, this);
   }
 
-  public Command closeIntake() {
+  public Command closeIntakeCommand() {
     return new RunCommand(() -> {
       intakeMotor.set(0);
-      closePiston();
+      closePistonCommand();
     }, this);
   }
 
   public Command toggleIntakeCommand(){
     return new FunctionalCommand(
-            this::openPiston,
+            this::openPistonCommand,
             ()-> intakeMotor.set(0.3),
             (__) -> {
-              closePiston();
+              closePistonCommand();
               intakeMotor.set(0);
             },
             ()-> false);
