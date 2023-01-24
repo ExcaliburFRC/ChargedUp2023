@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -58,6 +59,7 @@ public final class Constants {
       };
 
       public static final double kTolerance = 0.1;
+      public static final double kRobotTheta = 0; // TODO: find
       public static final double kDeadband = 0.25;
 
       public static final double kTrackWidth = 0.5842; // m
@@ -112,10 +114,15 @@ public final class Constants {
       public static final double kPTurning = 0.5;
     }
 
-    public final class ClawConstants {
+    public static final class ClawConstants {
       public static final int FORWARD_CHANNEL = 0;
       public static final int REVERSE_CHANNEL = 0;
       public static final int BEAMBREAK_CHANNEL = 0;
       public static final int BUTTON_CHANNEL = 0;
+    }
+
+    public static final class CoordinationConstants {
+    public static final double blueAllianceRampXAxis = 3.9;
+    public static final double redAllianceRampXAxis = 12.66;
     }
   }

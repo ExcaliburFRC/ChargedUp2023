@@ -9,13 +9,18 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.utiliy.Limelight;
+import static frc.robot.Constants.CoordinationConstants.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -94,6 +99,10 @@ public class Swerve extends SubsystemBase {
     return Rotation2d.fromDegrees(getDegrees());
   }
 
+  private double getRampAngle(){
+    return _gyro.getPitch();
+  }
+
   public Command resetGyroCommand() {
     return new InstantCommand(this::resetGyro);
   }
@@ -164,14 +173,13 @@ public class Swerve extends SubsystemBase {
         DoubleSupplier ySpeed,
         DoubleSupplier xAngle,
         DoubleSupplier yAngle,
-        BooleanSupplier fieldOriented){
+        BooleanSupplier fieldOriented) {
     return driveSwerveCommand(
           xSpeed,
           ySpeed,
-          ()-> thetaController.calculate(
-          getDegrees(),Math.atan(yAngle.getAsDouble() / xAngle.getAsDouble())
-    ),fieldOriented);
-
+          () -> thetaController.calculate(
+                getDegrees(), Math.atan(yAngle.getAsDouble() / xAngle.getAsDouble())
+          ), fieldOriented);
   }
 
   private void setModulesStates(SwerveModuleState[] states) {
@@ -180,6 +188,16 @@ public class Swerve extends SubsystemBase {
     swerveModules[FRONT_RIGHT].setDesiredState(states[FRONT_RIGHT]);
     swerveModules[BACK_LEFT].setDesiredState(states[BACK_LEFT]);
     swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
+  }
+
+  public Command rotateToAngleCommand(double angle) {
+    return driveSwerveWithAngleCommand(
+          () -> 0,
+          () -> 0,
+          () -> 1,
+          () -> Math.tan(angle),
+          () -> false)
+          .until(() -> Math.abs(angle - getDegrees()) < kRobotTheta);
   }
 
   @Override
@@ -231,45 +249,45 @@ public class Swerve extends SubsystemBase {
 
   // autonomous code
 
-//  public Command followTrajectoryCommand(Pose2d start, List<Translation2d> wayPoints, Pose2d end) {
-//    return followTrajectoryCommand(
-//          TrajectoryGenerator.generateTrajectory(
-//                start,
-//                wayPoints,
-//                end,
-//                kConfig
-//          ));
-//  }
-//
-//  public Command turnToAngleCommand(double degrees) {
-//    return driveSwerveCommand(() -> 0,
-//          () -> 0,
-//          () -> thetaController.calculate(getDegrees(), degrees),
-//          () -> true);
-//  }
+  public Command followTrajectoryCommand(Pose2d start, List<Translation2d> wayPoints, Pose2d end) {
+    return followTrajectoryCommand(
+          TrajectoryGenerator.generateTrajectory(
+                start,
+                wayPoints,
+                end,
+                kConfig)
+    );
+  }
 
-//  public Command followTrajectoryCommand(Trajectory trajectory) {
-//    return new SwerveControllerCommand(
-//          trajectory,
-//          this::getOdomertyPose,
-//          kSwerveKinematics,
-//          xAutoController,
-//          yAutoController,
-//          thetaController,
-//          this::setModulesStates,
-//          this);
-//  }
-//
-//  public Command spinVectorTo(Pose2d desiredPose) {
-//    return followTrajectoryCommand(getOdomertyPose(), new ArrayList<>(), desiredPose);
-//  }
-//
-//  public Command vectorTo(Translation2d desiredTranslation) {
-//    return spinVectorTo(new Pose2d(desiredTranslation, getRotation2d()));
-//  }
+  public Command turnToAngleCommand(double degrees) {
+    return driveSwerveCommand(() -> 0,
+          () -> 0,
+          () -> thetaController.calculate(getDegrees(), degrees),
+          () -> true);
+  }
 
-  //  private double time = 0;
-//  @Override
+  public Command followTrajectoryCommand(Trajectory trajectory) {
+    return new SwerveControllerCommand(
+          trajectory,
+          odometry::getEstimatedPosition,
+          kSwerveKinematics,
+          xAutoController,
+          yAutoController,
+          thetaController,
+          this::setModulesStates,
+          this);
+  }
+
+  public Command spinVectorTo(Pose2d desiredPose) {
+    return followTrajectoryCommand(odometry.getEstimatedPosition(), new ArrayList<>(), desiredPose);
+  }
+
+  public Command vectorTo(Translation2d desiredTranslation) {
+    return spinVectorTo(new Pose2d(desiredTranslation, getRotation2d()));
+  }
+
+    //private double time = 0;
+  //@Override
 //  public void periodic() {
 //    if (Timer.getFPGATimestamp() - time > 10 && swerveModules[SwerveModule.FRONT_LEFT].getDriveVelocity() < 0.01){
 //      swerveModules[SwerveModule.FRONT_LEFT].resetSpinningEncoder();
