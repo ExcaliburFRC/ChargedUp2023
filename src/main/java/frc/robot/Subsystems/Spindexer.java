@@ -17,8 +17,8 @@ public class Spindexer extends SubsystemBase {
   private final DigitalInput beamBreaker = new DigitalInput(BEAMBREAK_CHANNEL);
   private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
 
-  private final Trigger beamBreakDetected = new Trigger(beamBreaker::get);
-  private final Trigger buttonDetected = new Trigger(button::get);
+  private final Trigger beamBreakDetectedTrigger = new Trigger(()-> !beamBreaker.get());
+  private final Trigger buttonDetectedTrigger = new Trigger(()-> !button.get());
 
   public gamePiece currentPiece;
 
@@ -33,19 +33,19 @@ public class Spindexer extends SubsystemBase {
 
   public Command straightenGamePieceCommand() {
     return new SequentialCommandGroup(
-          setSpindexerMotor(0.3),
-          new ConditionalCommand(
-                new InstantCommand(),
-                handleGamePiecesCommand(),
-                () -> getCurrentItem().equals(gamePiece.EMPTY)
-          )).repeatedly();
+            setSpindexerMotor(0.3),
+            new ConditionalCommand(
+                    new InstantCommand(),
+                    handleGamePiecesCommand(),
+                    () -> getCurrentItem().equals(gamePiece.EMPTY)
+            )).repeatedly();
   }
 
   private Command handleGamePiecesCommand() {
     return new ConditionalCommand(
-          handleConeCommand(),
-          handleCubeCommand(),
-          () -> getCurrentItem().equals(gamePiece.CONE)
+            handleConeCommand(),
+            handleCubeCommand(),
+            () -> getCurrentItem().equals(gamePiece.CONE)
     );
   }
 
@@ -57,16 +57,16 @@ public class Spindexer extends SubsystemBase {
 
   private Command handleConeCommand(){
     return new SequentialCommandGroup(
-          setSpindexerMotor(0.3)
-                .until(buttonDetected),
-          new ConditionalCommand(
-                setSpindexerMotor(-0.3).withTimeout(0.3), //TODO: check the minimal time for successful straighten
-                new InstantCommand(),
-                beamBreakDetected),
-          setSpindexerMotor(0.3),
-          new InstantCommand(()-> {currentPiece = gamePiece.CONE;}),
-          new WaitCommand(0.3),
-          new WaitUntilCommand(buttonDetected.negate()));
+            setSpindexerMotor(0.3)
+                    .until(buttonDetectedTrigger),
+            new ConditionalCommand(
+                    setSpindexerMotor(-0.3).withTimeout(0.3), //TODO: check the minimal time for successful straighten
+                    new InstantCommand(),
+                    beamBreakDetectedTrigger),
+            setSpindexerMotor(0.3),
+            new InstantCommand(()-> {currentPiece = gamePiece.CONE;}),
+            new WaitCommand(0.3),
+            new WaitUntilCommand(buttonDetectedTrigger.negate()));
   }
 
   private Command setSpindexerMotor(double speed) {
