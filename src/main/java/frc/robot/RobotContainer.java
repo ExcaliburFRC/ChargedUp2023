@@ -48,11 +48,7 @@ public class RobotContainer {
   private void configureBindings() {
     controller.b().onTrue(claw.autoClawCommand());
 
-    intake.setDefaultCommand(
-          intake.manualCommand(
-                controller::getLeftY,
-                ()-> controller.getHID().getBButtonPressed()
-          ));
+    controller.y().toggleOnTrue(intake.toggleIntakeCommand());
 
     spindexer.setDefaultCommand(
           spindexer.straightenGamePieceCommand());
