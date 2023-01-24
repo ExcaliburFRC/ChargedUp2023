@@ -53,10 +53,19 @@ public class RobotContainer {
     spindexer.setDefaultCommand(
           spindexer.straightenGamePieceCommand());
 
+//    swerve.setDefaultCommand(
+//          swerve.driveSwerveCommand(
+//                controller::getLeftX,
+//                controller::getLeftY,
+//                controller::getRightY,
+//                controller.rightTrigger(0.1).negate()
+//          ));
+
     swerve.setDefaultCommand(
-          swerve.driveSwerveCommand(
+          swerve.driveSwerveWithAngleCommand(
                 controller::getLeftX,
                 controller::getLeftY,
+                controller::getRightX,
                 controller::getRightY,
                 controller.rightTrigger(0.1).negate()
           ));

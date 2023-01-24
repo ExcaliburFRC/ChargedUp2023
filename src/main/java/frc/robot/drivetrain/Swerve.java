@@ -159,6 +159,21 @@ public class Swerve extends SubsystemBase {
           this);
   }
 
+  public Command driveSwerveWithAngleCommand(
+        DoubleSupplier xSpeed,
+        DoubleSupplier ySpeed,
+        DoubleSupplier xAngle,
+        DoubleSupplier yAngle,
+        BooleanSupplier fieldOriented){
+    return driveSwerveCommand(
+          xSpeed,
+          ySpeed,
+          ()-> thetaController.calculate(
+          getDegrees(),Math.atan(yAngle.getAsDouble() / xAngle.getAsDouble())
+    ),fieldOriented);
+
+  }
+
   private void setModulesStates(SwerveModuleState[] states) {
     SwerveDriveKinematics.desaturateWheelSpeeds(states, kPhysicalMaxSpeedMetersPerSecond);
     swerveModules[FRONT_LEFT].setDesiredState(states[FRONT_LEFT]);
