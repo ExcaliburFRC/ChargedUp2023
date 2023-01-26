@@ -5,6 +5,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -13,7 +15,7 @@ import frc.robot.Constants;
 import static frc.robot.Constants.SwerveConstants.kTolerance;
 import static java.lang.Math.PI;
 
-public class SwerveModule {
+public class SwerveModule implements Sendable {
   private final CANSparkMax _driveMotor;
   private final CANSparkMax _spinningMotor;
 
@@ -142,5 +144,11 @@ public class SwerveModule {
   public void stop() {
     _driveMotor.set(0);
     _spinningMotor.set(0);
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    builder.setSmartDashboardType("Gyro");
+    builder.addDoubleProperty("Value", this::getAbsEncoderRad, null);
   }
 }
