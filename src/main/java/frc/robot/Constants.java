@@ -111,7 +111,23 @@ public final class Constants {
         public static final int REVERSE_CHANNEL = 0;
     }
 
-    public final class ArmConstants {
+    public static final class ArmConstants {
+        public enum Setpoints {
+            SET_POINT1(20,90),
+            SET_POINT2(30,40);
+
+            public final int x;
+            public final int y;
+
+            Setpoints(int x, int y){
+                this.x = x;
+                this.y = y;
+            }
+            public Translation2d getTranslation2d() {
+                return new Translation2d(x, y);
+            }
+        }
+
         public static final int ANGLE_MOTOR_ID = 0;
         public static final int LENGTH_MOTOR_ID = 0;
 
