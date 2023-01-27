@@ -31,12 +31,12 @@ public class SwerveModule implements Sendable {
   public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < kTolerance).debounce(0.1);
 
   public SwerveModule(
-        int driveMotorId,
-        int spinningMotorId,
-        boolean driveMotorReversed,
-        boolean spinningMotorReversed,
-        int absEncoderChannel,
-        double offsetAngle) {
+          int driveMotorId,
+          int spinningMotorId,
+          boolean driveMotorReversed,
+          boolean spinningMotorReversed,
+          int absEncoderChannel,
+          double offsetAngle) {
     _absEncoderChannel = absEncoderChannel;
     _absEncoder = new DutyCycleEncoder(absEncoderChannel);
     _absEncoderOffsetRad = offsetAngle * 2 * PI;
@@ -112,7 +112,7 @@ public class SwerveModule implements Sendable {
   }
 
   public SwerveModulePosition getPosition(){
-    return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getSpinningPosition()));
+    return new SwerveModulePosition(getDrivePosition(), Rotation2d.fromRadians(getSpinningPosition()));
   }
 
   public void setDesiredState(SwerveModuleState state) {

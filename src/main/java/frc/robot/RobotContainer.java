@@ -7,10 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.Claw;
-import frc.robot.subsystems.Intake;
 import frc.robot.drivetrain.Swerve;
-import frc.robot.subsystems.Spindexer;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,9 +17,6 @@ import frc.robot.subsystems.Spindexer;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final Intake intake = new Intake();
-  private final Spindexer spindexer = new Spindexer();
-  private final Claw claw = new Claw();
   private final Swerve swerve = new Swerve();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -46,29 +40,26 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    controller.b().onTrue(claw.autoClawCommand());
-
-    controller.y().toggleOnTrue(intake.toggleIntakeCommand());
-
-    spindexer.setDefaultCommand(
-          spindexer.straightenGamePieceCommand());
+    swerve.setDefaultCommand(
+          swerve.driveSwerveCommand(
+                controller::getLeftX,
+                controller::getLeftY,
+                () -> -controller.getRightX(),
+                controller.rightTrigger(0.1).negate()
+          ));
 
 //    swerve.setDefaultCommand(
-//          swerve.driveSwerveCommand(
+//          swerve.driveSwerveWithAngleCommand(
 //                controller::getLeftX,
 //                controller::getLeftY,
+//                controller::getRightX,
 //                controller::getRightY,
 //                controller.rightTrigger(0.1).negate()
 //          ));
 
-    swerve.setDefaultCommand(
-          swerve.driveSwerveWithAngleCommand(
-                controller::getLeftX,
-                controller::getLeftY,
-                controller::getRightX,
-                controller::getRightY,
-                controller.rightTrigger(0.1).negate()
-          ));
+    controller.rightBumper().onTrue(swerve.resetModulesCommand());
+    controller.leftBumper()
+          .onTrue(swerve.resetGyroCommand());
   }
 
   /**
@@ -77,7 +68,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return null;
+    return swerve.resetModulesCommand();
   }
 }
