@@ -49,6 +49,14 @@ public class Limelight {
   public void setPipeline(PipelineType pipeline){
     ll.setPipelineIndex(pipeline.pipeline);
   }
+  public void setDriveMode(boolean isDriverMode){
+    ll.setDriverMode(isDriverMode);
+  }
+  public void setLEDs(VisionLEDMode ledMode){
+    ll.setLED(ledMode);
+  }
+
+
 
   public boolean updateFromAprilTagPose(BiConsumer<Pose2d, Double> toUpdate) {
     var result = ll.getLatestResult();
