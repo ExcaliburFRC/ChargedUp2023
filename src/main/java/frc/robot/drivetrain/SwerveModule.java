@@ -125,7 +125,6 @@ public class SwerveModule implements Sendable {
 
     _driveMotor.set(state.speedMetersPerSecond / Constants.SwerveConstants.kPhysicalMaxSpeedMetersPerSecond);
     _spinningMotor.set(_spinningPIDController.calculate(getSpinningPosition(), state.angle.getRadians()));
-    SmartDashboard.putString("Swerve [" + _absEncoderChannel + "] state ", state.toString());
   }
 
   public void spinTo(double setpoint){
@@ -150,5 +149,6 @@ public class SwerveModule implements Sendable {
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Gyro");
     builder.addDoubleProperty("Value", this::getAbsEncoderRad, null);
+    builder.addDoubleProperty("absEncoderPos", this::getAbsPos, null);
   }
 }

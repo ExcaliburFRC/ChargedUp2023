@@ -88,7 +88,10 @@ public class Swerve extends SubsystemBase {
   public Swerve() {
     resetGyro();
     var tab = Shuffleboard.getTab("Swerve");
-    tab.add("Left Front", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro);
+    tab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro);
+    tab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro);
+    tab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro);
+    tab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro);
   }
 
 	public void resetGyro() {
@@ -203,6 +206,8 @@ public class Swerve extends SubsystemBase {
           });
     field.setRobotPose(odometry.getEstimatedPosition());
     SmartDashboard.putData(field);
+
+	SmartDashboard.putData("gyro angle", _gyro);
   }
 
   @Override
