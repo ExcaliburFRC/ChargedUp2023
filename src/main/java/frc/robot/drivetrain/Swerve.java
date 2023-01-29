@@ -88,6 +88,7 @@ public class Swerve extends SubsystemBase {
   public Swerve() {
     resetGyro();
     var tab = Shuffleboard.getTab("Swerve");
+
     tab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro);
     tab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro);
     tab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro);
@@ -184,13 +185,17 @@ public class Swerve extends SubsystemBase {
 					xSpeed,
 					ySpeed,
 					() -> thetaController.calculate(
-								getDegrees(), calculateJoystickAngle(xAngle, yAngle)),
+								getDegrees(), calculateJoystickAngle(
+											xAngle.getAsDouble(),
+											yAngle.getAsDouble())),
 					fieldOriented);
 	}
 
-	private double calculateJoystickAngle(DoubleSupplier x, DoubleSupplier y){
-		var value = Math.atan(y.getAsDouble() / x.getAsDouble());
-		return x.getAsDouble() + y.getAsDouble() > 0.1? value: 0;
+	private double calculateJoystickAngle(double x, double y) {
+		double a =  -Math.toDegrees(Math.atan(y / x));
+		if (x<0) a+=180;
+		if (a<0) a+=360;
+		return a;
 	}
 
   @Override
@@ -204,27 +209,13 @@ public class Swerve extends SubsystemBase {
                 swerveModules[BACK_LEFT].getPosition(),
                 swerveModules[BACK_RIGHT].getPosition()
           });
-    field.setRobotPose(odometry.getEstimatedPosition());
+
+		field.setRobotPose(odometry.getEstimatedPosition());
     SmartDashboard.putData(field);
 
 	SmartDashboard.putData("gyro angle", _gyro);
   }
 
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    builder.clearProperties();
-    builder.setSmartDashboardType("Subsystem");
-
-		builder.addDoubleProperty("FL angle", swerveModules[FRONT_LEFT]::getResetRad, null);
-		builder.addDoubleProperty("FR angle", swerveModules[FRONT_RIGHT]::getResetRad, null);
-		builder.addDoubleProperty("BL angle", swerveModules[BACK_LEFT]::getResetRad, null);
-		builder.addDoubleProperty("BR angle", swerveModules[BACK_RIGHT]::getResetRad, null);
-
-		builder.addDoubleProperty("FL pos", swerveModules[FRONT_LEFT]::getAbsPos, null);
-		builder.addDoubleProperty("FR pos", swerveModules[FRONT_RIGHT]::getAbsPos, null);
-		builder.addDoubleProperty("BL pos", swerveModules[BACK_LEFT]::getAbsPos, null);
-		builder.addDoubleProperty("BR pos", swerveModules[BACK_RIGHT]::getAbsPos, null);
-	}
 
 	private void setModulesStates(SwerveModuleState[] states) {
 		SwerveDriveKinematics.desaturateWheelSpeeds(states, kPhysicalMaxSpeedMetersPerSecond);

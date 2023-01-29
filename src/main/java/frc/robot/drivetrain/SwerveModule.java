@@ -148,7 +148,8 @@ public class SwerveModule implements Sendable {
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Gyro");
-    builder.addDoubleProperty("Value", this::getAbsEncoderRad, null);
+    builder.addDoubleProperty("Value", () -> Math.toDegrees(getAbsEncoderRad()), null);
+    builder.addDoubleProperty("abs value", this::getAbsPos, null);
     builder.addDoubleProperty("absEncoderPos", this::getAbsPos, null);
   }
 }

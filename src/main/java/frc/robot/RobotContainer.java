@@ -4,7 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.drivetrain.Swerve;
@@ -48,16 +50,17 @@ public class RobotContainer {
                 controller.rightTrigger(0.1).negate()
           ));
 
-//    swerve.setDefaultCommand(
-//          swerve.driveSwerveWithAngleCommand(
-//                controller::getLeftX,
-//                controller::getLeftY,
-//                controller::getRightX,
-//                controller::getRightY,
-//                controller.rightTrigger(0.1).negate()
-//          ));
+    swerve.setDefaultCommand(
+          swerve.driveSwerveWithAngleCommand(
+                controller::getLeftX,
+                controller::getLeftY,
+                controller::getRightX,
+                controller::getRightY,
+                controller.rightTrigger(0.1).negate()
+          ));
 
-    controller.rightBumper().onTrue(swerve.resetModulesCommand());
+    controller.rightBumper()
+          .onTrue(swerve.resetModulesCommand());
     controller.leftBumper()
           .onTrue(swerve.resetGyroCommand());
   }
@@ -68,6 +71,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return swerve.resetModulesCommand();
+    //return swerve.resetModulesCommand();
+  return swerve.resetModulesCommand();
   }
 }
