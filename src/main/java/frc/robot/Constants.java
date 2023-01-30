@@ -37,8 +37,7 @@ public final class Constants {
       public static final double[] kOffsetAngle = {0.826, 0.038, 0.622, 0.860};
 
       public static final double kTolerance = 0.05;
-      public static final double kRobotTheta = 0; // TODO: find
-      public static final double kDeadband = 0.5;
+      public static final double kDeadband = 0.05;
 
       public static final double kTrackWidth = 0.5842; // m
       public static final double kWheelBase = 0.5842; // m
@@ -55,7 +54,7 @@ public final class Constants {
 
       // intentional limitations
 
-      public static final double kSpeedPercantageLimit = 65; // %
+      public static final double kSpeedPercantageLimit = 50; // %
       public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
       public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
       public static final double kMaxTurningAcceleration = Math.PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -78,7 +77,9 @@ public final class Constants {
 
       public static final double kPXAuto = 0; //TODO: find
       public static final double kPYAuto = 0; //TODO: find
-      public static final double kPThetaAuto = 0.75; //TODO: find
+      public static final double kPThetaTeleop = 0.0145; //TODO: find
+      public static final double kDThetaTeleop = 0.001; //TODO: find
+      public static final double kPThetaAuto = 0; //TODO: find
     }
 
     public static final class ModuleConstants {
@@ -89,6 +90,6 @@ public final class Constants {
       public static final double kTurningMotorGearRatio = 1 / 21.4285714;
       public static final double kTurningEncoderRotationsToRadians = kTurningMotorGearRatio * 2 * Math.PI;
       public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
-      public static final double kPTurning = 0.55;
+      public static final double kPTurning = 0.6;
     }
   }

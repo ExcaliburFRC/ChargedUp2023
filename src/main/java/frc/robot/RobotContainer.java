@@ -43,26 +43,18 @@ public class RobotContainer {
    */
   private void configureBindings() {
     swerve.setDefaultCommand(
-          swerve.driveSwerveCommand(
+          swerve.dualDriveSwerveCommand(
                 controller::getLeftX,
                 controller::getLeftY,
                 () -> -controller.getRightX(),
-                controller.rightTrigger(0.1).negate()
-          ));
+                () -> controller.getRightY(),
+                controller.rightTrigger(0.1).negate(),
+                controller.leftTrigger(0.1)));
 
-    swerve.setDefaultCommand(
-          swerve.driveSwerveWithAngleCommand(
-                controller::getLeftX,
-                controller::getLeftY,
-                controller::getRightX,
-                controller::getRightY,
-                controller.rightTrigger(0.1).negate()
-          ));
-
-    controller.rightBumper()
+    controller.b()
           .onTrue(swerve.resetModulesCommand());
-    controller.leftBumper()
-          .onTrue(swerve.resetGyroCommand());
+    controller.y()
+          .onTrue(swerve.resetGyroCommand().alongWith(swerve.resetJoystickAngle()));
   }
 
   /**
