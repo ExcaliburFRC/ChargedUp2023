@@ -12,7 +12,7 @@ import static frc.robot.Constants.IntakeConstants.*;
 
 public class Spindexer extends SubsystemBase {
 
-  private final CANSparkMax spindexer = new CANSparkMax(k_DJ_MOTOR_ID, kBrushless);
+  private final CANSparkMax spindexer = new CANSparkMax(k_SPINDEXER_MOTOR_ID, kBrushless);
   private final DigitalInput button = new DigitalInput(BUTTON_CHANNEL);
   private final DigitalInput beamBreaker = new DigitalInput(BEAMBREAK_CHANNEL);
   private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
