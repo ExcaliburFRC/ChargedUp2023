@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -19,23 +20,6 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static class IntakeConstants {
-    public static final int k_INTAKE_MOTOR_ID = 0;
-    public static final int k_SPINDEXER_MOTOR_ID = 0;
-
-    public static final int k_INTAKE_MOTOR_CURRENT_LIMIT = 0;
-    public static final int k_DJ_MOTOR_CURRENT_LIMIT = 0;
-
-    public static final int k_FWD_CHANNEL = 0;
-    public static final int k_REV_CHANNEL = 0;
-
-    public static final int BEAMBREAK_CHANNEL = 0;
-    public static final int BUTTON_CHANNEL = 0;
-
-    public static final int GAME_PIECE_THRESHOLD = 93; // (blue)
-    public static final int DISTANCE_THRESHOLD = 0; //TODO: find
-  }
-
     public static final class SwerveConstants {
       public enum Modules {
         ;
@@ -45,20 +29,15 @@ public final class Constants {
         public static final int BACK_RIGHT = 3;
       }
 
-      public static final int[] kDriveMotorId = {18, 12, 16, 14};
-      public static final int[] kSpinningMotorId = {17, 11, 15, 13};
+      public static final int[] kDriveMotorId = {17, 11, 15, 13};
+      public static final int[] kSpinningMotorId = {18, 12, 16, 14};
       public static final boolean[] kDriveMotorReversed = {false, false, false, false};
       public static final boolean[] kSpinningMotorReversed = {false, false, false, false};
       public static final int[] kAbsEncoderChannel = {1, 0, 2, 3};
-      public static final double[] kOffsetAngle = {
-            0.809,
-            0.285,
-            0.393,
-            0.349
-      };
+      public static final double[] kOffsetAngle = {0.826, 0.038, 0.622, 0.860};
 
-      public static final double kTolerance = 0.1;
-      public static final double kDeadband = 0.25;
+      public static final double kTolerance = 0.05;
+      public static final double kDeadband = 0.05;
 
       public static final double kTrackWidth = 0.5842; // m
       public static final double kWheelBase = 0.5842; // m
@@ -75,10 +54,10 @@ public final class Constants {
 
       // intentional limitations
 
-      //    public static double kSpeedPercantageLimit = 75; // %
-      public static double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond; // m/s
-      public static double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond;// rad/s
-      public static double kMaxTurningAcceleration = Math.PI; // rad/s^2
+      public static final double kSpeedPercantageLimit = 50; // %
+      public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
+      public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
+      public static final double kMaxTurningAcceleration = Math.PI / 100 * kSpeedPercantageLimit; // rad/s^2
 
       //unclear values
       public static final double kMaxDriveAccelerationUnitsPerSecond = 3;
@@ -98,7 +77,9 @@ public final class Constants {
 
       public static final double kPXAuto = 0; //TODO: find
       public static final double kPYAuto = 0; //TODO: find
-      public static final double kPThetaAuto = 0.75; //TODO: find
+      public static final double kPThetaTeleop = 0.0145; //TODO: find
+      public static final double kDThetaTeleop = 0.001; //TODO: find
+      public static final double kPThetaAuto = 0; //TODO: find
     }
 
     public static final class ModuleConstants {
@@ -109,13 +90,6 @@ public final class Constants {
       public static final double kTurningMotorGearRatio = 1 / 21.4285714;
       public static final double kTurningEncoderRotationsToRadians = kTurningMotorGearRatio * 2 * Math.PI;
       public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
-      public static final double kPTurning = 0.5;
-    }
-
-    public final class ClawConstants {
-      public static final int FORWARD_CHANNEL = 0;
-      public static final int REVERSE_CHANNEL = 0;
-      public static final int BEAMBREAK_CHANNEL = 0;
-      public static final int BUTTON_CHANNEL = 0;
+      public static final double kPTurning = 0.6;
     }
   }
