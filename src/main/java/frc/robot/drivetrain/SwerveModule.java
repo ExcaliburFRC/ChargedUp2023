@@ -5,8 +5,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -15,7 +13,7 @@ import frc.robot.Constants;
 import static frc.robot.Constants.SwerveConstants.kTolerance;
 import static java.lang.Math.PI;
 
-public class SwerveModule implements Sendable {
+public class SwerveModule {
   private final CANSparkMax _driveMotor;
   private final CANSparkMax _spinningMotor;
 
@@ -31,12 +29,12 @@ public class SwerveModule implements Sendable {
   public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < kTolerance).debounce(0.1);
 
   public SwerveModule(
-          int driveMotorId,
-          int spinningMotorId,
-          boolean driveMotorReversed,
-          boolean spinningMotorReversed,
-          int absEncoderChannel,
-          double offsetAngle) {
+        int driveMotorId,
+        int spinningMotorId,
+        boolean driveMotorReversed,
+        boolean spinningMotorReversed,
+        int absEncoderChannel,
+        double offsetAngle) {
     _absEncoderChannel = absEncoderChannel;
     _absEncoder = new DutyCycleEncoder(absEncoderChannel);
     _absEncoderOffsetRad = offsetAngle * 2 * PI;
@@ -112,7 +110,7 @@ public class SwerveModule implements Sendable {
   }
 
   public SwerveModulePosition getPosition(){
-    return new SwerveModulePosition(getDrivePosition(), Rotation2d.fromRadians(getSpinningPosition()));
+    return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getSpinningPosition()));
   }
 
   public void setDesiredState(SwerveModuleState state) {
@@ -125,6 +123,7 @@ public class SwerveModule implements Sendable {
 
     _driveMotor.set(state.speedMetersPerSecond / Constants.SwerveConstants.kPhysicalMaxSpeedMetersPerSecond);
     _spinningMotor.set(_spinningPIDController.calculate(getSpinningPosition(), state.angle.getRadians()));
+    SmartDashboard.putString("Swerve [" + _absEncoderChannel + "] state ", state.toString());
   }
 
   public void spinTo(double setpoint){
@@ -143,13 +142,5 @@ public class SwerveModule implements Sendable {
   public void stop() {
     _driveMotor.set(0);
     _spinningMotor.set(0);
-  }
-
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    builder.setSmartDashboardType("Gyro");
-    builder.addDoubleProperty("Value", () -> Math.toDegrees(getAbsEncoderRad()), null);
-    builder.addDoubleProperty("abs value", this::getAbsPos, null);
-    builder.addDoubleProperty("absEncoderPos", this::getAbsPos, null);
   }
 }
