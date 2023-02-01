@@ -1,10 +1,9 @@
-package frc.robot.Subsystems;
+package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -19,10 +18,12 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.Constants.ArmConstants.*;
 
 public class Arm extends SubsystemBase {
-  private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+  private final CANSparkMax angleMasterMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+  private final CANSparkMax angleSlaveMotor = new CANSparkMax(ANGLE_FOLLOWER_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
   private final CANSparkMax lengthMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
 
   private final RelativeEncoder lengthEncoder;
+
 
   private final DutyCycleEncoder absAngleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_CHANNEL);
 
@@ -32,40 +33,47 @@ public class Arm extends SubsystemBase {
   private final Trigger armFullyOpenedTrigger = new Trigger(() -> !upperLimitSwitch.get());
   private final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
 
-  private final PIDController angleController;
+  private final SparkMaxPIDController angleController;
   private final SparkMaxPIDController lengthController;
-//  private final PIDController lengthController;
-
 
   public Arm() {
-    angleMotor.restoreFactoryDefaults();
+    angleSlaveMotor.restoreFactoryDefaults();
+    angleMasterMotor.restoreFactoryDefaults();
     lengthMotor.restoreFactoryDefaults();
 
-    angleMotor.setInverted(false); //TODO: check
+    angleSlaveMotor.follow(angleMasterMotor, false);
+    angleMasterMotor.setInverted(false); //TODO: check
     lengthMotor.setInverted(false); //TODO: check
 
-    angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    angleMasterMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     lengthMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    angleSlaveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
     lengthEncoder = lengthMotor.getEncoder();
 
     lengthEncoder.setPositionConversionFactor(ROT_TO_METER);
     lengthEncoder.setVelocityConversionFactor(RPM_TO_METER_PER_SEC);
 
-    lengthController = new PIDController(kP_LENGTH, kI_LENGTH, kD_LENGTH);
-    angleController = new PIDController(kP_ANGLE, kI_ANGLE, kD_ANGLE);
+    lengthController = lengthMotor.getPIDController();
+
+    lengthController.setP(kP_LENGTH);
+    lengthController.setI(0);
+    lengthController.setD(0);
+
+    angleController = angleMasterMotor.getPIDController();
+    angleController.setP(kP_ANGLE);
+    angleController.setI(0);
+    angleController.setD(0);
 
 
-    angleController.setTolerance(ANGLE_TOLERANCE);
-
-    angleMotor.setOpenLoopRampRate(ARM_RAMP_RATE);
+    angleMasterMotor.setClosedLoopRampRate(ARM_RAMP_RATE);
   }
 
   public Command manualCommand(DoubleSupplier angleJoystick, DoubleSupplier lengthJoystick) {
     return new RunCommand(
           () -> {
             lengthMotor.set(lengthJoystick.getAsDouble());
-            angleMotor.set(angleJoystick.getAsDouble());
+            angleMasterMotor.set(angleJoystick.getAsDouble());
           }, this);
   }
 
@@ -73,45 +81,35 @@ public class Arm extends SubsystemBase {
     return MINIMAL_LENGTH_METERS + lengthEncoder.getPosition();
   }
 
-  public Command resetLengthEncoder() {
+  public Command calibrateLengthEncoderCommand() {
     return new RunCommand(
-          () -> lengthMotor.set(-0.05)
+          () -> lengthMotor.set(-0.1)
     ).until(
                 armFullyClosedTrigger)
           .andThen(new InstantCommand(
                 () -> {
-                  lengthEncoder.setPosition(0);
+                  lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
                   lengthMotor.stopMotor();
                 }
           ));
   }
 
-  public Command setTranslationCommand(Setpoints setPointConstant) {
-    Translation2d setPoint = setPointConstant.getTranslation2d();
-    Command lengthCommand = openToLengthCommand(setPoint);
-
-    double lengthSetPoint = setPoint.getNorm();
-    double angleSetPoint = setPoint.getNorm();
-    return new RunCommand(
-          () -> {
-            angleMotor.set(angleController.calculate(
-                  getAbsEncoderPos(),
-                  angleSetPoint));
-          }).alongWith(new ProxyCommand(()-> openToLengthCommand(setPoint))
-          .unless(() -> isAchievableTranslation(setPoint));
+  public Command holdSetpoint(Setpoints setpoint) {
+    return moveToLengthCommand(setpoint.translation).alongWith(
+          moveToAngleCommand(setpoint.translation));
   }
 
-  private Command openToLengthCommand(Translation2d setPoint) {
-    return new ProxyCommand( () -> new TrapezoidProfileCommand(
+  private Command moveToLengthCommand(Translation2d setPoint) {
+    return new ProxyCommand(() -> new TrapezoidProfileCommand(
           new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(kMaxVelocity, kMaxAcceleration),
+                new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxAngularAcceleration),
                 new TrapezoidProfile.State(setPoint.getNorm(), 0),
                 new TrapezoidProfile.State(getLengthMeter(), lengthEncoder.getVelocity())
           ),
           state -> {
-            double feedforward = ks * Math.signum(state.velocity)
-                  + kg * Math.sin(Units.degreesToRadians(getAbsEncoderPos()))
-                  + kv * state.velocity;
+            double feedforward = kS_LENGTH * Math.signum(state.velocity)
+                  + kG_LENGTH * Math.sin(Units.degreesToRadians(getAbsEncoderPos()))
+                  + kV_LENGTH * state.velocity;
 
             lengthController.setReference(state.position, CANSparkMax.ControlType.kPosition,
                   0,
@@ -120,17 +118,31 @@ public class Arm extends SubsystemBase {
     ));
   }
 
-  private boolean isAchievableTranslation(Translation2d target) {
-    return target.getNorm() >= MINIMAL_LENGTH_METERS && target.getNorm() <= MINIMAL_LENGTH_METERS * 2 &&
-          (target.getAngle().getDegrees() <= PHYSICAL_BACK_MAX_ARM_ANGLE_DEG ||
-                target.getAngle().getDegrees() >= PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG);
-  } // TODO: find the max length multiplier
+  public Command moveToAngleCommand(Translation2d setPoint) {
+    return new ProxyCommand(
+          () -> new TrapezoidProfileCommand(
+                new TrapezoidProfile(
+                      new TrapezoidProfile.Constraints(kMaxAngularVelocity, kMaxAngularAcceleration),
+                      new TrapezoidProfile.State(setPoint.getAngle().getDegrees(), 0),
+                      new TrapezoidProfile.State(getAbsEncoderPos(), 0)
+                ),
+                state -> {
+                  double feedforward =
+                        kS_ANGLE * Math.signum(state.velocity)
+                              + kG_ANGLE.get(getLengthMeter()) * Math.cos(state.position)
+                              + kV_ANGLE * state.velocity;
+                  angleController.setReference(state.position, CANSparkMax.ControlType.kPosition,
+                        0,
+                        feedforward, SparkMaxPIDController.ArbFFUnits.kVoltage);
+                }
+          ));
+  }
 
-    private double getAbsEncoderPos() {
-        return absAngleEncoder.getAbsolutePosition() - ABS_ENCODER_OFFSET_ANGLE_DEG < 0 ?
-                360 - (absAngleEncoder.getAbsolutePosition() + ABS_ENCODER_OFFSET_ANGLE_DEG) :
-                absAngleEncoder.getAbsolutePosition() - ABS_ENCODER_OFFSET_ANGLE_DEG;
-    }
+  private double getAbsEncoderPos() {
+    return absAngleEncoder.getAbsolutePosition() - ABS_ENCODER_OFFSET_ANGLE_DEG < 0 ?
+          360 - (absAngleEncoder.getAbsolutePosition() + ABS_ENCODER_OFFSET_ANGLE_DEG) :
+          absAngleEncoder.getAbsolutePosition() - ABS_ENCODER_OFFSET_ANGLE_DEG;
+  }
 
   @Override
   public void initSendable(SendableBuilder builder) {
