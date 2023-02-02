@@ -76,10 +76,6 @@ public class Arm extends SubsystemBase {
           }, this);
   }
 
-  public double getLengthMeter() {
-    return MINIMAL_LENGTH_METERS + lengthEncoder.getPosition();
-  }
-
   public Command calibrateLengthEncoderCommand() {
     return new RunCommand(
           () -> lengthMotor.set(-0.1)
@@ -93,6 +89,19 @@ public class Arm extends SubsystemBase {
           ));
   }
 
+  private double getArmDegrees() {
+    double wantedAngle = absAngleEncoder.getAbsolutePosition() - ABS_ENCODER_OFFSET_ANGLE_DEG;
+    if (wantedAngle < 0) wantedAngle += 1;
+    return wantedAngle * 360;
+  }
+
+  private double getProfiledAngle() {//TODO: change from 0 to 360 to -180 to 180
+    double realAngle = getArmDegrees();
+    if (realAngle > (PHYSICAL_BACK_MAX_ARM_ANGLE_DEG + PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG) / 2)
+      return 360 - realAngle;
+    return realAngle;
+  }
+
   public Command holdSetpoint(Setpoints setpoint) {
     return moveToLengthCommand(setpoint.translation).alongWith(
           moveToAngleCommand(setpoint.translation));
@@ -103,11 +112,11 @@ public class Arm extends SubsystemBase {
           new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxAngularAcceleration),
                 new TrapezoidProfile.State(setPoint.getNorm(), 0),
-                new TrapezoidProfile.State(getLengthMeter(), lengthEncoder.getVelocity())
+                new TrapezoidProfile.State(lengthEncoder.getPosition(), lengthEncoder.getVelocity())
           ),
           state -> {
             double feedforward = kS_LENGTH * Math.signum(state.velocity)
-                  + kG_LENGTH * Math.sin(Units.degreesToRadians(getAbsEncoderPos()))
+                  + kG_LENGTH * Math.sin(Units.degreesToRadians(getArmDegrees()))
                   + kV_LENGTH * state.velocity;
 
             lengthController.setReference(state.position, CANSparkMax.ControlType.kPosition,
@@ -123,12 +132,12 @@ public class Arm extends SubsystemBase {
                 new TrapezoidProfile(
                       new TrapezoidProfile.Constraints(kMaxAngularVelocity, kMaxAngularAcceleration),
                       new TrapezoidProfile.State(setPoint.getAngle().getDegrees(), 0),
-                      new TrapezoidProfile.State(getAbsEncoderPos(), 0)
+                      new TrapezoidProfile.State(getProfiledAngle(), 0)
                 ),
                 state -> {
                   double feedforward =
                         kS_ANGLE * Math.signum(state.velocity)
-                              + kG_ANGLE.get(getLengthMeter()) * Math.cos(state.position)
+                              + kG_ANGLE.get(lengthEncoder.getPosition()) * Math.cos(state.position)
                               + kV_ANGLE * state.velocity;
                   angleController.setReference(state.position, CANSparkMax.ControlType.kPosition,
                         0,
