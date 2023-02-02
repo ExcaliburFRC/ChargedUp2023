@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.Subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -18,12 +18,11 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.Constants.ArmConstants.*;
 
 public class Arm extends SubsystemBase {
-  private final CANSparkMax angleMasterMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final CANSparkMax angleSlaveMotor = new CANSparkMax(ANGLE_FOLLOWER_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+  private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+  private final CANSparkMax angleFollowerMotor = new CANSparkMax(ANGLE_FOLLOWER_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
   private final CANSparkMax lengthMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
 
   private final RelativeEncoder lengthEncoder;
-
 
   private final DutyCycleEncoder absAngleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_CHANNEL);
 
@@ -37,17 +36,17 @@ public class Arm extends SubsystemBase {
   private final SparkMaxPIDController lengthController;
 
   public Arm() {
-    angleSlaveMotor.restoreFactoryDefaults();
-    angleMasterMotor.restoreFactoryDefaults();
+    angleFollowerMotor.restoreFactoryDefaults();
+    angleMotor.restoreFactoryDefaults();
     lengthMotor.restoreFactoryDefaults();
 
-    angleSlaveMotor.follow(angleMasterMotor, false);
-    angleMasterMotor.setInverted(false); //TODO: check
+    angleFollowerMotor.follow(angleMotor, false); // TODO: check
+    angleMotor.setInverted(false); //TODO: check
     lengthMotor.setInverted(false); //TODO: check
 
-    angleMasterMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     lengthMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-    angleSlaveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
     lengthEncoder = lengthMotor.getEncoder();
 
@@ -60,20 +59,20 @@ public class Arm extends SubsystemBase {
     lengthController.setI(0);
     lengthController.setD(0);
 
-    angleController = angleMasterMotor.getPIDController();
+    angleController = angleMotor.getPIDController();
     angleController.setP(kP_ANGLE);
     angleController.setI(0);
     angleController.setD(0);
 
 
-    angleMasterMotor.setClosedLoopRampRate(ARM_RAMP_RATE);
+    angleMotor.setClosedLoopRampRate(ARM_RAMP_RATE);
   }
 
   public Command manualCommand(DoubleSupplier angleJoystick, DoubleSupplier lengthJoystick) {
     return new RunCommand(
           () -> {
             lengthMotor.set(lengthJoystick.getAsDouble());
-            angleMasterMotor.set(angleJoystick.getAsDouble());
+            angleMotor.set(angleJoystick.getAsDouble());
           }, this);
   }
 
