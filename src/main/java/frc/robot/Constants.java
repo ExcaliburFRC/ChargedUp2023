@@ -34,6 +34,13 @@ public final class Constants {
 
     public static final int GAME_PIECE_THRESHOLD = 93; // (blue)
     public static final int DISTANCE_THRESHOLD = 0; //TODO: find
+
+    public static final double K_INTAKE_MOTOR_VELOCITY = 0;
+    public static enum GamePiece{
+      EMPTY,
+      CUBE,
+      CONE;
+    }
   }
 
   public static final class SwerveConstants {

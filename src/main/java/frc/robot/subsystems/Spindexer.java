@@ -20,7 +20,7 @@ public class Spindexer extends SubsystemBase {
   private final Trigger beamBreakDetectedTrigger = new Trigger(()-> !beamBreaker.get());
   private final Trigger buttonDetectedTrigger = new Trigger(()-> !button.get());
 
-  public gamePiece currentPiece;
+  public GamePiece currentPiece;
 
   public Spindexer() {
     spindexer.restoreFactoryDefaults();
@@ -37,21 +37,23 @@ public class Spindexer extends SubsystemBase {
             new ConditionalCommand(
                     new InstantCommand(),
                     handleGamePiecesCommand(),
-                    () -> getCurrentItem().equals(gamePiece.EMPTY)
+                    () -> getCurrentItem() == GamePiece.EMPTY
             )).repeatedly();
   }
-
+  public boolean isStraight(){
+    return getCurrentItem() == GamePiece.EMPTY;
+  }
   private Command handleGamePiecesCommand() {
     return new ConditionalCommand(
             handleConeCommand(),
             handleCubeCommand(),
-            () -> getCurrentItem().equals(gamePiece.CONE)
+            () -> getCurrentItem().equals(GamePiece.CONE)
     );
   }
 
   private Command handleCubeCommand(){
     return new InstantCommand(() -> {
-      currentPiece = gamePiece.CUBE;
+      currentPiece = GamePiece.CUBE;
     });
   }
 
@@ -63,26 +65,24 @@ public class Spindexer extends SubsystemBase {
                     new InstantCommand(),
                     beamBreakDetectedTrigger),
             setSpindexerMotor(0.3),
-            new InstantCommand(()-> {currentPiece = gamePiece.CONE;}),
+            new InstantCommand(()-> {currentPiece = GamePiece.CONE;}),
             new WaitCommand(0.3),
             new WaitUntilCommand(buttonDetectedTrigger.negate()));
+  }
+
+  public boolean isGamePieceDetected(){
+    return beamBreakDetectedTrigger.getAsBoolean();
   }
 
   private Command setSpindexerMotor(double speed) {
     return new InstantCommand(() -> spindexer.set(speed), this);
   }
 
-  public enum gamePiece {
-    CUBE,
-    CONE,
-    EMPTY
-  }
-
-  public gamePiece getCurrentItem() {
+  public GamePiece getCurrentItem() {
     if (colorSensor.getProximity() < DISTANCE_THRESHOLD) {
-      if (colorSensor.getBlue() < GAME_PIECE_THRESHOLD) return gamePiece.CONE;
-      return gamePiece.CUBE;
+      if (colorSensor.getBlue() < GAME_PIECE_THRESHOLD) return GamePiece.CONE;
+      return GamePiece.CUBE;
     }
-    return gamePiece.EMPTY;
+    return GamePiece.EMPTY;
   }
 }
