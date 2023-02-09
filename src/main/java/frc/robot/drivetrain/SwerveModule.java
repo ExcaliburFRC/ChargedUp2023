@@ -16,20 +16,21 @@ import static frc.robot.Constants.SwerveConstants.kTolerance;
 import static java.lang.Math.PI;
 
 public class SwerveModule implements Sendable {
+  //create the module's motors
   private final CANSparkMax _driveMotor;
   private final CANSparkMax _spinningMotor;
 
+  //create the module's encoders
   private final RelativeEncoder _driveEncoder;
   private final RelativeEncoder _spinningEncoder;
   private final DutyCycleEncoder _absEncoder;
   private final double _resetOffset;
   private final double _absEncoderOffsetRad;
-  private final int _absEncoderChannel;
-
+  //a pid controller for the angle of the module
   private final PIDController _spinningPIDController;
 
   public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < kTolerance).debounce(0.1);
-
+  // construct the class
   public SwerveModule(
           int driveMotorId,
           int spinningMotorId,
@@ -37,7 +38,6 @@ public class SwerveModule implements Sendable {
           boolean spinningMotorReversed,
           int absEncoderChannel,
           double offsetAngle) {
-    _absEncoderChannel = absEncoderChannel;
     _absEncoder = new DutyCycleEncoder(absEncoderChannel);
     _absEncoderOffsetRad = offsetAngle * 2 * PI;
     _resetOffset = _absEncoderOffsetRad - PI;

@@ -108,7 +108,7 @@ public class Swerve extends SubsystemBase {
         _gyro.reset();
     }
 
-    // return the angle of the robot in degrees between -180 and 180
+    // return the angle of the robot in degrees between 0 and 360
     //TODO: check if works
     private double getDegrees() {
         double deg = Math.IEEEremainder(_gyro.getAngle(), 360);
@@ -117,7 +117,7 @@ public class Swerve extends SubsystemBase {
         return deg;
     }
 
-    //get rhe rotation2d of the robots heading
+    //get the rotation2d of the robots heading
     public Rotation2d getRotation2d() {
         return Rotation2d.fromDegrees(getDegrees());
     }
@@ -129,7 +129,6 @@ public class Swerve extends SubsystemBase {
         pitch *= -1;
         if (pitch < 0) pitch += 360;
         return pitch;
-
     }
 
     // returns a command that resets the gyro to 0
@@ -161,7 +160,7 @@ public class Swerve extends SubsystemBase {
                 this);
     }
 
-    //returns a command that enable the driver to conrol the swerve at each technic he wants
+    //returns a command that enable the driver to control the swerve at each technic he wants
     public Command dualDriveSwerveCommand(
             DoubleSupplier xSpeedSupplier,
             DoubleSupplier ySpeedSupplier,
@@ -279,7 +278,7 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putData("gyro angle", _gyro);
         SmartDashboard.putNumber("lastJoystickAngle", lastJoystickAngle.get());
     }
-
+    //sets the swerve modules to the wanted states
     private void setModulesStates(SwerveModuleState[] states) {
         SwerveDriveKinematics.desaturateWheelSpeeds(states, kPhysicalMaxSpeedMetersPerSecond);
         swerveModules[FRONT_LEFT].setDesiredState(states[FRONT_LEFT]);
@@ -287,7 +286,7 @@ public class Swerve extends SubsystemBase {
         swerveModules[BACK_LEFT].setDesiredState(states[BACK_LEFT]);
         swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
     }
-
+    //reset the encoders of the swerve modules to 0
     private void resetEncoders() {
         swerveModules[FRONT_LEFT].resetEncoders();
         swerveModules[FRONT_RIGHT].resetEncoders();
@@ -302,12 +301,13 @@ public class Swerve extends SubsystemBase {
         swerveModules[BACK_RIGHT].stop();
     }
 
-    // autonomous code
+    // autonomous code:
 
-    public Command followTrajectoryCommand(Pose2d start, List<Translation2d> wayPoints, Pose2d end) {
+    //follow the given translations by their order and finishes at the end pose
+    public Command followTrajectoryCommand(List<Translation2d> wayPoints, Pose2d end) {
         return followTrajectoryCommand(
                 TrajectoryGenerator.generateTrajectory(
-                        start,
+                        odometry.getEstimatedPosition(),
                         wayPoints,
                         end,
                         kConfig)
@@ -321,7 +321,7 @@ public class Swerve extends SubsystemBase {
                 () -> thetaTeleopController.calculate(getDegrees(), degrees),
                 () -> false);
     }
-
+    //follows a given trajectory
     public Command followTrajectoryCommand(Trajectory trajectory) {
         return new SwerveControllerCommand(
                 trajectory,
@@ -333,25 +333,12 @@ public class Swerve extends SubsystemBase {
                 this::setModulesStates,
                 this);
     }
-
+    //go in a straight line to the desired point while spinning to the desired angle
     public Command spinVectorTo(Pose2d desiredPose) {
-        return followTrajectoryCommand(odometry.getEstimatedPosition(), new ArrayList<>(), desiredPose);
+        return followTrajectoryCommand(new ArrayList<>(), desiredPose);
     }
-
+    //go in a straight line to the desired point
     public Command vectorTo(Translation2d desiredTranslation) {
         return spinVectorTo(new Pose2d(desiredTranslation, getRotation2d()));
     }
-
-    //private double time = 0;
-    //@Override
-//  public void periodic() {
-//    if (Timer.getFPGATimestamp() - time > 10 && swerveModules[SwerveModule.FRONT_LEFT].getDriveVelocity() < 0.01){
-//      swerveModules[SwerveModule.FRONT_LEFT].resetSpinningEncoder();
-//      swerveModules[FRONT_RIGHT].resetSpinningEncoder();
-//      swerveModules[BACK_LEFT].resetSpinningEncoder();
-//      swerveModules[BACK_RIGHT].resetSpinningEncoder();
-//
-//      time = Timer.getFPGATimestamp();
-//    }
-//	}
 }
