@@ -11,14 +11,12 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class SuperStructure extends SubsystemBase {
-  private final Intake intake;
   private final Swerve swerve;
   private final Spindexer spindexer;
   //private final Arm arm;
   private final Claw claw;
   private GamePiece currentGamePiece;
   public SuperStructure(){
-    intake = new Intake();
     swerve = new Swerve();
     spindexer = new Spindexer();
     //arm = new Arm();
@@ -28,13 +26,10 @@ public class SuperStructure extends SubsystemBase {
   //add led stuff
   public Command intakeCommand(){
     return new SequentialCommandGroup(
-          intake.manualCommand(()->K_INTAKE_MOTOR_VELOCITY,()->true)
-                .until(spindexer::isGamePieceDetected),
           new InstantCommand(()->this.currentGamePiece = spindexer.currentPiece),//check
           spindexer.straightenGamePieceCommand().until(spindexer::isStraight),
           //arm.goToCommand(Setpoints.SPINDEXER_SET_POINT),
-          claw.autoClawCommand(),
-          intake.closeIntakeCommand()
+          claw.autoClawCommand()
     );
   }
   public Command putOnUpperCommand(){
@@ -44,8 +39,7 @@ public class SuperStructure extends SubsystemBase {
           // currentGamePiece == GamePiece.CUBE?
           // setPoints.CUBE_HIGH_LEVEL_POINT:
           // setPoints.CONE_HIGH_LEVEL_POINT),
-          claw.openClawCommand(),
-          intake.openIntakeCommand()
+          claw.openClawCommand()
           //,arm.holdPoint(setPoints.SPINDEXER_SET_POINT)
     );
   }
@@ -56,8 +50,7 @@ public class SuperStructure extends SubsystemBase {
           // currentGamePiece == GamePiece.CUBE?
           // setPoints.CUBE_MID_LEVEL_POINT:
           // setPoints.CONE_MID_LEVEL_POINT),
-          claw.openClawCommand(),
-          intake.openIntakeCommand()
+          claw.openClawCommand()
           //,arm.holdPoint(setPoints.SPINDEXER_SET_POINT)
     );
   }
@@ -68,8 +61,7 @@ public class SuperStructure extends SubsystemBase {
           // currentGamePiece == GamePiece.CUBE?
           // setPoints.CUBE_LOW_LEVEL_POINT:
           // setPoints.CONE_LOW_LEVEL_POINT),
-          claw.openClawCommand(),
-          intake.openIntakeCommand()
+          claw.openClawCommand()
           //,arm.holdPoint(setPoints.SPINDEXER_SET_POINT)
     );
   }
