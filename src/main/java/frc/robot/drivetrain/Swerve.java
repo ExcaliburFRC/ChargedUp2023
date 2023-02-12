@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -340,5 +341,15 @@ public class Swerve extends SubsystemBase {
     //go in a straight line to the desired point
     public Command vectorTo(Translation2d desiredTranslation) {
         return spinVectorTo(new Pose2d(desiredTranslation, getRotation2d()));
+    }
+
+    public Command spinToCommand(double angle){
+        return driveSwerveWithAngleCommand(
+                () -> 0, ()-> 0, ()-> Math.cos(angle), ()-> Math.cos(angle), ()-> true);
+    }
+
+    public Command rotateToGridCommand(){
+        double angle = DriverStation.getAlliance().equals(DriverStation.Alliance.Blue)? 180 : 0;
+        return spinToCommand(angle);
     }
 }

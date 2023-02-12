@@ -63,8 +63,8 @@ public final class Constants {
     public static final double kTolerance = 0.05;
     public static final double kDeadband = 0.05;
 
-    public static final double kTrackWidth = 0.5842; // m
-    public static final double kWheelBase = 0.5842; // m
+    public static final double kTrackWidth = 0.56665; // m
+    public static final double kWheelBase = 0.56665; // m
     public static final SwerveDriveKinematics kSwerveKinematics =
             new SwerveDriveKinematics(
                     new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
@@ -163,7 +163,7 @@ public final class Constants {
     public static final double RPM_TO_DEG_PER_SEC = 0; // rot/sec
     public static final double ROT_TO_METER = 0; // rot/m
     public static final double RPM_TO_METER_PER_SEC = 0; // rpm/ms
-    public static final double MINIMAL_LENGTH_METERS = 0; // m
+    public static final double MINIMAL_LENGTH_METERS = 0.6; // m
 
     // Angle control
     public static final double kS_ANGLE = 0;

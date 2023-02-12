@@ -5,12 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.Claw;
-import frc.robot.subsystems.Intake;
-import frc.robot.drivetrain.Swerve;
-import frc.robot.subsystems.Spindexer;
+import frc.robot.utiliy.Superstructure;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,13 +18,10 @@ import frc.robot.subsystems.Spindexer;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final Intake intake = new Intake();
-  private final Spindexer spindexer = new Spindexer();
-  private final Claw claw = new Claw();
-  private final Swerve swerve = new Swerve();
+  private final Superstructure superstructure = new Superstructure();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandPS4Controller controller = new CommandPS4Controller(0);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -46,27 +41,23 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    controller.b().onTrue(claw.autoClawCommand());
+    controller.R1().onTrue(superstructure.intakeCommand());
 
-    controller.y().toggleOnTrue(intake.toggleIntakeCommand());
-
-    spindexer.setDefaultCommand(
-          spindexer.straightenGamePieceCommand());
-
-    swerve.setDefaultCommand(
-            swerve.dualDriveSwerveCommand(
+    superstructure.swerve.setDefaultCommand(
+            superstructure.swerve.dualDriveSwerveCommand(
                     controller::getLeftX,
                     controller::getLeftY,
                     () -> -controller.getRightX(),
                     () -> controller.getRightY(),
-                    controller.rightTrigger(0.1).negate(),
-                    controller.leftTrigger(0.1)));
+                    controller.axisGreaterThan(1, 0.1), // TODO: find axis, and greater / lower
+                    controller.axisGreaterThan(2, 0.1))); // TODO: find axis, and greater / lower
 
-    controller.b()
-            .onTrue(swerve.resetModulesCommand());
-    controller.y()
-            .onTrue(swerve.resetGyroCommand().alongWith(swerve.resetJoystickAngle()));
+    controller.circle().onTrue(superstructure.swerve.resetGyroCommand().alongWith(superstructure.swerve.resetJoystickAngle()));
 
+    // put game objects on the grid
+    controller.triangle().onTrue(superstructure.putOnUpperCommand());
+    controller.square().onTrue(superstructure.putOnMiddleCommand());
+    controller.cross().onTrue(superstructure.putOnLowerCommand());
   }
 
   /**
