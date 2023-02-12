@@ -88,6 +88,7 @@ public final class Constants {
     public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
 
     // autonomous constants
+    public static final double K_P_CLIMB = 0;//TODO: find
     public static final TrajectoryConfig kConfig =
             new TrajectoryConfig(
                     kMaxDriveSpeed,
@@ -202,6 +203,8 @@ public final class Constants {
               lastPoint.getY());
     }
 
-    public static double middleAxisXValue = 0;
+    public static final double middleAxisXValue = 0;
+    public static final double blueRampXAxis = 0;
+    public static final double redRampXAxis = 0;
   }
   }
