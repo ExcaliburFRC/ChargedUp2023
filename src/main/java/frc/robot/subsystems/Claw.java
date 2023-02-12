@@ -37,7 +37,7 @@ public class Claw extends SubsystemBase {
             });
   }
 
-  private Command openClawCommand() {
+  public Command openClawCommand() {
     return new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kReverse), this);
   }
 
