@@ -9,6 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.InterpolatingTreeMap;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -115,4 +116,85 @@ public final class Constants {
       public static final int BEAMBREAK_CHANNEL = 0;
       public static final int BUTTON_CHANNEL = 0;
     }
+
+  public static final class ArmConstants {
+    public enum Setpoints {
+      SPINDEXER_SET_POINT(0, 0),
+      GROUND_INTAKE_SET_POINT(0, 0),
+      CONE_LOW_LEVEL_POINT(0, 0),
+      CONE_MID_LEVEL_POINT(0, 0),
+      CONE_HIGH_LEVEL_POINT(0, 0),
+      CUBE_LOW_LEVEL_POINT(0, 0),
+      CUBE_MID_LEVEL_POINT(0, 0),
+      CUBE_HIGH_LEVEL_POINT(0, 0);
+
+      public final Translation2d translation;
+
+      private boolean isAchievableTranslation(Translation2d target) {
+        return target.getNorm() >= MINIMAL_LENGTH_METERS && target.getNorm() <= MINIMAL_LENGTH_METERS * 2 &&
+                (target.getAngle().getDegrees() <= PHYSICAL_BACK_MAX_ARM_ANGLE_DEG ||
+                        target.getAngle().getDegrees() >= PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG);
+      } // TODO: find the max length multiplier
+
+      Setpoints(double x, double y) {
+        this.translation = new Translation2d(x,y);
+        if(!isAchievableTranslation(translation)) {
+          throw new AssertionError("Unattainable setpoint in enum " + this.name());
+        };
+      }
+    }
+
+    public static final int ANGLE_MOTOR_ID = 0;
+    public static final int ANGLE_FOLLOWER_MOTOR_ID = 0;
+    public static final int LENGTH_MOTOR_ID = 0;
+
+    public static final int UPPER_LIMIT_SWITCH_ID = 0;
+    public static final int LOWER_LIMIT_SWITCH_ID = 0;
+
+    public static final int ABS_ANGLE_ENCODER_CHANNEL = 0;
+
+    public static final double RPM_TO_DEG_PER_SEC = 0; // rot/sec
+    public static final double ROT_TO_METER = 0; // rot/m
+    public static final double RPM_TO_METER_PER_SEC = 0; // rpm/ms
+    public static final double MINIMAL_LENGTH_METERS = 0; // m
+
+    // Angle control
+    public static final double kS_ANGLE = 0;
+    public static final double kV_ANGLE = 0;
+    public static final InterpolatingTreeMap<Double, Double> kG_ANGLE = new InterpolatingTreeMap<>();
+    static {
+      // TODO
+      // Fill with data points
+      // (length, kG)
+//        kG.put(0,0);
+    }
+    public static final double kP_ANGLE = 0;
+    public static final double kMaxAngularVelocity = 0;
+    public static final double kMaxAngularAcceleration = 0;
+
+    // Length control
+    public static final double kS_LENGTH = 0;
+    public static final double kV_LENGTH = 0;
+    public static final double kG_LENGTH = 0;
+    public static final double kP_LENGTH = 0;
+    public static final double kMaxLinearVelocity = 0;
+    public static final double kMaxLinearAcceleration = 0;
+
+    public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0;
+    public static final int PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG = 0;
+    public static final int PHYSICAL_BACK_MAX_ARM_ANGLE_DEG = 0;
+
+    public static final int ARM_RAMP_RATE = 0;
+  }
+
+  public static class CoordinatesConstants {
+    public static Translation2d toOppositeAlliance(Translation2d lastPoint) {
+      double dis = Math.abs(middleAxisXValue - lastPoint.getX());
+      return new Translation2d(
+              lastPoint.getX() < middleAxisXValue ? middleAxisXValue + dis : middleAxisXValue - dis,
+              lastPoint.getY());
+    }
+
+    public static double middleAxisXValue = 0;
+  }
   }
