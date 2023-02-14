@@ -72,9 +72,10 @@ public class Swerve extends SubsystemBase {
         0,
         0,
         kThetaControllerConstraints);
-  private final PIDController thetaTeleopController = new PIDController(kPThetaTeleop, 0, kDThetaTeleop);
 
-  private PIDController climberController = new PIDController(K_P_CLIMB, 0, 0);
+  private final PIDController thetaTeleopController = new PIDController(kPThetaTeleop, 0, kDThetaTeleop);
+  private PIDController climberController = new PIDController(KP_CLIMB, 0, 0);
+
   //creating th pose estimator
   private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
         kSwerveKinematics,
@@ -85,10 +86,13 @@ public class Swerve extends SubsystemBase {
               swerveModules[BACK_LEFT].getPosition(),
               swerveModules[BACK_RIGHT].getPosition()},
         new Pose2d(new Translation2d(3, 4), new Rotation2d(0)));
+
   //creating the lime light
   private final Limelight ll = new Limelight();
+
   // the field object
   private final Field2d field = new Field2d();
+
   //creating an atomicInteger to hold the last angle in the angle based driving technic
   private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
 
@@ -99,6 +103,8 @@ public class Swerve extends SubsystemBase {
     //sets some stuff for the pid for the angle based technic
     thetaTeleopController.enableContinuousInput(-180, 180);
     thetaTeleopController.setTolerance(1.5);
+
+    climberController.setTolerance(1.5);
 
     //creating the windows for debug info on the swerve
     var tab = Shuffleboard.getTab("Swerve");
@@ -352,20 +358,15 @@ public class Swerve extends SubsystemBase {
     return spinVectorTo(new Pose2d(desiredTranslation, getRotation2d()));
   }
 
-  public Command spinToCommand(double angle) {
-    return driveSwerveWithAngleCommand(
-          () -> 0, () -> 0, () -> Math.cos(angle), () -> Math.cos(angle), () -> true);
-  }
-
   public Command rotateToGridCommand() {
     double angle = DriverStation.getAlliance().equals(DriverStation.Alliance.Blue) ? 180 : 0;
-    return spinToCommand(angle);
+    return turnToAngleCommand(angle);
   }
 
   public Command balanceRampCommand() {
     return driveSwerveCommand(
-          () -> climberController.calculate(getRampAngle(), 0),
           () -> 0,
+          () -> climberController.calculate(getRampAngle(), 0),
           () -> 0,
           () -> true
     );

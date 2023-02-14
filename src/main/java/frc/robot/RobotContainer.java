@@ -4,10 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.Arm;
 import frc.robot.utiliy.Superstructure;
 
 /**
@@ -18,10 +20,10 @@ import frc.robot.utiliy.Superstructure;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final Superstructure superstructure = new Superstructure();
+  private final Arm arm = new Arm();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandPS4Controller controller = new CommandPS4Controller(0);
+  private final XboxController controller = new XboxController(0);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -41,23 +43,7 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    controller.R1().onTrue(superstructure.intakeCommand());
-
-    superstructure.swerve.setDefaultCommand(
-            superstructure.swerve.dualDriveSwerveCommand(
-                    controller::getLeftX,
-                    controller::getLeftY,
-                    () -> -controller.getRightX(),
-                    () -> controller.getRightY(),
-                    controller.axisGreaterThan(1, 0.1), // TODO: find axis, and greater / lower
-                    controller.axisGreaterThan(2, 0.1))); // TODO: find axis, and greater / lower
-
-    controller.circle().onTrue(superstructure.swerve.resetGyroCommand().alongWith(superstructure.swerve.resetJoystickAngle()));
-
-    // put game objects on the grid
-    controller.triangle().onTrue(superstructure.putOnUpperCommand());
-    controller.square().onTrue(superstructure.putOnMiddleCommand());
-    controller.cross().onTrue(superstructure.putOnLowerCommand());
+  arm.setDefaultCommand(arm.manualCommand(controller::getLeftY,controller::getRightY));
   }
 
   /**
