@@ -1,82 +1,79 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import edu.wpi.first.wpilibj2.command.*;
+import frc.robot.Constants.ArmConstants.Setpoints;
 import frc.robot.drivetrain.Swerve;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.robot.Constants.ClawConstants.GamePiece;
-import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
 public class Superstructure extends SubsystemBase {
-  private final Swerve swerve = new Swerve();
-  private final Arm arm = new Arm();
-  private final Claw claw = new Claw();
-  private final Spindexer spindexer = new Spindexer();
-  private Constants.ClawConstants.GamePiece currentGamePiece;
-  public Superstructure(){
-    currentGamePiece = GamePiece.EMPTY;
-  }
-  //add led stuff
-  public Command intakeCommand(){
-    return new SequentialCommandGroup(
-          new InstantCommand(()->this.currentGamePiece = spindexer.currentPiece),//check
-          spindexer.straightenGamePieceCommand().until(spindexer::isStraight),
-          arm.holdSetpoint(SPINDEXER_SET_POINT),
-          claw.autoClawCommand()
-    );
-  }
-  public Command putOnUpperCommand(){
-    return new SequentialCommandGroup(
-          swerve.rotateToGridCommand(),
-           arm.holdSetpoint(
-           currentGamePiece == GamePiece.CUBE?
-           CUBE_HIGH_LEVEL_POINT:
-           CONE_HIGH_LEVEL_POINT),
-          claw.openClawCommand(), 
-            arm.holdSetpoint(SPINDEXER_SET_POINT));
-  }
-  public Command putOnMiddleCommand(){
-    return new SequentialCommandGroup(
-            swerve.rotateToGridCommand(),
-           arm.holdSetpoint(
-           currentGamePiece == GamePiece.CUBE?
-           CUBE_MID_LEVEL_POINT:
-           CONE_MID_LEVEL_POINT),
-          claw.openClawCommand(),
-            arm.holdSetpoint(SPINDEXER_SET_POINT)
-    );
-  }
-  public Command putOnLowerCommand(){
-    return new SequentialCommandGroup(
-            swerve.rotateToGridCommand(),
-           arm.holdSetpoint(
-           currentGamePiece == GamePiece.CUBE?
-           CUBE_LOW_LEVEL_POINT:
-           CONE_LOW_LEVEL_POINT),
-          claw.openClawCommand(),
-            arm.holdSetpoint(SPINDEXER_SET_POINT)
-    );
-  }
 
-  public Command driveCommand(DoubleSupplier xSpeed,
-                              DoubleSupplier ySpeed,
-                              DoubleSupplier xAngle,
-                              DoubleSupplier yAngle,
-                              BooleanSupplier fieldOriented,
-                              BooleanSupplier withAngle){
-    return swerve.dualDriveSwerveCommand(
-          xSpeed,
-          ySpeed,
-          xAngle,
-          yAngle,
-          fieldOriented,
-          withAngle
-    );
-  }
+    private final Swerve swerve = new Swerve();
+    private final Arm arm = new Arm();
+    private final Claw   claw = new Claw();
+    private final Spindexer spindexer = new Spindexer();
+
+    public static AtomicReference<GamePiece> currentGamePiece;
+    public static AtomicReference<Setpoints> currentSetpoint;
+
+    public Superstructure() {
+        currentGamePiece.set(GamePiece.EMPTY);
+        currentSetpoint.set(Setpoints.SPINDEXER);
+
+        arm.setDefaultCommand(arm.holdSetpointCommand(Setpoints.spindexer));
+    }
+
+    private boolean isCone(){
+        return currentGamePiece.equals(GamePiece.CONE);
+    }
+
+    private Command setCurrentSetpoint(Setpoints setpoint){
+        return new InstantCommand(()-> currentSetpoint.set(setpoint));
+    }
+
+    //TODO: add led signalling
+    public Command intakeFromGroundCommand() {
+        return new SequentialCommandGroup(
+                setCurrentSetpoint(Setpoints.INTAKE),
+                arm.holdSetpointCommand(Setpoints.intake),
+                claw.openClawCommand(),
+                claw.autoClawCommand());
+    }
+
+    public Command placeOnHighCommand() {
+        return new SequentialCommandGroup(
+                claw.closeClawCommand(),
+                swerve.rotateToGridCommand(),
+                arm.holdSetpointCommand(isCone()? Setpoints.HIGH.cone : Setpoints.HIGH.cube),
+                Commands.runOnce(()-> currentSetpoint.set(Setpoints.HIGH)),
+                claw.openClawCommand(),
+                new WaitCommand(0.1),
+                arm.holdSetpointCommand(Setpoints.spindexer));
+    }
+
+    public Command placeOnMidCommand() {
+        return new SequentialCommandGroup(
+                claw.closeClawCommand(),
+                swerve.rotateToGridCommand(),
+                arm.holdSetpointCommand(isCone()? Setpoints.MID.cone : Setpoints.MID.cube),
+                Commands.runOnce(()-> currentSetpoint.set(Setpoints.MID)),
+                claw.openClawCommand(),
+                new WaitCommand(0.1),
+                arm.holdSetpointCommand(Setpoints.spindexer)
+        );
+    }
+
+    public Command placeOnLowCommand() {
+        return new SequentialCommandGroup(
+                claw.closeClawCommand(),
+                swerve.rotateToGridCommand(),
+                arm.holdSetpointCommand(isCone()? Setpoints.LOW.cone : Setpoints.LOW.cube),
+                Commands.runOnce(()-> currentSetpoint.set(Setpoints.LOW)),
+                claw.openClawCommand(),
+                new WaitCommand(0.1),
+                arm.holdSetpointCommand(Setpoints.spindexer)
+        );
+    }
 }
