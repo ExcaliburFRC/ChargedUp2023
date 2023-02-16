@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.utiliy.Superstructure;
+import frc.robot.subsystems.Superstructure;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -41,23 +41,6 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    controller.R1().onTrue(superstructure.intakeCommand());
-
-    superstructure.swerve.setDefaultCommand(
-            superstructure.swerve.dualDriveSwerveCommand(
-                    controller::getLeftX,
-                    controller::getLeftY,
-                    () -> -controller.getRightX(),
-                    () -> controller.getRightY(),
-                    controller.axisGreaterThan(1, 0.1), // TODO: find axis, and greater / lower
-                    controller.axisGreaterThan(2, 0.1))); // TODO: find axis, and greater / lower
-
-    controller.circle().onTrue(superstructure.swerve.resetGyroCommand().alongWith(superstructure.swerve.resetJoystickAngle()));
-
-    // put game objects on the grid
-    controller.triangle().onTrue(superstructure.putOnUpperCommand());
-    controller.square().onTrue(superstructure.putOnMiddleCommand());
-    controller.cross().onTrue(superstructure.putOnLowerCommand());
   }
 
   /**
