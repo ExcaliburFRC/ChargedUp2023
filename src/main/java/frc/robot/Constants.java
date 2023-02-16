@@ -36,12 +36,8 @@ public final class Constants {
     public static final int GAME_PIECE_THRESHOLD = 93; // (blue)
     public static final int DISTANCE_THRESHOLD = 0; //TODO: find
 
+
     public static final double K_INTAKE_MOTOR_VELOCITY = 0;
-    public static enum GamePiece{
-      EMPTY,
-      CUBE,
-      CONE;
-    }
   }
 
   public static final class SwerveConstants {
@@ -117,11 +113,18 @@ public final class Constants {
     public static final double kPTurning = 0.6;
   }
 
-    public final class ClawConstants {
+    public static final class ClawConstants {
       public static final int FORWARD_CHANNEL = 0;
       public static final int REVERSE_CHANNEL = 0;
       public static final int BEAMBREAK_CHANNEL = 0;
       public static final int BUTTON_CHANNEL = 0;
+      public static final int COLOR_SENSOR_CHANNEL = 0;
+
+      public static enum GamePiece{
+        EMPTY,
+        CUBE,
+        CONE;
+      }
     }
 
   public static final class ArmConstants {

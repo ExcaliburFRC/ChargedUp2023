@@ -1,5 +1,5 @@
 package frc.robot.subsystems;
-
+/*
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -74,9 +74,6 @@ public class Spindexer extends SubsystemBase {
     return beamBreakDetectedTrigger.getAsBoolean();
   }
 
-  private Command setSpindexerMotor(double speed) {
-    return new InstantCommand(() -> spindexer.set(speed), this);
-  }
 
   public GamePiece getCurrentItem() {
     if (colorSensor.getProximity() < DISTANCE_THRESHOLD) {
@@ -85,4 +82,8 @@ public class Spindexer extends SubsystemBase {
     }
     return GamePiece.EMPTY;
   }
+  private Command setSpindexerMotor(double speed) {
+    return new InstantCommand(() -> spindexer.set(speed), this);
+  }
 }
+*/
