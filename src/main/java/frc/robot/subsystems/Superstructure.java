@@ -4,23 +4,22 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static frc.robot.Constants.IntakeConstants.*;
+import frc.robot.Constants;
 import frc.robot.drivetrain.Swerve;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-public class SuperStructure extends SubsystemBase {
-  private final Swerve swerve;
-  private final Spindexer spindexer;
-  //private final Arm arm;
-  private final Claw claw;
-  private GamePiece currentGamePiece;
-  public SuperStructure(){
-    swerve = new Swerve();
-    spindexer = new Spindexer();
-    //arm = new Arm();
-    claw = new Claw();
+import static frc.robot.Constants.ClawConstants.GamePiece;
+import static frc.robot.Constants.ArmConstants.Setpoints.*;
+
+public class Superstructure extends SubsystemBase {
+  private final Swerve swerve = new Swerve();
+  private final Arm arm = new Arm();
+  private final Claw claw = new Claw();
+  private final Spindexer spindexer = new Spindexer();
+  private Constants.ClawConstants.GamePiece currentGamePiece;
+  public Superstructure(){
     currentGamePiece = GamePiece.EMPTY;
   }
   //add led stuff
@@ -28,41 +27,40 @@ public class SuperStructure extends SubsystemBase {
     return new SequentialCommandGroup(
           new InstantCommand(()->this.currentGamePiece = spindexer.currentPiece),//check
           spindexer.straightenGamePieceCommand().until(spindexer::isStraight),
-          //arm.goToCommand(Setpoints.SPINDEXER_SET_POINT),
+          arm.holdSetpoint(SPINDEXER_SET_POINT),
           claw.autoClawCommand()
     );
   }
   public Command putOnUpperCommand(){
     return new SequentialCommandGroup(
-        //  swerve.rotateToGridCommand(),
-          // arm.holdSetPoint(
-          // currentGamePiece == GamePiece.CUBE?
-          // setPoints.CUBE_HIGH_LEVEL_POINT:
-          // setPoints.CONE_HIGH_LEVEL_POINT),
-          claw.openClawCommand()
-          //,arm.holdPoint(setPoints.SPINDEXER_SET_POINT)
-    );
+          swerve.rotateToGridCommand(),
+           arm.holdSetpoint(
+           currentGamePiece == GamePiece.CUBE?
+           CUBE_HIGH_LEVEL_POINT:
+           CONE_HIGH_LEVEL_POINT),
+          claw.openClawCommand(), 
+            arm.holdSetpoint(SPINDEXER_SET_POINT));
   }
   public Command putOnMiddleCommand(){
     return new SequentialCommandGroup(
-          //  swerve.rotateToGridCommand(),
-          // arm.holdSetPoint(
-          // currentGamePiece == GamePiece.CUBE?
-          // setPoints.CUBE_MID_LEVEL_POINT:
-          // setPoints.CONE_MID_LEVEL_POINT),
-          claw.openClawCommand()
-          //,arm.holdPoint(setPoints.SPINDEXER_SET_POINT)
+            swerve.rotateToGridCommand(),
+           arm.holdSetpoint(
+           currentGamePiece == GamePiece.CUBE?
+           CUBE_MID_LEVEL_POINT:
+           CONE_MID_LEVEL_POINT),
+          claw.openClawCommand(),
+            arm.holdSetpoint(SPINDEXER_SET_POINT)
     );
   }
   public Command putOnLowerCommand(){
     return new SequentialCommandGroup(
-          //  swerve.rotateToGridCommand(),
-          // arm.holdSetPoint(
-          // currentGamePiece == GamePiece.CUBE?
-          // setPoints.CUBE_LOW_LEVEL_POINT:
-          // setPoints.CONE_LOW_LEVEL_POINT),
-          claw.openClawCommand()
-          //,arm.holdPoint(setPoints.SPINDEXER_SET_POINT)
+            swerve.rotateToGridCommand(),
+           arm.holdSetpoint(
+           currentGamePiece == GamePiece.CUBE?
+           CUBE_LOW_LEVEL_POINT:
+           CONE_LOW_LEVEL_POINT),
+          claw.openClawCommand(),
+            arm.holdSetpoint(SPINDEXER_SET_POINT)
     );
   }
 

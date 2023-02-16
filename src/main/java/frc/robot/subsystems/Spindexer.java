@@ -1,11 +1,14 @@
 package frc.robot.subsystems;
-/*
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
+
+import static frc.robot.Constants.ClawConstants.GamePiece;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.IntakeConstants.*;
@@ -86,4 +89,3 @@ public class Spindexer extends SubsystemBase {
     return new InstantCommand(() -> spindexer.set(speed), this);
   }
 }
-*/
