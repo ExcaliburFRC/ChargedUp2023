@@ -16,10 +16,9 @@ public class Superstructure extends SubsystemBase {
    private final Claw claw = new Claw();
    private final Spindexer spindexer = new Spindexer();
    private final Intake intake = new Intake();
-   private final LEDs leds = new LEDs();
 
-    public static AtomicReference<GamePiece> currentGamePiece;
-    public static AtomicReference<Setpoints> currentSetpoint;
+    static AtomicReference<GamePiece> currentGamePiece;
+    static AtomicReference<Setpoints> currentSetpoint;
 
     public Superstructure() {
         currentGamePiece.set(GamePiece.EMPTY);
@@ -27,7 +26,6 @@ public class Superstructure extends SubsystemBase {
 
         arm.setDefaultCommand(arm.holdSetpointCommand(Setpoints.spindexer)
                 .alongWith(setCurrentSetpoint(Setpoints.SPINDEXER)));
-        leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
     }
 
     private boolean isCone(){
@@ -83,14 +81,5 @@ public class Superstructure extends SubsystemBase {
                 setCurrentSetpoint(Setpoints.LOW),
                 claw.openClawCommand(),
                 new WaitCommand(0.1));
-    }
-
-    public Command askFroGamePieceCommand(GamePiece gamePiece){
-        return Commands.repeatingSequence(
-                leds.setColorCommand(gamePiece.equals(GamePiece.CONE) ? ORANGE : PURPLE),
-                new WaitCommand(0.5),
-                leds.setColorCommand(OFF),
-                new WaitCommand(0.5))
-                .withTimeout(5);
     }
 }
