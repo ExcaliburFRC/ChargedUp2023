@@ -8,8 +8,7 @@ import frc.robot.drivetrain.Swerve;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.robot.Constants.ClawConstants.GamePiece;
-import static frc.robot.subsystems.LEDs.LedMode.PINK;
-import static frc.robot.subsystems.LEDs.LedMode.YELLOW;
+import static frc.robot.subsystems.LEDs.LedMode.*;
 
 public class Superstructure extends SubsystemBase {
 
@@ -39,16 +38,17 @@ public class Superstructure extends SubsystemBase {
     private Command setCurrentSetpoint(Setpoints setpoint){
         return new InstantCommand(()-> currentSetpoint.set(setpoint));
     }
+    private Command setCurrentGamePiece(GamePiece gamePiece){
+        return new InstantCommand(()-> currentGamePiece.set(gamePiece));
+    }
 
-    public Command intakeFromGroundCommand(Trigger isCone) {
+    public Command intakeFromClawCommand(Trigger isCone) {
         return new SequentialCommandGroup(
-                leds.setColorCommand(isCone.getAsBoolean()? YELLOW: PINK).withTimeout(3),
                 claw.openClawCommand(),
-                intake.intakeCommand().until(spindexer.beambreakTrigger),
-                spindexer.straightenGamePieceCommand(),
                 arm.holdSetpointCommand(Setpoints.intake),
                 setCurrentSetpoint(Setpoints.INTAKE),
-                claw.autoCloseCommand());
+                claw.autoCloseCommand())
+                .alongWith(leds.setColorCommand(isCone.getAsBoolean()? ORANGE : PURPLE).withTimeout(3));
     }
 
     public Command intakeCommand(){
@@ -56,8 +56,8 @@ public class Superstructure extends SubsystemBase {
                 claw.openClawCommand(),
                 intake.intakeCommand().until(spindexer.beambreakTrigger),
                 spindexer.straightenGamePieceCommand(),
-                new InstantCommand(()-> currentGamePiece.set(spindexer.getCurrentItem())),
-                leds.setColorCommand(currentGamePiece.get().equals(GamePiece.CONE)? YELLOW : PINK).withTimeout(3));
+                setCurrentGamePiece(spindexer.getCurrentGamePiece()),
+                leds.setColorCommand(currentGamePiece.get().equals(GamePiece.CONE)? ORANGE : PURPLE).withTimeout(3));
     }
 
     public Command placeOnHighCommand() {
@@ -65,7 +65,7 @@ public class Superstructure extends SubsystemBase {
                 claw.closeClawCommand(),
                 swerve.rotateToGridCommand(),
                 arm.holdSetpointCommand(isCone()? Setpoints.HIGH.cone : Setpoints.HIGH.cube),
-                Commands.runOnce(()-> currentSetpoint.set(Setpoints.HIGH)),
+                setCurrentSetpoint(Setpoints.HIGH),
                 claw.openClawCommand(),
                 new WaitCommand(0.1));
     }
@@ -75,7 +75,7 @@ public class Superstructure extends SubsystemBase {
                 claw.closeClawCommand(),
                 swerve.rotateToGridCommand(),
                 arm.holdSetpointCommand(isCone()? Setpoints.MID.cone : Setpoints.MID.cube),
-                Commands.runOnce(()-> currentSetpoint.set(Setpoints.MID)),
+                setCurrentSetpoint(Setpoints.MID),
                 claw.openClawCommand(),
                 new WaitCommand(0.1));
     }
@@ -85,7 +85,7 @@ public class Superstructure extends SubsystemBase {
                 claw.closeClawCommand(),
                 swerve.rotateToGridCommand(),
                 arm.holdSetpointCommand(isCone()? Setpoints.LOW.cone : Setpoints.LOW.cube),
-                Commands.runOnce(()-> currentSetpoint.set(Setpoints.LOW)),
+                setCurrentSetpoint(Setpoints.LOW),
                 claw.openClawCommand(),
                 new WaitCommand(0.1));
     }

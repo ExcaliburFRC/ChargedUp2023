@@ -12,8 +12,6 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
-import frc.robot.Constants.ClawConstants.GamePiece;
 
 import java.util.function.DoubleSupplier;
 
@@ -80,13 +78,12 @@ public class Arm extends SubsystemBase {
 
     public Command calibrateLengthEncoderCommand() {
         return new RunCommand(
-                () -> lengthMotor.set(-0.1)
-        ).until(
-                        armFullyClosedTrigger)
+                () -> lengthMotor.set(-0.1))
+                .until(armFullyClosedTrigger)
                 .andThen(new InstantCommand(
                         () -> {
-                            lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
                             lengthMotor.stopMotor();
+                            lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
                         }
                 ));
     }

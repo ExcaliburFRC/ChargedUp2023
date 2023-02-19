@@ -13,7 +13,6 @@ import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.IntakeConstants.*;
 
 public class Spindexer extends SubsystemBase {
-
     private final CANSparkMax spindexer = new CANSparkMax(k_SPINDEXER_MOTOR_ID, kBrushless);
 
     private final DigitalInput button = new DigitalInput(BUTTON_CHANNEL);
@@ -33,7 +32,7 @@ public class Spindexer extends SubsystemBase {
     public Spindexer() {
         spindexer.restoreFactoryDefaults();
         spindexer.clearFaults();
-        spindexer.setSmartCurrentLimit(k_DJ_MOTOR_CURRENT_LIMIT);
+        spindexer.setSmartCurrentLimit(SPINDEXER_CURRENT_LIMIT);
         spindexer.setIdleMode(CANSparkMax.IdleMode.kBrake);
         spindexer.setInverted(false); //TODO: check
 
@@ -59,14 +58,14 @@ public class Spindexer extends SubsystemBase {
         return new SequentialCommandGroup(
                 new WaitUntilCommand(buttonTrigger),
                 new ConditionalCommand(
-                        setSpindexerMotor(0),
+                        new InstantCommand(),
                         streightenConeCommand(),
                         ConeStraightTrigger)
                         .andThen(setGamePieceCommand(GamePiece.CONE))
         );
     }
 
-    private ParallelRaceGroup streightenConeCommand() {
+    private Command streightenConeCommand() {
         return Commands.repeatingSequence(
                         setSpindexerMotor(-0.3),
                         new WaitCommand(2), // TODO: find the shortest duration for a successful straighten
@@ -78,7 +77,7 @@ public class Spindexer extends SubsystemBase {
         return Commands.runOnce(()-> currentPiece.set(gamePiece));
     }
 
-    public GamePiece getCurrentItem() {
+    public GamePiece getCurrentGamePiece() {
         return currentPiece.get();
     }
 
