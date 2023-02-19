@@ -10,10 +10,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import static frc.robot.Constants.ClawConstants.GamePiece;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
-import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.Constants.SpindexerConstants.*;
 
 public class Spindexer extends SubsystemBase {
-    private final CANSparkMax spindexer = new CANSparkMax(k_SPINDEXER_MOTOR_ID, kBrushless);
+    private final CANSparkMax spindexer = new CANSparkMax(SPINDEXER_MOTOR_ID, kBrushless);
 
     private final DigitalInput button = new DigitalInput(BUTTON_CHANNEL);
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);

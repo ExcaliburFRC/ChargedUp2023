@@ -12,12 +12,12 @@ import static edu.wpi.first.wpilibj.PneumaticsModuleType.REVPH;
 import static frc.robot.Constants.IntakeConstants.*;
 
 public class Intake extends SubsystemBase {
-    private final CANSparkMax intakeMotor = new CANSparkMax(k_INTAKE_MOTOR_ID, kBrushless);
-    private final DoubleSolenoid piston = new DoubleSolenoid(REVPH, k_FWD_CHANNEL, k_REV_CHANNEL);
+    private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, kBrushless);
+    private final DoubleSolenoid piston = new DoubleSolenoid(REVPH, FWD_CHANNEL, k_REV_CHANNEL);
 
     public Intake() {
         intakeMotor.restoreFactoryDefaults();
-        intakeMotor.setSmartCurrentLimit(k_INTAKE_MOTOR_CURRENT_LIMIT);
+        intakeMotor.setSmartCurrentLimit(INTAKE_MOTOR_CURRENT_LIMIT);
         intakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         intakeMotor.setInverted(false); //TODO: check
     }
@@ -35,7 +35,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command startMotorCommand(){
-        return new RunCommand(()-> intakeMotor.set(INTAKE_MOTOR_VELOCITY), this);
+        return new RunCommand(()-> intakeMotor.set(0.5), this);
     }
 
     public Command stopMotorCommand(){
@@ -57,7 +57,7 @@ public class Intake extends SubsystemBase {
     public Command intakeCommand(){
         return new FunctionalCommand(
                 ()-> piston.set(DoubleSolenoid.Value.kForward),
-                ()-> intakeMotor.set(INTAKE_MOTOR_VELOCITY),
+                ()-> intakeMotor.set(0.5),
                 (__) -> {
                     intakeMotor.set(0);
                     piston.set(DoubleSolenoid.Value.kReverse);

@@ -77,9 +77,9 @@ public class RobotContainer {
   private Command askFroGamePieceCommand(GamePiece gamePiece){
     return Commands.repeatingSequence(
             leds.setColorCommand(gamePiece.equals(GamePiece.CONE) ? ORANGE : PURPLE),
-                    new WaitCommand(0.5),
+                    new WaitCommand(0.25),
                     leds.setColorCommand(OFF),
-                    new WaitCommand(0.5))
+                    new WaitCommand(0.25))
             .withTimeout(5);
   }
 

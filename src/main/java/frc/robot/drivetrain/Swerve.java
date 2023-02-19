@@ -66,12 +66,12 @@ public class Swerve extends SubsystemBase {
 
     private final AHRS _gyro = new AHRS(SPI.Port.kMXP);
 
-    private final PIDController xAutoController = new PIDController(kPXAuto, 0, 0);
-    private final PIDController yAutoController = new PIDController(kPYAuto, 0, 0);
-    private final ProfiledPIDController thetaAutoController = new ProfiledPIDController(kPThetaAuto, 0, 0, kThetaControllerConstraints);
+    private final PIDController xAutoController = new PIDController(kp_x_AUTO, 0, 0);
+    private final PIDController yAutoController = new PIDController(kp_y_AUTO, 0, 0);
+    private final ProfiledPIDController thetaAutoController = new ProfiledPIDController(kp_Theta_AUTO, 0, 0, kThetaControllerConstraints);
 
     private final PIDController rampController = new PIDController(Constants.SwerveConstants.RAMP_BALANCE_KP, 0, 0);
-    private final PIDController thetaTeleopController = new PIDController(kPThetaTeleop, 0, kDThetaTeleop);
+    private final PIDController thetaTeleopController = new PIDController(kp_Theta_TELEOP, 0, 0);
 
     private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
             kSwerveKinematics,

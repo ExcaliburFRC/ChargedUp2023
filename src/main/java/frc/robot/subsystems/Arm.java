@@ -20,7 +20,7 @@ import static frc.robot.Constants.ArmConstants.*;
 public class Arm extends SubsystemBase {
     private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
     private final CANSparkMax angleFollowerMotor = new CANSparkMax(ANGLE_FOLLOWER_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
-    private final CANSparkMax lengthMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+    private final CANSparkMax lengthMotor = new CANSparkMax(LENGTH_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
 
     private final RelativeEncoder lengthEncoder;
 
@@ -63,7 +63,6 @@ public class Arm extends SubsystemBase {
         angleController.setP(kP_ANGLE);
         angleController.setI(0);
         angleController.setD(0);
-
 
         angleMotor.setClosedLoopRampRate(ARM_RAMP_RATE);
     }

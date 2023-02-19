@@ -1,17 +1,13 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static frc.robot.Constants.ClawConstants.*;
-import static frc.robot.Constants.IntakeConstants.DISTANCE_THRESHOLD;
-import static frc.robot.Constants.IntakeConstants.GAME_PIECE_THRESHOLD;
 
 public class Claw extends SubsystemBase {
     private final DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.REVPH, FORWARD_CHANNEL, REVERSE_CHANNEL);
