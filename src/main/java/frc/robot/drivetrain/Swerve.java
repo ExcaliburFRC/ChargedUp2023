@@ -323,7 +323,8 @@ public class Swerve extends SubsystemBase {
                 () -> 0,
                 () -> 0,
                 () -> thetaTeleopController.calculate(getDegrees(), degrees),
-                () -> false);
+                () -> false)
+                .until(thetaTeleopController::atSetpoint);
     }
 
     public Command rotateToGridCommand() {
@@ -359,7 +360,7 @@ public class Swerve extends SubsystemBase {
         );
     }
 
-    public Command autoClimbCommand(RampLocations location) {
+    public Command autoClimbCommand() {
         return Commands.sequence(
                 turnToAngleCommand(0),
                 slowDriveToRampCommand(),

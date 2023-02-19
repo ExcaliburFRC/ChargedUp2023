@@ -8,7 +8,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.drivetrain.Swerve;
 import frc.robot.subsystems.Superstructure;
+
+import static frc.robot.Constants.ClawConstants.GamePiece;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -19,6 +22,8 @@ import frc.robot.subsystems.Superstructure;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Superstructure superstructure = new Superstructure();
+  public final Swerve swerve = new Swerve();
+
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandPS4Controller controller = new CommandPS4Controller(0);
@@ -41,6 +46,27 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    swerve.setDefaultCommand(
+            swerve.dualDriveSwerveCommand(
+                    controller::getLeftX,
+                    controller::getLeftY,
+                    controller::getRightX,
+                    controller::getRightY,
+                    controller.L2(),
+                    controller.R2()));
+
+    // pick commands
+    controller.R1().onTrue(superstructure.intakeCommand());
+    controller.R2().onTrue(superstructure.intakeFromClawCommand());
+
+    // place commands
+    controller.triangle().onTrue(superstructure.placeOnHighCommand().alongWith(swerve.rotateToGridCommand()));
+    controller.circle().onTrue(superstructure.placeOnMidCommand().alongWith(swerve.rotateToGridCommand()));
+    controller.cross().onTrue(superstructure.placeOnLowCommand().alongWith(swerve.rotateToGridCommand()));
+
+    // LED control
+    controller.options().onTrue(superstructure.askFroGamePieceCommand(GamePiece.CONE));
+    controller.share().onTrue(superstructure.askFroGamePieceCommand(GamePiece.CUBE));
   }
 
   /**
