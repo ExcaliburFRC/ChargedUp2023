@@ -43,16 +43,18 @@ public class Superstructure extends SubsystemBase {
     public Command intakeFromGroundCommand(Trigger isCone) {
         return new SequentialCommandGroup(
                 leds.setColorCommand(isCone.getAsBoolean()? YELLOW: PINK).withTimeout(3),
-                setCurrentSetpoint(Setpoints.INTAKE),
-                arm.holdSetpointCommand(Setpoints.intake),
                 claw.openClawCommand(),
+                intake.intakeCommand().until(spindexer.beambreakTrigger),
+                spindexer.straightenGamePieceCommand(),
+                arm.holdSetpointCommand(Setpoints.intake),
+                setCurrentSetpoint(Setpoints.INTAKE),
                 claw.autoCloseCommand());
     }
 
     public Command intakeCommand(){
         return new SequentialCommandGroup(
                 claw.openClawCommand(),
-                intake.intakeCommand().until(spindexer::isGamePieceDetected),
+                intake.intakeCommand().until(spindexer.beambreakTrigger),
                 spindexer.straightenGamePieceCommand(),
                 new InstantCommand(()-> currentGamePiece.set(spindexer.getCurrentItem())),
                 leds.setColorCommand(currentGamePiece.get().equals(GamePiece.CONE)? YELLOW : PINK).withTimeout(3));

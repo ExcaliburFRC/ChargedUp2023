@@ -1,11 +1,11 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.robot.Constants.ClawConstants.GamePiece;
 
@@ -15,14 +15,20 @@ import static frc.robot.Constants.IntakeConstants.*;
 public class Spindexer extends SubsystemBase {
 
     private final CANSparkMax spindexer = new CANSparkMax(k_SPINDEXER_MOTOR_ID, kBrushless);
+
     private final DigitalInput button = new DigitalInput(BUTTON_CHANNEL);
-    private final DigitalInput beamBreaker = new DigitalInput(BEAMBREAK_CHANNEL);
-    private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
+    private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
 
-    private final Trigger beamBreakDetectedTrigger = new Trigger(() -> !beamBreaker.get());
-    private final Trigger buttonDetectedTrigger = new Trigger(() -> !button.get());
+    // sensor triggers
+    public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get()).debounce(0.1);
+    public final Trigger buttonTrigger = new Trigger(() -> !button.get()).debounce(0.1);
 
-    public GamePiece currentPiece;
+    //state triggers
+    private final Trigger ConeStraightTrigger = buttonTrigger.and(beambreakTrigger.negate());
+    private final Trigger isConeStuckTrigger = buttonTrigger.and(beambreakTrigger);
+    private final Trigger isCubeTrigger = beambreakTrigger.and(buttonTrigger.negate());
+
+    public AtomicReference<GamePiece> currentPiece;
 
     public Spindexer() {
         spindexer.restoreFactoryDefaults();
@@ -30,60 +36,53 @@ public class Spindexer extends SubsystemBase {
         spindexer.setSmartCurrentLimit(k_DJ_MOTOR_CURRENT_LIMIT);
         spindexer.setIdleMode(CANSparkMax.IdleMode.kBrake);
         spindexer.setInverted(false); //TODO: check
+
+        currentPiece.set(GamePiece.EMPTY);
     }
 
     public Command straightenGamePieceCommand() {
         return new SequentialCommandGroup(
-                setSpindexerMotor(0.3),
+                setSpindexerMotor(0.3)
+                        .until(beambreakTrigger.debounce(3)),
                 new ConditionalCommand(
-                        new InstantCommand(),
-                        handleGamePiecesCommand(),
-                        () -> getCurrentItem() == GamePiece.EMPTY));
-    }
-
-    private Command handleGamePiecesCommand() {
-        return new ConditionalCommand(
-                handleConeCommand(),
-                handleCubeCommand(),
-                () -> getCurrentItem().equals(GamePiece.CONE)
-        );
+                        handleCubeCommand(),
+                        handleConeCommand(),
+                        isCubeTrigger),
+                setSpindexerMotor(0));
     }
 
     private Command handleCubeCommand() {
-        return new InstantCommand(() -> {
-            currentPiece = GamePiece.CUBE;
-        });
+        return setGamePieceCommand(GamePiece.CUBE);
     }
 
     private Command handleConeCommand() {
         return new SequentialCommandGroup(
-                new WaitUntilCommand(buttonDetectedTrigger),
+                new WaitUntilCommand(buttonTrigger),
                 new ConditionalCommand(
-                        setSpindexerMotor(-0.3).withTimeout(0.3), //TODO: check the minimal time for successful straighten
-                        new InstantCommand(),
-                        beamBreakDetectedTrigger),
-                setSpindexerMotor(0.3),
-                new InstantCommand(() -> {
-                    currentPiece = GamePiece.CONE;
-                }),
-                new WaitCommand(0.3),
-                new WaitUntilCommand(buttonDetectedTrigger.negate()));
+                        setSpindexerMotor(0),
+                        streightenConeCommand(),
+                        ConeStraightTrigger)
+                        .andThen(setGamePieceCommand(GamePiece.CONE))
+        );
     }
 
-    public boolean isGamePieceDetected() {
-        return beamBreakDetectedTrigger.getAsBoolean();
+    private ParallelRaceGroup streightenConeCommand() {
+        return Commands.repeatingSequence(
+                        setSpindexerMotor(-0.3),
+                        new WaitCommand(2), // TODO: find the shortest duration for a successful straighten
+                        setSpindexerMotor(0.3))
+                .until(ConeStraightTrigger);
     }
 
+    private Command setGamePieceCommand(GamePiece gamePiece){
+        return Commands.runOnce(()-> currentPiece.set(gamePiece));
+    }
 
     public GamePiece getCurrentItem() {
-        if (colorSensor.getProximity() < DISTANCE_THRESHOLD) {
-            if (colorSensor.getBlue() < GAME_PIECE_THRESHOLD) return GamePiece.CONE;
-            return GamePiece.CUBE;
-        }
-        return GamePiece.EMPTY;
+        return currentPiece.get();
     }
 
     private Command setSpindexerMotor(double speed) {
-        return new InstantCommand(() -> spindexer.set(speed), this);
+        return new RunCommand(() -> spindexer.set(speed), this);
     }
 }
