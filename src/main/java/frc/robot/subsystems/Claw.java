@@ -22,13 +22,14 @@ public class Claw extends SubsystemBase {
     private final Trigger beambreakDetectedTrigger = new Trigger(() -> !beambreak.get());
 
     public Claw() {
+        piston.set(DoubleSolenoid.Value.kOff);
     }
 
     public Command autoCloseCommand() {
         return new RunCommand(
                 () -> {
                     if (beambreakDetectedTrigger.getAsBoolean() && isClawOpenedTrigger.getAsBoolean())
-                        piston.set(CLOSED);
+                        piston.set(DoubleSolenoid.Value.kForward);
                 });
     }
 

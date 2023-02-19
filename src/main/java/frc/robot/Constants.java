@@ -10,10 +10,6 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.InterpolatingTreeMap;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import frc.robot.subsystems.Spindexer;
-
-import java.util.Set;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -29,7 +25,7 @@ public final class Constants {
         public static final int k_SPINDEXER_MOTOR_ID = 0;
 
         public static final int k_INTAKE_MOTOR_CURRENT_LIMIT = 0;
-        public static final int k_DJ_MOTOR_CURRENT_LIMIT = 0;
+        public static final int SPINDEXER_CURRENT_LIMIT = 0;
 
         public static final int k_FWD_CHANNEL = 0;
         public static final int k_REV_CHANNEL = 0;
@@ -41,7 +37,7 @@ public final class Constants {
         public static final int DISTANCE_THRESHOLD = 0; //TODO: find
 
 
-        public static final double K_INTAKE_MOTOR_VELOCITY = 0;
+        public static final double INTAKE_MOTOR_VELOCITY = 0;
     }
 
     public static final class SwerveConstants {
@@ -149,9 +145,6 @@ public final class Constants {
         public static final int BEAMBREAK_CHANNEL = 0;
         public static final int BUTTON_CHANNEL = 0;
         public static final int COLOR_SENSOR_CHANNEL = 0;
-
-        public static final DoubleSolenoid.Value OPEN = DoubleSolenoid.Value.kForward;
-        public static final DoubleSolenoid.Value CLOSED = DoubleSolenoid.Value.kReverse;
 
         public enum GamePiece {
             EMPTY,

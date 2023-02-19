@@ -22,14 +22,18 @@ public class LEDs extends SubsystemBase {
     public enum LedMode {
         BLUE(0.87),
         RED(0.61),
+        ORANGE(0.65),
         GREEN(0.73),
         YELLOW(0.67),
-        RAINBOW(-0.97),
         WHITE(0.93),
-        VIOLET(0.91),
+        PURPLE(0.91),
         PINK(0.57),
         GOLD(0.67),
+        GRAY(0.95),
         BLACK(0.99),
+        BLUE_GREEN(0.79),
+        RAINBOW(-0.97),
+        LIGHT_CHASE_BLUE(-0.29), // TODO: check if works, if so: https://www.revrobotics.com/content/docs/REV-11-1105-UM.pdf
         OFF(0.99);
 
         LedMode(double c) {
@@ -46,7 +50,7 @@ public class LEDs extends SubsystemBase {
             case Red:
                 return LedMode.RED;
         }
-        return LedMode.GOLD;
+        return LedMode.LIGHT_CHASE_BLUE;
     }
 
     public Command setColorCommand(LedMode color) {

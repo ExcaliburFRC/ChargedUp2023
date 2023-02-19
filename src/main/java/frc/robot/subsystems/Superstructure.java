@@ -8,20 +8,17 @@ import frc.robot.drivetrain.Swerve;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.robot.Constants.ClawConstants.GamePiece;
-import static frc.robot.subsystems.LEDs.LedMode.PINK;
-import static frc.robot.subsystems.LEDs.LedMode.YELLOW;
+import static frc.robot.subsystems.LEDs.LedMode.*;
 
 public class Superstructure extends SubsystemBase {
 
-    private final Swerve swerve = new Swerve();
-    private final Arm arm = new Arm();
-    private final Claw claw = new Claw();
-    private final Spindexer spindexer = new Spindexer();
-    private final Intake intake = new Intake();
-    private final LEDs leds = new LEDs();
+   private final Arm arm = new Arm();
+   private final Claw claw = new Claw();
+   private final Spindexer spindexer = new Spindexer();
+   private final Intake intake = new Intake();
 
-    public static AtomicReference<GamePiece> currentGamePiece;
-    public static AtomicReference<Setpoints> currentSetpoint;
+    static AtomicReference<GamePiece> currentGamePiece;
+    static AtomicReference<Setpoints> currentSetpoint;
 
     public Superstructure() {
         currentGamePiece.set(GamePiece.EMPTY);
@@ -29,7 +26,6 @@ public class Superstructure extends SubsystemBase {
 
         arm.setDefaultCommand(arm.holdSetpointCommand(Setpoints.spindexer)
                 .alongWith(setCurrentSetpoint(Setpoints.SPINDEXER)));
-        leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
     }
 
     private boolean isCone(){
@@ -39,31 +35,31 @@ public class Superstructure extends SubsystemBase {
     private Command setCurrentSetpoint(Setpoints setpoint){
         return new InstantCommand(()-> currentSetpoint.set(setpoint));
     }
+    private Command setCurrentGamePiece(GamePiece gamePiece){
+        return new InstantCommand(()-> currentGamePiece.set(gamePiece));
+    }
 
-    public Command intakeFromGroundCommand(Trigger isCone) {
+    public Command intakeFromClawCommand() {
         return new SequentialCommandGroup(
-                leds.setColorCommand(isCone.getAsBoolean()? YELLOW: PINK).withTimeout(3),
-                setCurrentSetpoint(Setpoints.INTAKE),
-                arm.holdSetpointCommand(Setpoints.intake),
                 claw.openClawCommand(),
+                arm.holdSetpointCommand(Setpoints.intake),
+                setCurrentSetpoint(Setpoints.INTAKE),
                 claw.autoCloseCommand());
     }
 
     public Command intakeCommand(){
         return new SequentialCommandGroup(
                 claw.openClawCommand(),
-                intake.intakeCommand().until(spindexer::isGamePieceDetected),
+                intake.intakeCommand().until(spindexer.beambreakTrigger),
                 spindexer.straightenGamePieceCommand(),
-                new InstantCommand(()-> currentGamePiece.set(spindexer.getCurrentItem())),
-                leds.setColorCommand(currentGamePiece.get().equals(GamePiece.CONE)? YELLOW : PINK).withTimeout(3));
+                setCurrentGamePiece(spindexer.getCurrentGamePiece()));
     }
 
     public Command placeOnHighCommand() {
         return new SequentialCommandGroup(
                 claw.closeClawCommand(),
-                swerve.rotateToGridCommand(),
                 arm.holdSetpointCommand(isCone()? Setpoints.HIGH.cone : Setpoints.HIGH.cube),
-                Commands.runOnce(()-> currentSetpoint.set(Setpoints.HIGH)),
+                setCurrentSetpoint(Setpoints.HIGH),
                 claw.openClawCommand(),
                 new WaitCommand(0.1));
     }
@@ -71,9 +67,8 @@ public class Superstructure extends SubsystemBase {
     public Command placeOnMidCommand() {
         return new SequentialCommandGroup(
                 claw.closeClawCommand(),
-                swerve.rotateToGridCommand(),
                 arm.holdSetpointCommand(isCone()? Setpoints.MID.cone : Setpoints.MID.cube),
-                Commands.runOnce(()-> currentSetpoint.set(Setpoints.MID)),
+                setCurrentSetpoint(Setpoints.MID),
                 claw.openClawCommand(),
                 new WaitCommand(0.1));
     }
@@ -81,9 +76,8 @@ public class Superstructure extends SubsystemBase {
     public Command placeOnLowCommand() {
         return new SequentialCommandGroup(
                 claw.closeClawCommand(),
-                swerve.rotateToGridCommand(),
                 arm.holdSetpointCommand(isCone()? Setpoints.LOW.cone : Setpoints.LOW.cube),
-                Commands.runOnce(()-> currentSetpoint.set(Setpoints.LOW)),
+                setCurrentSetpoint(Setpoints.LOW),
                 claw.openClawCommand(),
                 new WaitCommand(0.1));
     }
