@@ -19,23 +19,17 @@ public class Superstructure extends SubsystemBase {
 
     static AtomicReference<GamePiece> currentGamePiece;
     static AtomicReference<GamePiece> lastRequestedGamePiece;
-    static AtomicReference<Setpoints> currentSetpoint;
 
     public Superstructure() {
         currentGamePiece.set(GamePiece.EMPTY);
-        currentSetpoint.set(Setpoints.SPINDEXER);
 
-        arm.setDefaultCommand(arm.holdSetpointCommand(Setpoints.SPINDEXER.gamePiece)
-                .alongWith(setCurrentSetpoint(Setpoints.SPINDEXER)));
+        arm.setDefaultCommand(arm.holdSetpointCommand(Setpoints.SPINDEXER.gamePiece));
     }
 
     private boolean isCone(){
         return currentGamePiece.equals(GamePiece.CONE);
     }
 
-    private Command setCurrentSetpoint(Setpoints setpoint){
-        return new InstantCommand(()-> currentSetpoint.set(setpoint));
-    }
     private Command setCurrentGamePiece(GamePiece gamePiece){
         return new InstantCommand(()-> currentGamePiece.set(gamePiece));
     }
@@ -47,7 +41,6 @@ public class Superstructure extends SubsystemBase {
         return new SequentialCommandGroup(
                 claw.openClawCommand(),
                 arm.holdSetpointCommand(Setpoints.INTAKE.gamePiece),
-                setCurrentSetpoint(Setpoints.INTAKE),
                 claw.autoCloseCommand(),
                 setCurrentGamePiece(lastRequestedGamePiece.get()));
     }
@@ -64,38 +57,31 @@ public class Superstructure extends SubsystemBase {
         return new SequentialCommandGroup(
                 claw.openClawCommand(),
                 arm.holdSetpointCommand(Setpoints.SHELF.gamePiece),
-                setCurrentSetpoint(Setpoints.SHELF),
                 claw.autoCloseCommand(),
                 setCurrentGamePiece(lastRequestedGamePiece.get()));
     }
 
-    public Command placeOnHighCommand() {
+    public Command placeOnHighCommand(Trigger release) {
         return new SequentialCommandGroup(
                 claw.closeClawCommand(),
                 arm.holdSetpointCommand(isCone()? Setpoints.HIGH.cone : Setpoints.HIGH.cube),
-                setCurrentSetpoint(Setpoints.HIGH),
-                claw.openClawCommand(),
-                new WaitCommand(0.1),
+                claw.releaseCommand(release),
                 setCurrentGamePiece(GamePiece.EMPTY));
     }
 
-    public Command placeOnMidCommand() {
+    public Command placeOnMidCommand(Trigger release) {
         return new SequentialCommandGroup(
                 claw.closeClawCommand(),
                 arm.holdSetpointCommand(isCone()? Setpoints.MID.cone : Setpoints.MID.cube),
-                setCurrentSetpoint(Setpoints.MID),
-                claw.openClawCommand(),
-                new WaitCommand(0.1)
+                claw.releaseCommand(release),
                 setCurrentGamePiece(GamePiece.EMPTY));
     }
 
-    public Command placeOnLowCommand() {
+    public Command placeOnLowCommand(Trigger release) {
         return new SequentialCommandGroup(
                 claw.closeClawCommand(),
                 arm.holdSetpointCommand(isCone()? Setpoints.LOW.cone : Setpoints.LOW.cube),
-                setCurrentSetpoint(Setpoints.LOW),
-                claw.openClawCommand(),
-                new WaitCommand(0.1),
+                claw.releaseCommand(release),
                 setCurrentGamePiece(GamePiece.EMPTY));
     }
 }

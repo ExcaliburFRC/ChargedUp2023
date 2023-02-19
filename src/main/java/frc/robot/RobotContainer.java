@@ -61,14 +61,14 @@ public class RobotContainer {
                     controller.R2()));
 
     // pick commands
-    controller.R1().onTrue(superstructure.intakeCommand());
-    controller.L1().onTrue(superstructure.intakeFromClawCommand());
-    controller.square().onTrue(superstructure.intakeFromShelfCommand());
+    controller.povLeft().onTrue(superstructure.intakeCommand());
+    controller.povRight().onTrue(superstructure.intakeFromClawCommand());
+    controller.povUp().onTrue(superstructure.intakeFromShelfCommand());
 
     // place commands
-    controller.triangle().onTrue(superstructure.placeOnHighCommand().alongWith(swerve.rotateToGridCommand()));
-    controller.circle().onTrue(superstructure.placeOnMidCommand().alongWith(swerve.rotateToGridCommand()));
-    controller.cross().onTrue(superstructure.placeOnLowCommand().alongWith(swerve.rotateToGridCommand()));
+    controller.triangle().onTrue(superstructure.placeOnHighCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
+    controller.circle().onTrue(superstructure.placeOnMidCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
+    controller.cross().toggleOnTrue(superstructure.placeOnLowCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
 
     // LED control
     controller.options().onTrue(askForGamePieceCommand(GamePiece.CONE));

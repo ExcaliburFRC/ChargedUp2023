@@ -37,6 +37,10 @@ public class Claw extends SubsystemBase {
         return new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kForward), this);
     }
 
+    public Command releaseCommand(Trigger release){
+        return new RunCommand(()-> {}).until(release).andThen(openClawCommand());
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addBooleanProperty("claw beam-break", beambreakDetectedTrigger, null);
