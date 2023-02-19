@@ -81,12 +81,12 @@ public class Swerve extends SubsystemBase {
                     swerveModules[FRONT_RIGHT].getPosition(),
                     swerveModules[BACK_LEFT].getPosition(),
                     swerveModules[BACK_RIGHT].getPosition()},
-            new Pose2d(new Translation2d(3, 4), new Rotation2d(0)));
+            new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
 
     private final Limelight limelight = new Limelight();
     private final Field2d field = new Field2d();
     private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
-    private final Trigger robotBalancedTrigger = new Trigger(()-> Math.abs(getRampAngle()) > 3);
+    private final Trigger robotBalancedTrigger = new Trigger(()-> Math.abs(getRampAngle()) < 3);
 
     public Swerve() {
         resetGyro();
@@ -330,7 +330,7 @@ public class Swerve extends SubsystemBase {
         return turnToAngleCommand(180);
     }
 
-    public Command driveToRampCommand(RampLocations location) {
+    public Command PIDdriveToRampCommand(RampLocations location) {
         return driveSwerveCommand(
                 () -> xAutoController.calculate(
                         odometry.getEstimatedPosition().getX(),
@@ -341,25 +341,28 @@ public class Swerve extends SubsystemBase {
                 .until(()-> Math.abs(getRampAngle()) > 5);
     }
 
+    public Command slowDriveToRampCommand(){
+        return driveSwerveCommand(
+                ()-> 0.1,
+                ()-> 0,
+                ()-> 0,
+                ()-> true)
+                .until(robotBalancedTrigger.negate());
+    }
+
     public Command balanceRampCommand() {
         return driveSwerveCommand(
                 () -> 0,
-                () -> rampController.calculate(getRampAngle(), 0),
+                () -> rampController.calculate(getRampAngle(), 0) / 2,
                 () -> 0,
                 () -> true
         );
     }
 
     public Command autoClimbCommand(RampLocations location) {
-        return turnToAngleCommand(0)
-                .andThen(
-                        driveSwerveCommand(
-                        ()-> 0,
-                        ()-> yAutoController.calculate(odometry.getEstimatedPosition().getY(),
-                        Calculation.isBlueAlliance() ? location.blue.getY() : location.red.getY()),
-                        ()-> 0,
-                                ()-> true))
-                .andThen(driveToRampCommand(location))
-                .andThen(balanceRampCommand());
+        return Commands.sequence(
+                turnToAngleCommand(0),
+                slowDriveToRampCommand(),
+                balanceRampCommand());
     }
 }
