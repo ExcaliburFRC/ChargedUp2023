@@ -139,7 +139,8 @@ public final class Constants {
         public enum GamePiece {
             EMPTY,
             CUBE,
-            CONE;
+            CONE,
+            UNKNOWN;
         }
     }
 
@@ -149,14 +150,13 @@ public final class Constants {
             LOW(new Translation2d(0, 0), new Translation2d(0, 0)),
             MID(new Translation2d(0, 0), new Translation2d(0, 0)),
             HIGH(new Translation2d(0, 0), new Translation2d(0, 0)),
-            SPINDEXER(),
-            INTAKE();
+            SHELF(new Translation2d(0, 0)),
+            SPINDEXER(new Translation2d(0, 0)),
+            INTAKE(new Translation2d(0, 0));
 
-            public Translation2d cone = new Translation2d();
-            public Translation2d cube = new Translation2d();
-
-            public static Translation2d spindexer = new Translation2d();
-            public static Translation2d intake = new Translation2d();
+            public Translation2d cone;
+            public Translation2d cube;
+            public Translation2d gamePiece;
 
             Setpoints(Translation2d cone, Translation2d cube) {
                 this.cone = cone;
@@ -166,7 +166,9 @@ public final class Constants {
                 }
             }
 
-            Setpoints(){}
+            Setpoints(Translation2d gamePiece){
+                this.gamePiece = gamePiece;
+            }
         }
 
         private static boolean isAchievableTranslation(Translation2d target) {

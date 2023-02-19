@@ -15,7 +15,7 @@ public class Claw extends SubsystemBase {
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
 
     private final Trigger isClawOpenedTrigger = new Trigger(() -> piston.get().equals(DoubleSolenoid.Value.kReverse));
-    private final Trigger beambreakDetectedTrigger = new Trigger(() -> !beambreak.get());
+    private final Trigger beambreakDetectedTrigger = new Trigger(() -> !beambreak.get()).debounce(0.15);
 
     public Claw() {
         piston.set(DoubleSolenoid.Value.kOff);

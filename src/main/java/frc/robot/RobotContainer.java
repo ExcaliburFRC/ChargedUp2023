@@ -62,7 +62,8 @@ public class RobotContainer {
 
     // pick commands
     controller.R1().onTrue(superstructure.intakeCommand());
-    controller.R2().onTrue(superstructure.intakeFromClawCommand());
+    controller.L1().onTrue(superstructure.intakeFromClawCommand());
+    controller.square().onTrue(superstructure.intakeFromShelfCommand());
 
     // place commands
     controller.triangle().onTrue(superstructure.placeOnHighCommand().alongWith(swerve.rotateToGridCommand()));
@@ -70,17 +71,18 @@ public class RobotContainer {
     controller.cross().onTrue(superstructure.placeOnLowCommand().alongWith(swerve.rotateToGridCommand()));
 
     // LED control
-    controller.options().onTrue(askFroGamePieceCommand(GamePiece.CONE));
-    controller.share().onTrue(askFroGamePieceCommand(GamePiece.CUBE));
+    controller.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
+    controller.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
   }
 
-  private Command askFroGamePieceCommand(GamePiece gamePiece){
+  private Command askForGamePieceCommand(GamePiece gamePiece){
     return Commands.repeatingSequence(
             leds.setColorCommand(gamePiece.equals(GamePiece.CONE) ? ORANGE : PURPLE),
                     new WaitCommand(0.25),
                     leds.setColorCommand(OFF),
                     new WaitCommand(0.25))
-            .withTimeout(5);
+            .withTimeout(5)
+            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
   }
 
   /**
