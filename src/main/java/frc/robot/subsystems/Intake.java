@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj2.command.*;
+import frc.robot.Constants;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -47,28 +48,22 @@ public class Intake extends SubsystemBase {
         },this);
     }
 
-    public Command openIntakeCommand() {
-        return new RunCommand(() -> {
-            intakeMotor.set(0.5);
-            openPistonCommand();
-        }, this);
+    public Command startMotorCommand(){
+        return new RunCommand(()-> intakeMotor.set(K_INTAKE_MOTOR_VELOCITY), this);
+    }
+    public Command stopMotorCommand(){
+        return new RunCommand(()-> intakeMotor.set(0), this);
     }
 
-    public Command closeIntakeCommand() {
-        return new RunCommand(() -> {
-            intakeMotor.set(0);
-            closePistonCommand();
-        }, this);
-    }
-
-    public Command toggleIntakeCommand(){
+    public Command intakeCommand(){
         return new FunctionalCommand(
-                this::openPistonCommand,
-                ()-> intakeMotor.set(0.3),
+                ()-> piston.set(DoubleSolenoid.Value.kForward),
+                ()-> intakeMotor.set(K_INTAKE_MOTOR_VELOCITY),
                 (__) -> {
-                    closePistonCommand();
                     intakeMotor.set(0);
+                    piston.set(DoubleSolenoid.Value.kReverse);
                 },
-                ()-> false);
+                ()-> false,
+                this);
     }
 }

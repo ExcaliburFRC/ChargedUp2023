@@ -255,4 +255,8 @@ public final class Constants {
             }
         }
     }
+
+    public static class LedsConstants {
+        public static final int LEDS_PORT = 0;
+    }
 }

@@ -32,7 +32,6 @@ public class Spindexer extends SubsystemBase {
         spindexer.setInverted(false); //TODO: check
     }
 
-
     public Command straightenGamePieceCommand() {
         return new SequentialCommandGroup(
                 setSpindexerMotor(0.3),

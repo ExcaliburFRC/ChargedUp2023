@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Superstructure;
 
 /**
@@ -19,10 +18,10 @@ import frc.robot.subsystems.Superstructure;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final Arm arm = new Arm();
+  private final Superstructure superstructure = new Superstructure();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final XboxController controller = new XboxController(0);
+  private final CommandPS4Controller controller = new CommandPS4Controller(0);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -42,7 +41,6 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-  arm.setDefaultCommand(arm.manualCommand(controller::getLeftY,controller::getRightY));
   }
 
   /**

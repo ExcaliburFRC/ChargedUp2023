@@ -24,14 +24,7 @@ public class Claw extends SubsystemBase {
     public Claw() {
     }
 
-    public Command autoClawCommand() {
-        return new ConditionalCommand(
-                autoCloseCommand(),
-                openClawCommand(),
-                isClawOpenedTrigger);
-    }
-
-    private RunCommand autoCloseCommand() {
+    public Command autoCloseCommand() {
         return new RunCommand(
                 () -> {
                     if (beambreakDetectedTrigger.getAsBoolean() && isClawOpenedTrigger.getAsBoolean())
@@ -45,13 +38,6 @@ public class Claw extends SubsystemBase {
 
     public Command closeClawCommand() {
         return new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kForward), this);
-    }
-
-    public Command togglePistonCommand() {
-        return new ConditionalCommand(
-                new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kForward), this),
-                new InstantCommand(piston::toggle, this),
-                () -> piston.get().equals(DoubleSolenoid.Value.kOff));
     }
 
     @Override
