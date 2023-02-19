@@ -52,8 +52,7 @@ public class Superstructure extends SubsystemBase {
                 claw.openClawCommand(),
                 intake.intakeCommand().until(spindexer.beambreakTrigger),
                 spindexer.straightenGamePieceCommand(),
-                setCurrentGamePiece(spindexer.getCurrentGamePiece()),
-                leds.setColorCommand(currentGamePiece.get().equals(GamePiece.CONE)? ORANGE : PURPLE).withTimeout(3));
+                setCurrentGamePiece(spindexer.getCurrentGamePiece()));
     }
 
     public Command placeOnHighCommand() {
