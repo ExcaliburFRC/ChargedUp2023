@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
+import frc.robot.Constants.ClawConstants.GamePiece;
 
 import java.util.function.DoubleSupplier;
 
@@ -102,18 +104,17 @@ public class Arm extends SubsystemBase {
         return realAngle;
     }
 
-    public Command holdSetpoint(Setpoints setpoint) {
-        return moveToLengthCommand(setpoint.translation).alongWith(
-                moveToAngleCommand(setpoint.translation));
+    public Command holdSetpointCommand(Translation2d setpoint) {
+        return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
     }
 
     private Command moveToLengthCommand(Translation2d setPoint) {
-        return new ProxyCommand(() -> new TrapezoidProfileCommand(
+        return new ProxyCommand(
+                () -> new TrapezoidProfileCommand(
                 new TrapezoidProfile(
                         new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxAngularAcceleration),
                         new TrapezoidProfile.State(setPoint.getNorm(), 0),
-                        new TrapezoidProfile.State(lengthEncoder.getPosition(), lengthEncoder.getVelocity())
-                ),
+                        new TrapezoidProfile.State(lengthEncoder.getPosition(), lengthEncoder.getVelocity())),
                 state -> {
                     double feedforward = kS_LENGTH * Math.signum(state.velocity)
                             + kG_LENGTH * Math.sin(Units.degreesToRadians(getArmDegrees()))
@@ -122,8 +123,7 @@ public class Arm extends SubsystemBase {
                     lengthController.setReference(state.position, CANSparkMax.ControlType.kPosition,
                             0,
                             feedforward, SparkMaxPIDController.ArbFFUnits.kVoltage);
-                }, this
-        ));
+                }, this));
     }
 
     public Command moveToAngleCommand(Translation2d setPoint) {
