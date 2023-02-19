@@ -1,17 +1,13 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static frc.robot.Constants.ClawConstants.*;
-import static frc.robot.Constants.IntakeConstants.DISTANCE_THRESHOLD;
-import static frc.robot.Constants.IntakeConstants.GAME_PIECE_THRESHOLD;
 
 public class Claw extends SubsystemBase {
     private final DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.REVPH, FORWARD_CHANNEL, REVERSE_CHANNEL);
@@ -19,7 +15,7 @@ public class Claw extends SubsystemBase {
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
 
     private final Trigger isClawOpenedTrigger = new Trigger(() -> piston.get().equals(DoubleSolenoid.Value.kReverse));
-    private final Trigger beambreakDetectedTrigger = new Trigger(() -> !beambreak.get());
+    private final Trigger beambreakDetectedTrigger = new Trigger(() -> !beambreak.get()).debounce(0.15);
 
     public Claw() {
         piston.set(DoubleSolenoid.Value.kOff);
@@ -39,6 +35,10 @@ public class Claw extends SubsystemBase {
 
     public Command closeClawCommand() {
         return new InstantCommand(() -> piston.set(DoubleSolenoid.Value.kForward), this);
+    }
+
+    public Command releaseCommand(Trigger release){
+        return new RunCommand(()-> {}).until(release).andThen(openClawCommand());
     }
 
     @Override

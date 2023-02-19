@@ -11,6 +11,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.InterpolatingTreeMap;
 
+import static java.lang.Math.PI;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -21,29 +23,24 @@ import edu.wpi.first.util.InterpolatingTreeMap;
  */
 public final class Constants {
     public static class IntakeConstants {
-        public static final int k_INTAKE_MOTOR_ID = 0;
-        public static final int k_SPINDEXER_MOTOR_ID = 0;
+        public static final int INTAKE_MOTOR_ID = 0;
+        public static final int INTAKE_MOTOR_CURRENT_LIMIT = 0;
 
-        public static final int k_INTAKE_MOTOR_CURRENT_LIMIT = 0;
-        public static final int SPINDEXER_CURRENT_LIMIT = 0;
-
-        public static final int k_FWD_CHANNEL = 0;
+        public static final int FWD_CHANNEL = 0;
         public static final int k_REV_CHANNEL = 0;
+    }
 
+    public static final class SpindexerConstants{
         public static final int BEAMBREAK_CHANNEL = 0;
         public static final int BUTTON_CHANNEL = 0;
 
-        public static final int GAME_PIECE_THRESHOLD = 93; // (blue)
-        public static final int DISTANCE_THRESHOLD = 0; //TODO: find
-
-
-        public static final double INTAKE_MOTOR_VELOCITY = 0;
+        public static final int SPINDEXER_MOTOR_ID = 0;
+        public static final int SPINDEXER_CURRENT_LIMIT = 0;
     }
 
     public static final class SwerveConstants {
-        public static final double RAMP_BALANCE_KP = 0;
-
         public enum Modules {
+            // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
             FL(17, 18, 1, 0.826, false, false),
             FR(11,12, 0, 0.038, false, false),
             BL(15, 16, 2, 0.622, false, false),
@@ -60,6 +57,7 @@ public final class Constants {
             public static final int FRONT_RIGHT = 0;
             public static final int BACK_LEFT = 0;
             public static final int BACK_RIGHT = 0;
+
             Modules(int DRIVE_MOTOR_ID,
                     int SPIN_MOTOR_ID,
                     int ABS_ENCODER_CHANNEL,
@@ -75,13 +73,6 @@ public final class Constants {
             }
         }
 
-        public static final int[] kDriveMotorId = {17, 11, 15, 13};
-        public static final int[] kSpinningMotorId = {18, 12, 16, 14};
-        public static final int[] kAbsEncoderChannel = {1, 0, 2, 3};
-        public static final double[] kOffsetAngle = {0.826, 0.038, 0.622, 0.860};
-        public static final boolean[] kDriveMotorReversed = {false, false, false, false};
-        public static final boolean[] kSpinningMotorReversed = {false, false, false, false};
-
         public static final double kTolerance = 0.05;
         public static final double kDeadband = 0.05;
 
@@ -95,15 +86,17 @@ public final class Constants {
                         new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = 5;//TODO find
-        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI;//TODO find
+        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI;//TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3;//TODO find
+
+        public static final double RAMP_BALANCE_KP = 0;
 
         // intentional limitations
 
         public static final double kSpeedPercantageLimit = 50; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
-        public static final double kMaxTurningAcceleration = Math.PI / 100 * kSpeedPercantageLimit; // rad/s^2
+        public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
 
         //unclear values
         public static final double kMaxDriveAccelerationUnitsPerSecond = 3;
@@ -121,20 +114,19 @@ public final class Constants {
                         kMaxDriveTurningSpeed,
                         kMaxTurningAcceleration);
 
-        public static final double kPXAuto = 0; //TODO: find
-        public static final double kPYAuto = 0; //TODO: find
-        public static final double kPThetaTeleop = 0.0145; //TODO: find
-        public static final double kDThetaTeleop = 0.001; //TODO: find
-        public static final double kPThetaAuto = 0; //TODO: find
+        public static final double kp_x_AUTO = 0; //TODO: find
+        public static final double kp_y_AUTO = 0; //TODO: find
+        public static final double kp_Theta_AUTO = 0; //TODO: find
+        public static final double kp_Theta_TELEOP = 0.0145; //TODO: find
     }
 
     public static final class ModuleConstants {
         public static final double kWheelDiameterMeters = Units.inchesToMeters(4);
         public static final double kDriveMotorGearRatio = 1 / 8.14;
-        public static final double kDriveEncoderRotationsToMeters = kDriveMotorGearRatio * Math.PI * kWheelDiameterMeters;
+        public static final double kDriveEncoderRotationsToMeters = kDriveMotorGearRatio * PI * kWheelDiameterMeters;
         public static final double kDriveEncoderRPMToMeterPerSec = kDriveEncoderRotationsToMeters / 60;
         public static final double kTurningMotorGearRatio = 1 / 21.4285714;
-        public static final double kTurningEncoderRotationsToRadians = kTurningMotorGearRatio * 2 * Math.PI;
+        public static final double kTurningEncoderRotationsToRadians = kTurningMotorGearRatio * 2 * PI;
         public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
         public static final double kPTurning = 0.6;
     }
@@ -143,30 +135,28 @@ public final class Constants {
         public static final int FORWARD_CHANNEL = 0;
         public static final int REVERSE_CHANNEL = 0;
         public static final int BEAMBREAK_CHANNEL = 0;
-        public static final int BUTTON_CHANNEL = 0;
-        public static final int COLOR_SENSOR_CHANNEL = 0;
 
         public enum GamePiece {
             EMPTY,
             CUBE,
-            CONE;
+            CONE,
+            UNKNOWN;
         }
     }
 
     public static final class ArmConstants {
         public enum Setpoints {
-            // cone cube
+            // cone, cube
             LOW(new Translation2d(0, 0), new Translation2d(0, 0)),
             MID(new Translation2d(0, 0), new Translation2d(0, 0)),
             HIGH(new Translation2d(0, 0), new Translation2d(0, 0)),
-            SPINDEXER(),
-            INTAKE();
+            SHELF(new Translation2d(0, 0)),
+            SPINDEXER(new Translation2d(0, 0)),
+            INTAKE(new Translation2d(0, 0));
 
-            public Translation2d cone = new Translation2d();
-            public Translation2d cube = new Translation2d();
-
-            public static Translation2d spindexer = new Translation2d();
-            public static Translation2d intake = new Translation2d();
+            public Translation2d cone;
+            public Translation2d cube;
+            public Translation2d gamePiece;
 
             Setpoints(Translation2d cone, Translation2d cube) {
                 this.cone = cone;
@@ -176,7 +166,9 @@ public final class Constants {
                 }
             }
 
-            Setpoints(){}
+            Setpoints(Translation2d gamePiece){
+                this.gamePiece = gamePiece;
+            }
         }
 
         private static boolean isAchievableTranslation(Translation2d target) {
@@ -195,8 +187,9 @@ public final class Constants {
         public static final int ABS_ANGLE_ENCODER_CHANNEL = 0;
 
         public static final double RPM_TO_DEG_PER_SEC = 0; // rot/sec
-        public static final double ROT_TO_METER = 0; // rot/m
-        public static final double RPM_TO_METER_PER_SEC = 0; // rpm/ms
+        public static final double RADIUS = 0;
+        public static final double ROT_TO_METER = 2 * RADIUS * PI; // rot/m
+        public static final double RPM_TO_METER_PER_SEC = 2 * PI * RADIUS / 60 ; // rpm/ms
         public static final double MINIMAL_LENGTH_METERS = 0; // m
         public static final double MAXIMAL_LENGTH_METERS = 0; // m
 
@@ -225,15 +218,6 @@ public final class Constants {
     }
 
     public static class Coordinates {
-        public static Translation2d toOppositeAlliance(Translation2d lastPoint) {
-            double dis = Math.abs(middleAxisXValue - lastPoint.getX());
-            return new Translation2d(
-                    lastPoint.getX() < middleAxisXValue ? middleAxisXValue + dis : middleAxisXValue - dis,
-                    lastPoint.getY());
-        }
-
-        public static double middleAxisXValue = 8.3;
-
         public enum RampLocations {
             LEFT(new Translation2d(4, 3.481), new Translation2d(12.75, 3.481)),
             MIDDLE(new Translation2d(4, 2.707), new Translation2d(12.75, 2.707)),
@@ -247,6 +231,8 @@ public final class Constants {
                 this.red = red;
             }
         }
+
+        public static double middleAxisXValue = 8.3;
     }
 
     public static class LedsConstants {

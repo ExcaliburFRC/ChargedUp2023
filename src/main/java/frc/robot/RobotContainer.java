@@ -61,26 +61,28 @@ public class RobotContainer {
                     controller.R2()));
 
     // pick commands
-    controller.R1().onTrue(superstructure.intakeCommand());
-    controller.R2().onTrue(superstructure.intakeFromClawCommand());
+    controller.povLeft().onTrue(superstructure.intakeCommand());
+    controller.povRight().onTrue(superstructure.intakeFromClawCommand());
+    controller.povUp().onTrue(superstructure.intakeFromShelfCommand());
 
     // place commands
-    controller.triangle().onTrue(superstructure.placeOnHighCommand().alongWith(swerve.rotateToGridCommand()));
-    controller.circle().onTrue(superstructure.placeOnMidCommand().alongWith(swerve.rotateToGridCommand()));
-    controller.cross().onTrue(superstructure.placeOnLowCommand().alongWith(swerve.rotateToGridCommand()));
+    controller.triangle().onTrue(superstructure.placeOnHighCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
+    controller.circle().onTrue(superstructure.placeOnMidCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
+    controller.cross().toggleOnTrue(superstructure.placeOnLowCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
 
     // LED control
-    controller.options().onTrue(askFroGamePieceCommand(GamePiece.CONE));
-    controller.share().onTrue(askFroGamePieceCommand(GamePiece.CUBE));
+    controller.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
+    controller.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
   }
 
-  private Command askFroGamePieceCommand(GamePiece gamePiece){
+  private Command askForGamePieceCommand(GamePiece gamePiece){
     return Commands.repeatingSequence(
             leds.setColorCommand(gamePiece.equals(GamePiece.CONE) ? ORANGE : PURPLE),
-                    new WaitCommand(0.5),
+                    new WaitCommand(0.25),
                     leds.setColorCommand(OFF),
-                    new WaitCommand(0.5))
-            .withTimeout(5);
+                    new WaitCommand(0.25))
+            .withTimeout(5)
+            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
   }
 
   /**
