@@ -64,6 +64,10 @@ public class Arm extends SubsystemBase {
         angleController.setI(0);
         angleController.setD(0);
 
+        // kG_ANGLE.put(MINIMAL_LENGTH_METERS, SysId:kG);
+        // kG_ANGLE.put(MAXIMAL_LENGTH_METERS / 2, SysId:kG);
+        // kG_ANGLE.put(MAXIMAL_LENGTH_METERS, SysId:kG);
+
         angleMotor.setClosedLoopRampRate(ARM_RAMP_RATE);
     }
 
