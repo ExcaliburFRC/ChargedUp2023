@@ -53,6 +53,7 @@ public class Arm extends SubsystemBase {
         lengthEncoder.setPositionConversionFactor(ROT_TO_METER);
         lengthEncoder.setVelocityConversionFactor(RPM_TO_METER_PER_SEC);
 
+
         lengthController = lengthMotor.getPIDController();
 
         lengthController.setP(kP_LENGTH);
