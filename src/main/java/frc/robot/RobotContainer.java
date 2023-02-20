@@ -82,6 +82,7 @@ public class RobotContainer {
                     leds.setColorCommand(OFF),
                     new WaitCommand(0.25))
             .withTimeout(5)
+            .andThen(leds.restoreDefualtColorCommand())
             .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
   }
 

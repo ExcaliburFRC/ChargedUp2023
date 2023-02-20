@@ -30,6 +30,7 @@ public class SwerveModule implements Sendable {
   private final PIDController _spinningPIDController;
 
   public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < kTolerance).debounce(0.1);
+
   // construct the class
   public SwerveModule(
           int driveMotorId,

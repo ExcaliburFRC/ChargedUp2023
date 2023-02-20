@@ -23,8 +23,8 @@ import static java.lang.Math.PI;
  */
 public final class Constants {
     public static class IntakeConstants {
-        public static final int INTAKE_MOTOR_ID = 0;
-        public static final int INTAKE_MOTOR_CURRENT_LIMIT = 0;
+        public static final int INTAKE_MOTOR_ID = 31;
+        public static final int INTAKE_MOTOR_CURRENT_LIMIT = 0; // TODO: calculate
 
         public static final int FWD_CHANNEL = 0;
         public static final int k_REV_CHANNEL = 0;
@@ -34,8 +34,8 @@ public final class Constants {
         public static final int BEAMBREAK_CHANNEL = 0;
         public static final int BUTTON_CHANNEL = 0;
 
-        public static final int SPINDEXER_MOTOR_ID = 0;
-        public static final int SPINDEXER_CURRENT_LIMIT = 0;
+        public static final int SPINDEXER_MOTOR_ID = 32;
+        public static final int SPINDEXER_CURRENT_LIMIT = 0; // TODO: calculate
     }
 
     public static final class SwerveConstants {
@@ -85,9 +85,9 @@ public final class Constants {
                         new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
                         new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
-        public static final double kPhysicalMaxSpeedMetersPerSecond = 5;//TODO find
-        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI;//TODO find
-        public static final double kMaxAccelerationMetersPerSecondSquared = 3;//TODO find
+        public static final double kPhysicalMaxSpeedMetersPerSecond = 5; //TODO find
+        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
+        public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
         public static final double RAMP_BALANCE_KP = 0;
 
@@ -139,8 +139,7 @@ public final class Constants {
         public enum GamePiece {
             EMPTY,
             CUBE,
-            CONE,
-            UNKNOWN;
+            CONE;
         }
     }
 
@@ -184,12 +183,12 @@ public final class Constants {
         public static final int UPPER_LIMIT_SWITCH_ID = 0;
         public static final int LOWER_LIMIT_SWITCH_ID = 0;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 0;
+        public static final int ABS_ANGLE_ENCODER_CHANNEL = 4;
 
         public static final double RPM_TO_DEG_PER_SEC = 0; // rot/sec
         public static final double RADIUS = 0;
         public static final double ROT_TO_METER = 2 * RADIUS * PI; // rot/m
-        public static final double RPM_TO_METER_PER_SEC = 2 * PI * RADIUS / 60 ; // rpm/ms
+        public static final double RPM_TO_METER_PER_SEC = 1 / 60 ; // rpm/ms, link: https://brainly.in/question/3238411
         public static final double MINIMAL_LENGTH_METERS = 0; // m
         public static final double MAXIMAL_LENGTH_METERS = 0; // m
 
@@ -197,6 +196,12 @@ public final class Constants {
         public static final double kS_ANGLE = 0;
         public static final double kV_ANGLE = 0;
         public static final InterpolatingTreeMap<Double, Double> kG_ANGLE = new InterpolatingTreeMap<>();
+
+//        static {
+//             kG_ANGLE.put(MINIMAL_LENGTH_METERS, SysId:kG);
+//             kG_ANGLE.put((MAXIMAL_LENGTH_METERS - MINIMAL_LENGTH_METERS) / 2, SysId:kG);
+//             kG_ANGLE.put(MAXIMAL_LENGTH_METERS, SysId:kG);
+//        }
 
         public static final double kP_ANGLE = 0;
         public static final double kMaxAngularVelocity = 0;

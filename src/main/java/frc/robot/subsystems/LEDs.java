@@ -6,9 +6,7 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PWM;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 
 public class LEDs extends SubsystemBase {
     private final PWM leds = new PWM(LEDS_PORT);
@@ -55,6 +53,10 @@ public class LEDs extends SubsystemBase {
 
     public Command setColorCommand(LedMode color) {
         return new RunCommand(() -> leds.setSpeed(color.dutyCycle), this);
+    }
+
+    public Command restoreDefualtColorCommand(){
+        return new InstantCommand(()-> CommandScheduler.getInstance().requiring(this).cancel());
     }
 
     @Override
