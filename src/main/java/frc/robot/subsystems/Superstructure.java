@@ -17,12 +17,10 @@ public class Superstructure extends SubsystemBase {
    private final Spindexer spindexer = new Spindexer();
    private final Intake intake = new Intake();
 
-    static AtomicReference<GamePiece> currentGamePiece;
-    static AtomicReference<GamePiece> lastRequestedGamePiece;
+    static AtomicReference<GamePiece> currentGamePiece = new AtomicReference<>(GamePiece.EMPTY);
+    static AtomicReference<GamePiece> lastRequestedGamePiece = new AtomicReference<>();
 
     public Superstructure() {
-        currentGamePiece.set(GamePiece.EMPTY);
-
         arm.setDefaultCommand(arm.holdSetpointCommand(Setpoints.SPINDEXER.gamePiece));
     }
 

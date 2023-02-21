@@ -11,8 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.drivetrain.Swerve;
-import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.*;
 
 import static frc.robot.Constants.ClawConstants.GamePiece;
 import static frc.robot.subsystems.LEDs.LedMode.*;
@@ -25,9 +24,12 @@ import static frc.robot.subsystems.LEDs.LedMode.*;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final Superstructure superstructure = new Superstructure();
-  private final Swerve swerve = new Swerve();
-  private final LEDs leds = new LEDs();
+//  private final Superstructure superstructure = new Superstructure();
+//  private final Swerve swerve = new Swerve();
+//  private final LEDs leds = new LEDs();
+
+  // testing
+Arm arm = new Arm();
 
   private final CommandPS4Controller controller = new CommandPS4Controller(0);
 
@@ -50,41 +52,43 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // default command configurations
-    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
-    swerve.setDefaultCommand(
-            swerve.dualDriveSwerveCommand(
-                    controller::getLeftX,
-                    controller::getLeftY,
-                    controller::getRightX,
-                    controller::getRightY,
-                    controller.L2(),
-                    controller.R2()));
+//    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
+//    swerve.setDefaultCommand(
+//            swerve.dualDriveSwerveCommand(
+//                    controller::getLeftX,
+//                    controller::getLeftY,
+//                    controller::getRightX,
+//                    controller::getRightY,
+//                    controller.L2(),
+//                    controller.R2()));
 
     // pick commands
-    controller.povLeft().onTrue(superstructure.intakeCommand());
-    controller.povRight().onTrue(superstructure.intakeFromClawCommand());
-    controller.povUp().onTrue(superstructure.intakeFromShelfCommand());
+//    controller.povLeft().onTrue(superstructure.intakeCommand());
+//    controller.povRight().onTrue(superstructure.intakeFromClawCommand());
+//    controller.povUp().onTrue(superstructure.intakeFromShelfCommand());
 
     // place commands
-    controller.triangle().onTrue(superstructure.placeOnHighCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
-    controller.circle().onTrue(superstructure.placeOnMidCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
-    controller.cross().toggleOnTrue(superstructure.placeOnLowCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
+//    controller.triangle().onTrue(superstructure.placeOnHighCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
+//    controller.circle().onTrue(superstructure.placeOnMidCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
+//    controller.cross().toggleOnTrue(superstructure.placeOnLowCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
 
     // LED control
-    controller.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
-    controller.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
+//    controller.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
+//    controller.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
+
+    // testing
   }
 
-  private Command askForGamePieceCommand(GamePiece gamePiece){
-    return Commands.repeatingSequence(
-            leds.setColorCommand(gamePiece.equals(GamePiece.CONE) ? ORANGE : PURPLE),
-                    new WaitCommand(0.25),
-                    leds.setColorCommand(OFF),
-                    new WaitCommand(0.25))
-            .withTimeout(5)
-            .andThen(leds.restoreDefualtColorCommand())
-            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
-  }
+//  private Command askForGamePieceCommand(GamePiece gamePiece){
+//    return Commands.repeatingSequence(
+//            leds.setColorCommand(gamePiece.equals(GamePiece.CONE) ? ORANGE : PURPLE),
+//                    new WaitCommand(0.25),
+//                    leds.setColorCommand(OFF),
+//                    new WaitCommand(0.25))
+//            .withTimeout(5)
+//            .andThen(leds.restoreDefualtColorCommand())
+//            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
+//  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

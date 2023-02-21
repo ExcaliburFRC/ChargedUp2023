@@ -109,8 +109,8 @@ public class Swerve extends SubsystemBase {
     //TODO: check if works
     private double getDegrees() {
         double deg = Math.IEEEremainder(_gyro.getAngle(), 360);
-        deg *= -1;
-        if (deg < 0) deg += 360;
+//        deg *= -1;
+//        if (deg < 0) deg += 360;
         return deg;
     }
 

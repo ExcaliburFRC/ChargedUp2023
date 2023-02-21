@@ -13,7 +13,7 @@ import static frc.robot.Constants.IntakeConstants.*;
 
 public class Intake extends SubsystemBase {
     private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, kBrushless);
-    private final DoubleSolenoid piston = new DoubleSolenoid(REVPH, FWD_CHANNEL, k_REV_CHANNEL);
+    private final DoubleSolenoid piston = new DoubleSolenoid(REVPH, FWD_CHANNEL, REV_CHANNEL);
 
     public Intake() {
         intakeMotor.restoreFactoryDefaults();

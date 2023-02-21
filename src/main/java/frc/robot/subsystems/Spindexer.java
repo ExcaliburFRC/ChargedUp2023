@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ClawConstants.GamePiece;
 
@@ -27,7 +28,7 @@ public class Spindexer extends SubsystemBase {
     private final Trigger isConeStuckTrigger = buttonTrigger.and(beambreakTrigger);
     private final Trigger isCubeTrigger = beambreakTrigger.and(buttonTrigger.negate());
 
-    public AtomicReference<GamePiece> currentPiece;
+    public AtomicReference<GamePiece> currentPiece = new AtomicReference<>();
 
     public Spindexer() {
         spindexer.restoreFactoryDefaults();
@@ -75,6 +76,10 @@ public class Spindexer extends SubsystemBase {
 
     private Command setGamePieceCommand(GamePiece gamePiece){
         return Commands.runOnce(()-> currentPiece.set(gamePiece));
+    }
+
+    public Command manualCommand(DoubleSupplier intakeMotor){
+        return new RunCommand(()-> spindexer.set(intakeMotor.getAsDouble()), this);
     }
 
     public GamePiece getCurrentGamePiece() {

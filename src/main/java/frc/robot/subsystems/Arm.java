@@ -10,6 +10,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -52,7 +53,6 @@ public class Arm extends SubsystemBase {
 
         lengthEncoder.setPositionConversionFactor(ROT_TO_METER);
         lengthEncoder.setVelocityConversionFactor(RPM_TO_METER_PER_SEC);
-
 
         lengthController = lengthMotor.getPIDController();
 
@@ -102,14 +102,14 @@ public class Arm extends SubsystemBase {
     }
 
     public Command holdSetpointCommand(Translation2d setpoint) {
-        return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
+        return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint), new RunCommand(()-> {}, this));
     }
 
     private Command moveToLengthCommand(Translation2d setPoint) {
         return new ProxyCommand(
                 () -> new TrapezoidProfileCommand(
                 new TrapezoidProfile(
-                        new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxAngularAcceleration),
+                        new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxLinearAcceleration),
                         new TrapezoidProfile.State(setPoint.getNorm(), 0),
                         new TrapezoidProfile.State(lengthEncoder.getPosition(), lengthEncoder.getVelocity())),
                 state -> {
@@ -151,8 +151,15 @@ public class Arm extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        super.initSendable(builder);
+//        super.initSendable(builder);
+        builder.setSmartDashboardType("Subsystem");
         builder.addBooleanProperty("fullyOpened", armFullyOpenedTrigger, null);
         builder.addBooleanProperty("fullyClosed", armFullyClosedTrigger, null);
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putBoolean("magnetic lS", armFullyOpenedTrigger.getAsBoolean());
+        SmartDashboard.putBoolean("lS", armFullyClosedTrigger.getAsBoolean());
     }
 }
