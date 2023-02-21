@@ -181,16 +181,18 @@ public final class Constants {
         public static final int LENGTH_MOTOR_ID = 23;
 
         public static final int UPPER_LIMIT_SWITCH_ID = 5;
-        public static final int LOWER_LIMIT_SWITCH_ID = 9;
+        public static final int LOWER_LIMIT_SWITCH_ID = 4;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 7;
+        public static final int ABS_ANGLE_ENCODER_CHANNEL = 9;
 
-        public static final double RPM_TO_DEG_PER_SEC = 0; // rot/sec
-        public static final double RADIUS = 0;
-        public static final double ROT_TO_METER = 1; //2 * RADIUS * PI; // rot/m
-        public static final double RPM_TO_METER_PER_SEC = 1; //1 / 60 ; // rpm/ms, link: https://brainly.in/question/3238411
-        public static final double MINIMAL_LENGTH_METERS = 0; // m
-        public static final double MAXIMAL_LENGTH_METERS = 0; // m
+        public static final double RADIUS = 0.0015;
+        public static final double PERIMETER = RADIUS * 2 * PI;
+        public static final double ROT_TO_METER = 1.0 / PERIMETER;
+        public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
+        public static final double MINIMAL_LENGTH_METERS = 0.06175;// m
+        public static final double MAXIMAL_LENGTH_METERS = 0.105;// m
+
+        public static final double tempCoversion = 1 / 57.8;
 
         // Angle control
         public static final double kS_ANGLE = 0;
@@ -220,10 +222,10 @@ public final class Constants {
         public static final double kMaxLinearAcceleration = 0;
 
         public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0;
-        public static final int PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG = 0;
-        public static final int PHYSICAL_BACK_MAX_ARM_ANGLE_DEG = 0;
+        public static final int PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG = 220;
+        public static final int PHYSICAL_BACK_MAX_ARM_ANGLE_DEG = 150;
 
-        public static final int ARM_RAMP_RATE = 0;
+        public static final int ARM_RAMP_RATE = 1;
     }
 
     public static class Coordinates {

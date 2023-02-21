@@ -29,7 +29,7 @@ public class RobotContainer {
 //  private final LEDs leds = new LEDs();
 
   // testing
-Arm arm = new Arm();
+  Arm arm = new Arm();
 
   private final CommandPS4Controller controller = new CommandPS4Controller(0);
 
@@ -77,6 +77,12 @@ Arm arm = new Arm();
 //    controller.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
 
     // testing
+    arm.setDefaultCommand(
+          arm.manualCommand(
+                () -> controller.getLeftY() / 4,
+                () -> controller.getRightY()
+          )
+    );
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
