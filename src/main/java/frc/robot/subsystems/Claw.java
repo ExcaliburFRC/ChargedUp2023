@@ -43,6 +43,7 @@ public class Claw extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("Subsystem");
         builder.addBooleanProperty("claw beam-break", beambreakDetectedTrigger, null);
     }
 }

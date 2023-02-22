@@ -23,27 +23,39 @@ import static java.lang.Math.PI;
  */
 public final class Constants {
     public static class IntakeConstants {
-        public static final int INTAKE_MOTOR_ID = 31;
-        public static final int INTAKE_MOTOR_CURRENT_LIMIT = 0; // TODO: calculate
+        public static final int INTAKE_MOTOR_ID = 32;
+        public static final int INTAKE_MOTOR_CURRENT_LIMIT = 40; // TODO: calculate
 
         public static final int FWD_CHANNEL = 2;
         public static final int REV_CHANNEL = 3;
     }
 
     public static final class SpindexerConstants{
-        public static final int BEAMBREAK_CHANNEL = 5;
+        public static final int BEAMBREAK_CHANNEL = 6;
         public static final int BUTTON_CHANNEL = 4;
 
-        public static final int SPINDEXER_MOTOR_ID = 32;
-        public static final int SPINDEXER_CURRENT_LIMIT = 0; // TODO: calculate
+        public static final int SPINDEXER_MOTOR_ID = 31;
+        public static final int SPINDEXER_CURRENT_LIMIT = 50; // TODO: calculate
+    }
+
+    public static final class ClawConstants {
+        public static final int FORWARD_CHANNEL = 0;
+        public static final int REVERSE_CHANNEL = 1;
+        public static final int BEAMBREAK_CHANNEL = 9;
+
+        public enum GamePiece {
+            EMPTY,
+            CUBE,
+            CONE;
+        }
     }
 
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
             FL(18, 17, 1, 0.346, false, false),
-            FR(12, 11, 2, 0.622, false, false),
-            BL(16, 15, 0, 0.207, false, false),
+            FR(12, 11, 0, 0.622, false, false),
+            BL(16, 15, 2, 0.207, false, false),
             BR(14, 13, 3, 0.830, false, false);
 
             public int DRIVE_MOTOR_ID;
@@ -89,7 +101,7 @@ public final class Constants {
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
-        public static final double RAMP_BALANCE_KP = 0;
+        public static final double RAMP_BALANCE_KP = 0.05;
 
         // intentional limitations
 
@@ -131,18 +143,6 @@ public final class Constants {
         public static final double kPTurning = 0.6;
     }
 
-    public static final class ClawConstants {
-        public static final int FORWARD_CHANNEL = 0;
-        public static final int REVERSE_CHANNEL = 1;
-        public static final int BEAMBREAK_CHANNEL = 6;
-
-        public enum GamePiece {
-            EMPTY,
-            CUBE,
-            CONE;
-        }
-    }
-
     public static final class ArmConstants {
         public enum Setpoints {
             // cone, cube
@@ -180,10 +180,10 @@ public final class Constants {
         public static final int ANGLE_FOLLOWER_MOTOR_ID = 22;
         public static final int LENGTH_MOTOR_ID = 23;
 
-        public static final int UPPER_LIMIT_SWITCH_ID = 5;
-        public static final int LOWER_LIMIT_SWITCH_ID = 4;
+        public static final int OPENED_LIMIT_SWITCH_ID = 7;
+        public static final int CLOSED_LIMIT_SWITCH_ID = 5;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 9;
+        public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
 
         public static final double RADIUS = 0.0015;
         public static final double PERIMETER = RADIUS * 2 * PI;
@@ -221,7 +221,7 @@ public final class Constants {
         public static final double kMaxLinearVelocity = 0;
         public static final double kMaxLinearAcceleration = 0;
 
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0;
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.486;
         public static final int PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG = 220;
         public static final int PHYSICAL_BACK_MAX_ARM_ANGLE_DEG = 150;
 
@@ -249,4 +249,10 @@ public final class Constants {
     public static class LedsConstants {
         public static final int LEDS_PORT = 0;
     }
+
+    // DIO:
+    // swerve: 0 - 3
+    // spindexer: 4, 6
+    // claw bb: 5
+    // arm: 7 - 9
 }

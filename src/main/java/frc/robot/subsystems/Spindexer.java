@@ -35,7 +35,6 @@ public class Spindexer extends SubsystemBase {
         spindexer.clearFaults();
         spindexer.setSmartCurrentLimit(SPINDEXER_CURRENT_LIMIT);
         spindexer.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        spindexer.setInverted(false); //TODO: check
 
         currentPiece.set(GamePiece.EMPTY);
     }
@@ -79,7 +78,7 @@ public class Spindexer extends SubsystemBase {
     }
 
     public Command manualCommand(DoubleSupplier intakeMotor){
-        return new RunCommand(()-> spindexer.set(intakeMotor.getAsDouble()), this);
+        return new RunCommand(()-> spindexer.set(intakeMotor.getAsDouble() / 5), this);
     }
 
     public GamePiece getCurrentGamePiece() {

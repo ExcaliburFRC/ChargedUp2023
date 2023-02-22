@@ -4,17 +4,29 @@
 
 package frc.robot;
 
+import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.drivetrain.Swerve;
 import frc.robot.subsystems.*;
+import frc.robot.utiliy.ToggleCommand;
 
 import static frc.robot.Constants.ClawConstants.GamePiece;
 import static frc.robot.subsystems.LEDs.LedMode.*;
+import static frc.robot.utiliy.Calculation.deadband;
+
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -25,13 +37,19 @@ import static frc.robot.subsystems.LEDs.LedMode.*;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 //  private final Superstructure superstructure = new Superstructure();
-//  private final Swerve swerve = new Swerve();
+  private final Swerve swerve = new Swerve();
 //  private final LEDs leds = new LEDs();
+  Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
   // testing
   Arm arm = new Arm();
+  Claw claw = new Claw();
+  Intake intake = new Intake();
+  Spindexer spindexer = new Spindexer();
 
-  private final CommandPS4Controller controller = new CommandPS4Controller(0);
+
+  private final CommandPS4Controller driveController = new CommandPS4Controller(0);
+  private final CommandJoystick armJoystick = new CommandJoystick(1);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -39,6 +57,8 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
+    SmartDashboard.putData("arm", arm);
+    SmartDashboard.putData("claw", claw);
   }
 
   /**
@@ -76,13 +96,37 @@ public class RobotContainer {
 //    controller.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
 //    controller.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
 
-    // testing
+    // other
+    driveController.PS().toggleOnTrue(toggleCompressorCommand());
+
+//     --- testing ---
+//     arm
     arm.setDefaultCommand(
-          arm.manualCommand(
-                () -> controller.getLeftY() / 4,
-                () -> controller.getRightY()
+          arm.povManualCommand(
+                () -> deadband(armJoystick.getY(), 0.2) / 4,
+                () -> armJoystick.getHID().getPOV()));
+
+    armJoystick.trigger().toggleOnTrue(arm.floatCommand());
+
+    armJoystick.top().toggleOnTrue(
+          new ToggleCommand(
+                claw.openClawCommand(),
+                claw.closeClawCommand()));
+
+    // intake
+    intake.setDefaultCommand(
+          intake.manualButtonBasedCommand(
+                ()-> armJoystick.getHID().getRawButton(5),
+                0.75,
+                ()-> armJoystick.getHID().getRawButtonPressed(3)
+
           )
     );
+
+    // spindexer
+    spindexer.setDefaultCommand(
+          spindexer.manualCommand(
+                ()-> armJoystick.getHID().getRawButton(4)? 0.35 : 0));
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -95,6 +139,13 @@ public class RobotContainer {
 //            .andThen(leds.restoreDefualtColorCommand())
 //            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
 //  }
+
+  public Command toggleCompressorCommand(){
+    return new StartEndCommand(
+          compressor::enableDigital,
+          compressor::disable
+    );
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

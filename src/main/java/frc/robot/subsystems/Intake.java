@@ -19,7 +19,7 @@ public class Intake extends SubsystemBase {
         intakeMotor.restoreFactoryDefaults();
         intakeMotor.setSmartCurrentLimit(INTAKE_MOTOR_CURRENT_LIMIT);
         intakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        intakeMotor.setInverted(false); //TODO: check
+        intakeMotor.setInverted(false);
     }
 
     public Command openPistonCommand() {
@@ -34,10 +34,6 @@ public class Intake extends SubsystemBase {
         },this);
     }
 
-    public Command startMotorCommand(){
-        return new RunCommand(()-> intakeMotor.set(0.5), this);
-    }
-
     public Command stopMotorCommand(){
         return new RunCommand(()-> intakeMotor.set(0), this);
     }
@@ -45,19 +41,36 @@ public class Intake extends SubsystemBase {
     public Command manualCommand(DoubleSupplier intakeSpeed, BooleanSupplier togglePiston) {
         return new RunCommand(
                 () -> {
+                    if (!piston.get().equals(DoubleSolenoid.Value.kReverse))
                     intakeMotor.set(intakeSpeed.getAsDouble());
+                    else intakeMotor.stopMotor();
 
-                    if (togglePiston.getAsBoolean())
-                        if (piston.get().equals(DoubleSolenoid.Value.kReverse)) piston.set(DoubleSolenoid.Value.kForward);
+                    if (togglePiston.getAsBoolean()) {
+                        if (piston.get().equals(DoubleSolenoid.Value.kReverse))
+                            piston.set(DoubleSolenoid.Value.kForward);
                         else piston.set(DoubleSolenoid.Value.kReverse);
+                    }
                 },
                 this);
+    }
+
+    public Command manualButtonBasedCommand(BooleanSupplier intakeButton, double intakeSpeed, BooleanSupplier togglePiston){
+        return new RunCommand(()->{
+            if (intakeButton.getAsBoolean()) intakeMotor.set(intakeSpeed);
+            else intakeMotor.set(0);
+
+            if (togglePiston.getAsBoolean()) {
+                if (piston.get().equals(DoubleSolenoid.Value.kReverse))
+                    piston.set(DoubleSolenoid.Value.kForward);
+                else piston.set(DoubleSolenoid.Value.kReverse);
+            }
+        }, this);
     }
 
     public Command intakeCommand(){
         return new FunctionalCommand(
                 ()-> piston.set(DoubleSolenoid.Value.kForward),
-                ()-> intakeMotor.set(0.5),
+                ()-> intakeMotor.set(0.35),
                 (__) -> {
                     intakeMotor.set(0);
                     piston.set(DoubleSolenoid.Value.kReverse);
