@@ -19,7 +19,7 @@ public class Intake extends SubsystemBase {
         intakeMotor.restoreFactoryDefaults();
         intakeMotor.setSmartCurrentLimit(INTAKE_MOTOR_CURRENT_LIMIT);
         intakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        intakeMotor.setInverted(false); //TODO: check
+        intakeMotor.setInverted(true);
     }
 
     public Command openPistonCommand() {
@@ -34,10 +34,6 @@ public class Intake extends SubsystemBase {
         },this);
     }
 
-    public Command startMotorCommand(){
-        return new RunCommand(()-> intakeMotor.set(0.5), this);
-    }
-
     public Command stopMotorCommand(){
         return new RunCommand(()-> intakeMotor.set(0), this);
     }
@@ -47,9 +43,12 @@ public class Intake extends SubsystemBase {
                 () -> {
                     intakeMotor.set(intakeSpeed.getAsDouble());
 
-                    if (togglePiston.getAsBoolean())
-                        if (piston.get().equals(DoubleSolenoid.Value.kReverse)) piston.set(DoubleSolenoid.Value.kForward);
+                    if (togglePiston.getAsBoolean()) {
+                        if (piston.get().equals(DoubleSolenoid.Value.kReverse))
+                            piston.set(DoubleSolenoid.Value.kForward);
                         else piston.set(DoubleSolenoid.Value.kReverse);
+                        System.out.println("toggled piston");
+                    }
                 },
                 this);
     }
@@ -57,7 +56,7 @@ public class Intake extends SubsystemBase {
     public Command intakeCommand(){
         return new FunctionalCommand(
                 ()-> piston.set(DoubleSolenoid.Value.kForward),
-                ()-> intakeMotor.set(0.5),
+                ()-> intakeMotor.set(0.35),
                 (__) -> {
                     intakeMotor.set(0);
                     piston.set(DoubleSolenoid.Value.kReverse);

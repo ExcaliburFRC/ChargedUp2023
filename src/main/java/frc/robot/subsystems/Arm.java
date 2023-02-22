@@ -15,7 +15,12 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.utiliy.Calculation;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
@@ -36,6 +41,8 @@ public class Arm extends SubsystemBase {
   private final Trigger armFullyOpenedTrigger = new Trigger(() -> !upperLimitSwitch.get());
   private final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
 
+  AtomicInteger floatDutyCycle = new AtomicInteger(0);
+
   private final SparkMaxPIDController angleController;
   private final SparkMaxPIDController lengthController;
 
@@ -44,9 +51,9 @@ public class Arm extends SubsystemBase {
     angleMotor.restoreFactoryDefaults();
     lengthMotor.restoreFactoryDefaults();
 
-    angleFollowerMotor.follow(angleMotor, false); // TODO: check
-    angleMotor.setInverted(false); //TODO: check
-    lengthMotor.setInverted(false); //TODO: check
+    angleFollowerMotor.follow(angleMotor, false);
+    angleMotor.setInverted(true);
+    lengthMotor.setInverted(true); //TODO: check
 
     angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     lengthMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -78,6 +85,8 @@ public class Arm extends SubsystemBase {
           () -> {
             lengthMotor.set(lengthJoystick.getAsDouble());
             angleMotor.set(angleJoystick.getAsDouble());
+            Calculation.floatDutyCycle = angleJoystick.getAsDouble();
+            System.out.println(Calculation.floatDutyCycle);
           }, this);
   }
 
@@ -96,6 +105,8 @@ public class Arm extends SubsystemBase {
   private double getArmDegrees() {
     double wantedAngle = absAngleEncoder.getAbsolutePosition() - ABS_ENCODER_OFFSET_ANGLE_DEG;
     if (wantedAngle < 0) wantedAngle += 1;
+    wantedAngle *= -1;
+    wantedAngle += 1;
     return wantedAngle * 360;
   }
 
@@ -144,11 +155,22 @@ public class Arm extends SubsystemBase {
                 }));
   }
 
+  public Command floatCommand(){
+    return new RunCommand(
+          ()-> {
+            angleMotor.set(Calculation.floatDutyCycle);
+            System.out.println(Calculation.floatDutyCycle);
+          },
+          this
+    );
+  }
+
   @Override
   public void periodic() {
     SmartDashboard.putBoolean("magnetic lS", armFullyOpenedTrigger.getAsBoolean());
     SmartDashboard.putBoolean("lS", armFullyClosedTrigger.getAsBoolean());
     SmartDashboard.putNumber("abs angle",absAngleEncoder.getAbsolutePosition());
+    SmartDashboard.putNumber("get arm degrees", getArmDegrees());
     SmartDashboard.putNumber("length position", lengthEncoder.getPosition());
     SmartDashboard.putNumber("temp angle position", tempAngleEncoder.getPosition());
 

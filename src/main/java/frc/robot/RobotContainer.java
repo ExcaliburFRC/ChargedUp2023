@@ -4,9 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -15,6 +18,8 @@ import frc.robot.subsystems.*;
 
 import static frc.robot.Constants.ClawConstants.GamePiece;
 import static frc.robot.subsystems.LEDs.LedMode.*;
+import static frc.robot.utiliy.Calculation.deadband;
+
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,6 +35,11 @@ public class RobotContainer {
 
   // testing
   Arm arm = new Arm();
+  Claw claw = new Claw();
+  Intake intake = new Intake();
+//  Spindexer spindexer = new Spindexer();
+
+  Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
   private final CommandPS4Controller controller = new CommandPS4Controller(0);
 
@@ -76,13 +86,38 @@ public class RobotContainer {
 //    controller.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
 //    controller.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
 
-    // testing
+  controller.PS().toggleOnTrue(toggleCompressorCommand());
+
+//     testing
+//     arm
+
     arm.setDefaultCommand(
           arm.manualCommand(
-                () -> controller.getLeftY() / 4,
-                () -> controller.getRightY()
+                () -> deadband(controller.getLeftY()) / 4,
+                () -> deadband(controller.getRightY())
           )
     );
+
+    controller.triangle().toggleOnTrue(arm.floatCommand());
+
+    controller.circle().onTrue(claw.openClawCommand());
+    controller.square().onTrue(claw.closeClawCommand());
+
+    // intake
+    intake.setDefaultCommand(
+          intake.manualCommand(
+//                () -> deadband(controller.getLeftY()),
+                ()-> 0,
+                ()-> controller.getHID().getCrossButtonPressed()
+          )
+    );
+
+    // spindexer
+    /*
+    spindexer.setDefaultCommand(
+          spindexer.manualCommand(
+                () -> deadband(controller.getRightY()))
+    );*/
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -95,6 +130,13 @@ public class RobotContainer {
 //            .andThen(leds.restoreDefualtColorCommand())
 //            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
 //  }
+
+  public Command toggleCompressorCommand(){
+    return new StartEndCommand(
+          compressor::enableDigital,
+          compressor::disable
+    );
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

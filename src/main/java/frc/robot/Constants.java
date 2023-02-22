@@ -23,19 +23,19 @@ import static java.lang.Math.PI;
  */
 public final class Constants {
     public static class IntakeConstants {
-        public static final int INTAKE_MOTOR_ID = 31;
-        public static final int INTAKE_MOTOR_CURRENT_LIMIT = 0; // TODO: calculate
+        public static final int INTAKE_MOTOR_ID = 32;
+        public static final int INTAKE_MOTOR_CURRENT_LIMIT = 40; // TODO: calculate
 
         public static final int FWD_CHANNEL = 2;
         public static final int REV_CHANNEL = 3;
     }
 
     public static final class SpindexerConstants{
-        public static final int BEAMBREAK_CHANNEL = 5;
-        public static final int BUTTON_CHANNEL = 4;
+        public static final int BEAMBREAK_CHANNEL = 6;
+        public static final int BUTTON_CHANNEL = 7;
 
-        public static final int SPINDEXER_MOTOR_ID = 32;
-        public static final int SPINDEXER_CURRENT_LIMIT = 0; // TODO: calculate
+        public static final int SPINDEXER_MOTOR_ID = 31;
+        public static final int SPINDEXER_CURRENT_LIMIT = 50; // TODO: calculate
     }
 
     public static final class SwerveConstants {
@@ -89,7 +89,7 @@ public final class Constants {
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
-        public static final double RAMP_BALANCE_KP = 0;
+        public static final double RAMP_BALANCE_KP = 0.05;
 
         // intentional limitations
 
@@ -221,7 +221,7 @@ public final class Constants {
         public static final double kMaxLinearVelocity = 0;
         public static final double kMaxLinearAcceleration = 0;
 
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0;
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.486;
         public static final int PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG = 220;
         public static final int PHYSICAL_BACK_MAX_ARM_ANGLE_DEG = 150;
 
