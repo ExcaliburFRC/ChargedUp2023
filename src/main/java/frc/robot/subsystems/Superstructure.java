@@ -2,11 +2,14 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ArmConstants.Setpoints;
+import frc.robot.Constants;
 import frc.robot.drivetrain.Swerve;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
+import static frc.robot.Constants.ArmConstants.DutyCycle.*;
 import static frc.robot.Constants.ClawConstants.GamePiece;
 import static frc.robot.subsystems.LEDs.LedMode.*;
 
@@ -21,7 +24,6 @@ public class Superstructure extends SubsystemBase {
     static AtomicReference<GamePiece> lastRequestedGamePiece = new AtomicReference<>();
 
     public Superstructure() {
-        arm.setDefaultCommand(arm.holdSetpointCommand(Setpoints.SPINDEXER.gamePiece));
     }
 
     private boolean isCone(){
@@ -38,48 +40,43 @@ public class Superstructure extends SubsystemBase {
     public Command intakeFromClawCommand() {
         return new SequentialCommandGroup(
                 claw.openClawCommand(),
-                arm.holdSetpointCommand(Setpoints.INTAKE.gamePiece),
                 claw.autoCloseCommand(),
                 setCurrentGamePiece(lastRequestedGamePiece.get()));
     }
 
-    public Command intakeCommand(){
+//    public Command intakeCommand(){
+//        return new SequentialCommandGroup(
+//              arm.holdArmCommand(Constants.ArmConstants.DutyCycle.HIGH.angle, driveJoystick.R1(), Constants.ArmConstants.DutyCycle.HIGH.telescope)
+//                          new WaitUntilCommand(driveJoystick.square()),
+//                          claw.closeClawCommand()
+//      );
+//    }
+
+    public Command intakeFromShelfCommand(BooleanSupplier accel){
         return new SequentialCommandGroup(
                 claw.openClawCommand(),
-                intake.intakeCommand().until(spindexer.beambreakTrigger),
-                spindexer.straightenGamePieceCommand(),
-                setCurrentGamePiece(spindexer.getCurrentGamePiece()));
+                arm.holdArmCommand(SHELF.angle, accel, SHELF.telescope, SHELF.angle),
+                claw.autoCloseCommand());
     }
 
-    public Command intakeFromShelfCommand(){
-        return new SequentialCommandGroup(
-                claw.openClawCommand(),
-                arm.holdSetpointCommand(Setpoints.SHELF.gamePiece),
-                claw.autoCloseCommand(),
-                setCurrentGamePiece(lastRequestedGamePiece.get()));
-    }
-
-    public Command placeOnHighCommand(Trigger release) {
+    public Command placeOnHighCommand(Trigger release, BooleanSupplier accel) {
         return new SequentialCommandGroup(
                 claw.closeClawCommand(),
-                arm.holdSetpointCommand(isCone()? Setpoints.HIGH.cone : Setpoints.HIGH.cube),
-                claw.releaseCommand(release),
-                setCurrentGamePiece(GamePiece.EMPTY));
+                arm.holdArmCommand(HIGH.angle, accel, HIGH.telescope, HIGH.angle),
+                claw.releaseCommand(release));
     }
 
-    public Command placeOnMidCommand(Trigger release) {
-        return new SequentialCommandGroup(
-                claw.closeClawCommand(),
-                arm.holdSetpointCommand(isCone()? Setpoints.MID.cone : Setpoints.MID.cube),
-                claw.releaseCommand(release),
-                setCurrentGamePiece(GamePiece.EMPTY));
+    public Command placeOnMidCommand(Trigger release, BooleanSupplier accel) {
+      return new SequentialCommandGroup(
+            claw.closeClawCommand(),
+            arm.holdArmCommand(MID.angle, accel, MID.telescope, MID.angle),
+            claw.releaseCommand(release));
     }
 
-    public Command placeOnLowCommand(Trigger release) {
-        return new SequentialCommandGroup(
-                claw.closeClawCommand(),
-                arm.holdSetpointCommand(isCone()? Setpoints.LOW.cone : Setpoints.LOW.cube),
-                claw.releaseCommand(release),
-                setCurrentGamePiece(GamePiece.EMPTY));
+    public Command placeOnLowCommand(Trigger release, BooleanSupplier accel) {
+      return new SequentialCommandGroup(
+            claw.closeClawCommand(),
+            arm.holdArmCommand(Constants.ArmConstants.DutyCycle.LOW.angle, accel, LOW.telescope, LOW.angle),
+            claw.releaseCommand(release));
     }
 }

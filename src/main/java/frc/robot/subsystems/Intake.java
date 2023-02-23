@@ -54,10 +54,17 @@ public class Intake extends SubsystemBase {
                 this);
     }
 
-    public Command manualButtonBasedCommand(BooleanSupplier intakeButton, double intakeSpeed, BooleanSupplier togglePiston){
+    public Command buttonBasedManualCommand(
+          BooleanSupplier intakeButton,
+          double intakeSpeed,
+          BooleanSupplier cubeButton,
+          double cubeSpeed,
+          BooleanSupplier togglePiston){
         return new RunCommand(()->{
             if (intakeButton.getAsBoolean()) intakeMotor.set(intakeSpeed);
             else intakeMotor.set(0);
+
+            if (cubeButton.getAsBoolean() && !intakeButton.getAsBoolean()) intakeMotor.set(cubeSpeed);
 
             if (togglePiston.getAsBoolean()) {
                 if (piston.get().equals(DoubleSolenoid.Value.kReverse))
@@ -67,10 +74,10 @@ public class Intake extends SubsystemBase {
         }, this);
     }
 
-    public Command intakeCommand(){
+    public Command intakeCommand(DoubleSupplier intakeSpeed){
         return new FunctionalCommand(
                 ()-> piston.set(DoubleSolenoid.Value.kForward),
-                ()-> intakeMotor.set(0.35),
+                ()-> intakeMotor.set(intakeSpeed.getAsDouble()),
                 (__) -> {
                     intakeMotor.set(0);
                     piston.set(DoubleSolenoid.Value.kReverse);

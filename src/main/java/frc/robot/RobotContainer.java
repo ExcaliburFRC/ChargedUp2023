@@ -4,27 +4,19 @@
 
 package frc.robot;
 
-import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.drivetrain.Swerve;
+import frc.robot.Constants.ArmConstants.DutyCycle;
 import frc.robot.subsystems.*;
 import frc.robot.utiliy.ToggleCommand;
 
-import static frc.robot.Constants.ClawConstants.GamePiece;
-import static frc.robot.subsystems.LEDs.LedMode.*;
 import static frc.robot.utiliy.Calculation.deadband;
 
 
@@ -36,9 +28,9 @@ import static frc.robot.utiliy.Calculation.deadband;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-//  private final Superstructure superstructure = new Superstructure();
-  private final Swerve swerve = new Swerve();
-//  private final LEDs leds = new LEDs();
+  private final Superstructure superstructure = new Superstructure();
+//  private final Swerve swerve = new Swerve();
+  //  private final LEDs leds = new LEDs();
   Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
   // testing
@@ -48,8 +40,8 @@ public class RobotContainer {
   Spindexer spindexer = new Spindexer();
 
 
-  private final CommandPS4Controller driveController = new CommandPS4Controller(0);
-  private final CommandJoystick armJoystick = new CommandJoystick(1);
+  public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
+  public final CommandJoystick armJoystick = new CommandJoystick(1);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -66,67 +58,46 @@ public class RobotContainer {
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
    * predicate, or via the named factories in {@link
    * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+   * edu.wpi.first.wpilibj2.command.button.CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+   * PS4} driveJoysticks or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
   private void configureBindings() {
     // default command configurations
 //    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 //    swerve.setDefaultCommand(
-//            swerve.dualDriveSwerveCommand(
-//                    controller::getLeftX,
-//                    controller::getLeftY,
-//                    controller::getRightX,
-//                    controller::getRightY,
-//                    controller.L2(),
-//                    controller.R2()));
-
-    // pick commands
-//    controller.povLeft().onTrue(superstructure.intakeCommand());
-//    controller.povRight().onTrue(superstructure.intakeFromClawCommand());
-//    controller.povUp().onTrue(superstructure.intakeFromShelfCommand());
+//          swerve.driveSwerveCommand(
+//                driveJoystick::getLeftX,
+//                driveJoystick::getLeftY,
+//                driveJoystick::getRightX,
+//                driveJoystick.L2().negate()));
 
     // place commands
-//    controller.triangle().onTrue(superstructure.placeOnHighCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
-//    controller.circle().onTrue(superstructure.placeOnMidCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
-//    controller.cross().toggleOnTrue(superstructure.placeOnLowCommand(controller.square()).alongWith(swerve.rotateToGridCommand()));
+    driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.square(), driveJoystick.R1()));
+    driveJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.square(), driveJoystick.R1()));
+    driveJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand(driveJoystick.square(), driveJoystick.R1()));
 
     // LED control
-//    controller.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
-//    controller.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
+//    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
+//    driveJoystick.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
 
     // other
-    driveController.PS().toggleOnTrue(toggleCompressorCommand());
+    driveJoystick.PS().toggleOnTrue(toggleCompressorCommand());
+//    driveJoystick.R1().onTrue(swerve.resetGyroCommand());
 
 //     --- testing ---
-//     arm
-    arm.setDefaultCommand(
-          arm.povManualCommand(
-                () -> deadband(armJoystick.getY(), 0.2) / 4,
-                () -> armJoystick.getHID().getPOV()));
 
-    armJoystick.trigger().toggleOnTrue(arm.floatCommand());
+    //  intake
+//    intake.setDefaultCommand(
+//          intake.buttonBasedManualCommand(
+//                driveJoystick.square(),
+//                0.75,
+//                driveJoystick.povLeft(),
+//                 0.3,
+//                () -> driveJoystick.getHID().getTriangleButtonPressed()
+//          )
+//    );
 
-    armJoystick.top().toggleOnTrue(
-          new ToggleCommand(
-                claw.openClawCommand(),
-                claw.closeClawCommand()));
-
-    // intake
-    intake.setDefaultCommand(
-          intake.manualButtonBasedCommand(
-                ()-> armJoystick.getHID().getRawButton(5),
-                0.75,
-                ()-> armJoystick.getHID().getRawButtonPressed(3)
-
-          )
-    );
-
-    // spindexer
-    spindexer.setDefaultCommand(
-          spindexer.manualCommand(
-                ()-> armJoystick.getHID().getRawButton(4)? 0.35 : 0));
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -140,7 +111,7 @@ public class RobotContainer {
 //            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
 //  }
 
-  public Command toggleCompressorCommand(){
+  public Command toggleCompressorCommand() {
     return new StartEndCommand(
           compressor::enableDigital,
           compressor::disable

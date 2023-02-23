@@ -11,7 +11,6 @@ import static frc.robot.Constants.ClawConstants.*;
 
 public class Claw extends SubsystemBase {
     private final DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.REVPH, FORWARD_CHANNEL, REVERSE_CHANNEL);
-
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
 
     private final Trigger isClawOpenedTrigger = new Trigger(() -> piston.get().equals(DoubleSolenoid.Value.kReverse));
@@ -22,11 +21,8 @@ public class Claw extends SubsystemBase {
     }
 
     public Command autoCloseCommand() {
-        return new RunCommand(
-                () -> {
-                    if (beambreakDetectedTrigger.getAsBoolean() && isClawOpenedTrigger.getAsBoolean())
-                        piston.set(DoubleSolenoid.Value.kForward);
-                });
+        return new RunCommand(()->{}, this).until(beambreakDetectedTrigger)
+              .andThen(closeClawCommand());
     }
 
     public Command openClawCommand() {

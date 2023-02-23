@@ -9,7 +9,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.InterpolatingTreeMap;
 
 import static java.lang.Math.PI;
 
@@ -53,10 +52,10 @@ public final class Constants {
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
-            FL(18, 17, 1, 0.346, false, false),
-            FR(12, 11, 0, 0.622, false, false),
-            BL(16, 15, 2, 0.207, false, false),
-            BR(14, 13, 3, 0.830, false, false);
+            FL(18, 17, 1, 0.345, false, false),
+            FR(12, 11, 0, 0.616, false, false),
+            BL(16, 15, 2, 0.037, false, false),
+            BR(14, 13, 3, 0.834, false, false);
 
             public int DRIVE_MOTOR_ID;
             public int SPIN_MOTOR_ID;
@@ -105,7 +104,7 @@ public final class Constants {
 
         // intentional limitations
 
-        public static final double kSpeedPercantageLimit = 50; // %
+        public static final double kSpeedPercantageLimit = 25; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -144,29 +143,23 @@ public final class Constants {
     }
 
     public static final class ArmConstants {
-        public enum Setpoints {
+        public enum DutyCycle {
             // cone, cube
-            LOW(new Translation2d(0, 0), new Translation2d(0, 0)),
-            MID(new Translation2d(0, 0), new Translation2d(0, 0)),
-            HIGH(new Translation2d(0, 0), new Translation2d(0, 0)),
-            SHELF(new Translation2d(0, 0)),
-            SPINDEXER(new Translation2d(0, 0)),
-            INTAKE(new Translation2d(0, 0));
+            LOW(0, 0, 0),
+            MID(0, 0, 0),
+            HIGH(0, 1, 0),
+            SHELF(0, 1, 0),
+            SPINDEXER(0, 0.5, 0),
+            INTAKE(0, 1, 0);
 
-            public Translation2d cone;
-            public Translation2d cube;
-            public Translation2d gamePiece;
+            public double dc;
+            public double telescope;
+            public double angle;
 
-            Setpoints(Translation2d cone, Translation2d cube) {
-                this.cone = cone;
-                this.cube = cube;
-                if (!isAchievableTranslation(cone) || !isAchievableTranslation(cube)) {
-                    throw new AssertionError("Unattainable setpoint in enum " + this.name());
-                }
-            }
-
-            Setpoints(Translation2d gamePiece){
-                this.gamePiece = gamePiece;
+            DutyCycle(double dc, double telescope, double angle) {
+                this.dc = dc;
+                this.telescope = telescope;
+                this.angle = angle;
             }
         }
 
@@ -180,7 +173,6 @@ public final class Constants {
         public static final int ANGLE_FOLLOWER_MOTOR_ID = 22;
         public static final int LENGTH_MOTOR_ID = 23;
 
-        public static final int OPENED_LIMIT_SWITCH_ID = 7;
         public static final int CLOSED_LIMIT_SWITCH_ID = 5;
 
         public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
@@ -192,40 +184,10 @@ public final class Constants {
         public static final double MINIMAL_LENGTH_METERS = 0.06175;// m
         public static final double MAXIMAL_LENGTH_METERS = 0.105;// m
 
-        public static final double tempCoversion = 1 / 57.8;
-
-        // Angle control
-        public static final double kS_ANGLE = 0;
-        public static final double kV_ANGLE = 0;
-        public static final InterpolatingTreeMap<Double, Double> kG_ANGLE = new InterpolatingTreeMap<>();
-
-        static {
-//             kG_ANGLE.put(MINIMAL_LENGTH_METERS, SysId:kG);
-//             kG_ANGLE.put((MAXIMAL_LENGTH_METERS - MINIMAL_LENGTH_METERS) / 2, SysId:kG);
-//             kG_ANGLE.put(MAXIMAL_LENGTH_METERS, SysId:kG);
-
-            // false values - delete!
-             kG_ANGLE.put(0.0, 0.0);
-             kG_ANGLE.put(5.0, 10.0);
-        }
-
-        public static final double kP_ANGLE = 0;
-        public static final double kMaxAngularVelocity = 0;
-        public static final double kMaxAngularAcceleration = 0;
-
-        // Length control
-        public static final double kS_LENGTH = 0;
-        public static final double kV_LENGTH = 0;
-        public static final double kG_LENGTH = 0;
-        public static final double kP_LENGTH = 0;
-        public static final double kMaxLinearVelocity = 0;
-        public static final double kMaxLinearAcceleration = 0;
 
         public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.486;
         public static final int PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG = 220;
         public static final int PHYSICAL_BACK_MAX_ARM_ANGLE_DEG = 150;
-
-        public static final int ARM_RAMP_RATE = 1;
     }
 
     public static class Coordinates {
