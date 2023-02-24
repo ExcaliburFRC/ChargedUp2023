@@ -6,14 +6,15 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ArmConstants.DutyCycle;
 import frc.robot.subsystems.*;
 import frc.robot.utiliy.ToggleCommand;
 
@@ -34,11 +35,9 @@ public class RobotContainer {
   Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
   // testing
-  Arm arm = new Arm();
-  Claw claw = new Claw();
+//  Arm arm = new Arm();
+//  Claw claw = new Claw();
   Intake intake = new Intake();
-  Spindexer spindexer = new Spindexer();
-
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandJoystick armJoystick = new CommandJoystick(1);
@@ -49,8 +48,8 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-    SmartDashboard.putData("arm", arm);
-    SmartDashboard.putData("claw", claw);
+    SmartDashboard.putData("arm subsystem", superstructure.arm);
+//    SmartDashboard.putData("claw", claw);
   }
 
   /**
@@ -72,10 +71,13 @@ public class RobotContainer {
 //                driveJoystick::getRightX,
 //                driveJoystick.L2().negate()));
 
+    // intake command
+    driveJoystick.square().onTrue(superstructure.intakeFromShelfCommand(driveJoystick.R1()));
+
     // place commands
-    driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.square(), driveJoystick.R1()));
-    driveJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.square(), driveJoystick.R1()));
-    driveJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand(driveJoystick.square(), driveJoystick.R1()));
+    driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.square(), driveJoystick.L1()));
+    driveJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.square(), driveJoystick.L1()));
+    driveJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.square(), driveJoystick.L1()));
 
     // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
@@ -86,18 +88,10 @@ public class RobotContainer {
 //    driveJoystick.R1().onTrue(swerve.resetGyroCommand());
 
 //     --- testing ---
+    compressor.disable();
 
-    //  intake
-//    intake.setDefaultCommand(
-//          intake.buttonBasedManualCommand(
-//                driveJoystick.square(),
-//                0.75,
-//                driveJoystick.povLeft(),
-//                 0.3,
-//                () -> driveJoystick.getHID().getTriangleButtonPressed()
-//          )
-//    );
-
+    driveJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand());
+    driveJoystick.povRight().toggleOnTrue(intake.intakeCommand(()-> 0.4));
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -111,6 +105,13 @@ public class RobotContainer {
 //            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
 //  }
 
+  void manual(){
+    CommandScheduler.getInstance().cancelAll();
+
+//    superstructure.arm.setDefaultCommand(superstructure.manualCommand(driveJoystick::getRightY, () -> driveJoystick.getHID().getPOV(), driveJoystick.triangle()));
+//    driveJoystick.R1().toggleOnTrue(superstructure.floatCommand());
+  }
+
   public Command toggleCompressorCommand() {
     return new StartEndCommand(
           compressor::enableDigital,
@@ -121,7 +122,8 @@ public class RobotContainer {
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
-   * @return the command to run in autonomous
+   * @return the comman
+   * d to run in autonomous
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous

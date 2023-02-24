@@ -82,19 +82,22 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-//    compressor.disable();
+
+    CommandScheduler.getInstance().cancelAll();
   }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-//    SmartDashboard.putBoolean("squre",m_robotContainer.driveJoystick.square().getAsBoolean());
   }
 
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+    CommandScheduler.getInstance().enable();
+
+    m_robotContainer.manual();
   }
 
   /** This function is called periodically during test mode. */

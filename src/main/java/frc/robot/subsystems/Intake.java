@@ -76,13 +76,20 @@ public class Intake extends SubsystemBase {
 
     public Command intakeCommand(DoubleSupplier intakeSpeed){
         return new FunctionalCommand(
-                ()-> piston.set(DoubleSolenoid.Value.kForward),
+                ()-> {}, //piston.set(DoubleSolenoid.Value.kForward),
                 ()-> intakeMotor.set(intakeSpeed.getAsDouble()),
                 (__) -> {
                     intakeMotor.set(0);
-                    piston.set(DoubleSolenoid.Value.kReverse);
+//                    piston.set(DoubleSolenoid.Value.kReverse);
                 },
                 ()-> false,
                 this);
     }
+
+    public Command shootCubeCommand(){
+        return Commands.runEnd(()-> intakeMotor.set(-0.8), intakeMotor::stopMotor);
+    }
+    // top - 54
+    // middle - 30
+    // low - 5
 }

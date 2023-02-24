@@ -30,8 +30,8 @@ public final class Constants {
     }
 
     public static final class SpindexerConstants{
-        public static final int BEAMBREAK_CHANNEL = 6;
-        public static final int BUTTON_CHANNEL = 4;
+//        public static final int BEAMBREAK_CHANNEL = 6;
+//        public static final int BUTTON_CHANNEL = 4;
 
         public static final int SPINDEXER_MOTOR_ID = 31;
         public static final int SPINDEXER_CURRENT_LIMIT = 50; // TODO: calculate
@@ -40,7 +40,7 @@ public final class Constants {
     public static final class ClawConstants {
         public static final int FORWARD_CHANNEL = 0;
         public static final int REVERSE_CHANNEL = 1;
-        public static final int BEAMBREAK_CHANNEL = 9;
+        public static final int BEAMBREAK_CHANNEL = 5;
 
         public enum GamePiece {
             EMPTY,
@@ -143,23 +143,21 @@ public final class Constants {
     }
 
     public static final class ArmConstants {
-        public enum DutyCycle {
+        public enum CubeDutyCycle {
             // cone, cube
-            LOW(0, 0, 0),
-            MID(0, 0, 0),
-            HIGH(0, 1, 0),
-            SHELF(0, 1, 0),
-            SPINDEXER(0, 0.5, 0),
-            INTAKE(0, 1, 0);
+            LOW(-0.03953, 0.552),
+            MID(-0.0426, 0),
+            HIGH(-0.085, 1.3), //1.579
+            SHELF(-0.055, 0),
+            SPINDEXER(0, 0.5),
+            INTAKE(0, 1);
 
             public double dc;
             public double telescope;
-            public double angle;
 
-            DutyCycle(double dc, double telescope, double angle) {
+            CubeDutyCycle(double dc, double telescope) {
                 this.dc = dc;
                 this.telescope = telescope;
-                this.angle = angle;
             }
         }
 
@@ -173,13 +171,12 @@ public final class Constants {
         public static final int ANGLE_FOLLOWER_MOTOR_ID = 22;
         public static final int LENGTH_MOTOR_ID = 23;
 
-        public static final int CLOSED_LIMIT_SWITCH_ID = 5;
+        public static final int CLOSED_LIMIT_SWITCH_ID = 6;
 
         public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
 
-        public static final double RADIUS = 0.0015;
-        public static final double PERIMETER = RADIUS * 2 * PI;
-        public static final double ROT_TO_METER = 1.0 / PERIMETER;
+        public static final double RADIUS = 1.5 / 100;
+        public static final double ROT_TO_METER = 2 * PI * RADIUS;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
         public static final double MINIMAL_LENGTH_METERS = 0.06175;// m
         public static final double MAXIMAL_LENGTH_METERS = 0.105;// m
@@ -214,7 +211,9 @@ public final class Constants {
 
     // DIO:
     // swerve: 0 - 3
-    // spindexer: 4, 6
-    // claw bb: 5
-    // arm: 7 - 9
+    // claw bb: unknown
+    // intake bb: unknown
+    // arm:
+    //      closed: 6
+    //      encoder: 8
 }
