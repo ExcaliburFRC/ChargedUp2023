@@ -6,17 +6,14 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
-import frc.robot.utiliy.ToggleCommand;
 
 import static frc.robot.utiliy.Calculation.deadband;
 
@@ -71,13 +68,19 @@ public class RobotContainer {
 //                driveJoystick::getRightX,
 //                driveJoystick.L2().negate()));
 
-    // intake command
+    // intake commands
     driveJoystick.square().onTrue(superstructure.intakeFromShelfCommand(driveJoystick.R1()));
+    driveJoystick.povRight().toggleOnTrue(intake.IntakeCommand(0.3));
 
     // place commands
     driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.square(), driveJoystick.L1()));
     driveJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.square(), driveJoystick.L1()));
     driveJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.square(), driveJoystick.L1()));
+
+    driveJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(3));
+    driveJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(2));
+    driveJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(1));
+
 
     // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
@@ -89,9 +92,6 @@ public class RobotContainer {
 
 //     --- testing ---
     compressor.disable();
-
-    driveJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand());
-    driveJoystick.povRight().toggleOnTrue(intake.intakeCommand(()-> 0.4));
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -106,10 +106,11 @@ public class RobotContainer {
 //  }
 
   void manual(){
+
     CommandScheduler.getInstance().cancelAll();
 
-//    superstructure.arm.setDefaultCommand(superstructure.manualCommand(driveJoystick::getRightY, () -> driveJoystick.getHID().getPOV(), driveJoystick.triangle()));
-//    driveJoystick.R1().toggleOnTrue(superstructure.floatCommand());
+    superstructure.arm.setDefaultCommand(superstructure.manualCommand(driveJoystick::getRightY, () -> driveJoystick.getHID().getPOV(), driveJoystick.triangle()));
+    driveJoystick.R1().toggleOnTrue(superstructure.floatCommand());
   }
 
   public Command toggleCompressorCommand() {

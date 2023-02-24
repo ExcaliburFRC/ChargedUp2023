@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj2.command.*;
+import frc.robot.utiliy.ToggleCommand;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -13,7 +14,9 @@ import static frc.robot.Constants.IntakeConstants.*;
 
 public class Intake extends SubsystemBase {
     private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, kBrushless);
-    private final DoubleSolenoid piston = new DoubleSolenoid(REVPH, FWD_CHANNEL, REV_CHANNEL);
+
+    private final DoubleSolenoid intakePiston = new DoubleSolenoid(REVPH, INTAKE_FWD_CHANNEL, INTAKE_REV_CHANNEL);
+    private final DoubleSolenoid ejectPiston = new DoubleSolenoid(REVPH, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
 
     public Intake() {
         intakeMotor.restoreFactoryDefaults();
@@ -24,13 +27,13 @@ public class Intake extends SubsystemBase {
 
     public Command openPistonCommand() {
         return new InstantCommand(() -> {
-            piston.set(DoubleSolenoid.Value.kForward);
+            intakePiston.set(DoubleSolenoid.Value.kForward);
         }, this);
     }
 
     public Command closePistonCommand() {
         return new InstantCommand(() -> {
-            piston.set(DoubleSolenoid.Value.kReverse);
+            intakePiston.set(DoubleSolenoid.Value.kReverse);
         },this);
     }
 
@@ -41,14 +44,14 @@ public class Intake extends SubsystemBase {
     public Command manualCommand(DoubleSupplier intakeSpeed, BooleanSupplier togglePiston) {
         return new RunCommand(
                 () -> {
-                    if (!piston.get().equals(DoubleSolenoid.Value.kReverse))
+                    if (!intakePiston.get().equals(DoubleSolenoid.Value.kReverse))
                     intakeMotor.set(intakeSpeed.getAsDouble());
                     else intakeMotor.stopMotor();
 
                     if (togglePiston.getAsBoolean()) {
-                        if (piston.get().equals(DoubleSolenoid.Value.kReverse))
-                            piston.set(DoubleSolenoid.Value.kForward);
-                        else piston.set(DoubleSolenoid.Value.kReverse);
+                        if (intakePiston.get().equals(DoubleSolenoid.Value.kReverse))
+                            intakePiston.set(DoubleSolenoid.Value.kForward);
+                        else intakePiston.set(DoubleSolenoid.Value.kReverse);
                     }
                 },
                 this);
@@ -67,28 +70,60 @@ public class Intake extends SubsystemBase {
             if (cubeButton.getAsBoolean() && !intakeButton.getAsBoolean()) intakeMotor.set(cubeSpeed);
 
             if (togglePiston.getAsBoolean()) {
-                if (piston.get().equals(DoubleSolenoid.Value.kReverse))
-                    piston.set(DoubleSolenoid.Value.kForward);
-                else piston.set(DoubleSolenoid.Value.kReverse);
+                if (intakePiston.get().equals(DoubleSolenoid.Value.kReverse))
+                    intakePiston.set(DoubleSolenoid.Value.kForward);
+                else intakePiston.set(DoubleSolenoid.Value.kReverse);
             }
         }, this);
     }
 
-    public Command intakeCommand(DoubleSupplier intakeSpeed){
-        return new FunctionalCommand(
-                ()-> {}, //piston.set(DoubleSolenoid.Value.kForward),
-                ()-> intakeMotor.set(intakeSpeed.getAsDouble()),
-                (__) -> {
-                    intakeMotor.set(0);
-//                    piston.set(DoubleSolenoid.Value.kReverse);
-                },
-                ()-> false,
-                this);
+    public Command IntakeCommand(double intakeSpeed){
+        return new StartEndCommand(
+              ()-> {
+                  intakePiston.set(DoubleSolenoid.Value.kForward);
+                  intakeMotor.set(intakeSpeed);
+              },
+              ()-> {
+                  intakePiston.set(DoubleSolenoid.Value.kReverse);
+                  intakeMotor.stopMotor();
+              }, this
+        );
     }
 
-    public Command shootCubeCommand(){
-        return Commands.runEnd(()-> intakeMotor.set(-0.8), intakeMotor::stopMotor);
+    private Command ejectCommand(){
+        return new InstantCommand((()-> ejectPiston.set(DoubleSolenoid.Value.kForward)));
     }
+    private Command retractPistonCommand(){
+        return new InstantCommand((()-> ejectPiston.set(DoubleSolenoid.Value.kReverse)));
+    }
+
+    public Command pulseMotorCommand(){
+        return new RunCommand(()-> intakeMotor.set(-0.3)).withTimeout(0.1);
+    }
+
+    public Command shootCubeCommand(int height){
+        switch (height){
+            case 1:
+                return new ToggleCommand(
+                      Commands.repeatingSequence(
+                      new RunCommand(()-> intakeMotor.set(-0.075), this).withTimeout(0.5), pulseMotorCommand())
+                      .finallyDo((__)-> intakeMotor.stopMotor()),
+                      new InstantCommand(intakeMotor::stopMotor).alongWith(retractPistonCommand()));
+            case 2:
+                return new ToggleCommand(
+                      Commands.runEnd(()-> intakeMotor.set(-0.3), intakeMotor::stopMotor, this)
+                      .alongWith(new WaitCommand(0.2).andThen(ejectCommand())),
+                      new InstantCommand(intakeMotor::stopMotor).alongWith(retractPistonCommand()));
+          case 3:
+                return new ToggleCommand(
+                      Commands.runEnd(()-> intakeMotor.set(-0.54), intakeMotor::stopMotor, this)
+                      .alongWith(new WaitCommand(0.4).andThen(ejectCommand())),
+                      new InstantCommand(intakeMotor::stopMotor).alongWith(retractPistonCommand()));
+          default:
+              return new InstantCommand(()-> {});
+        }
+    }
+
     // top - 54
     // middle - 30
     // low - 5

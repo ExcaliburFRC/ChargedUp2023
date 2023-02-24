@@ -23,10 +23,13 @@ import static java.lang.Math.PI;
 public final class Constants {
     public static class IntakeConstants {
         public static final int INTAKE_MOTOR_ID = 32;
-        public static final int INTAKE_MOTOR_CURRENT_LIMIT = 40; // TODO: calculate
+        public static final int INTAKE_MOTOR_CURRENT_LIMIT = 80; // TODO: calculate
 
-        public static final int FWD_CHANNEL = 2;
-        public static final int REV_CHANNEL = 3;
+        public static final int INTAKE_FWD_CHANNEL = 2;
+        public static final int INTAKE_REV_CHANNEL = 3;
+
+        public static final int EJECT_FWD_CHANNEL = 8;
+        public static final int EJECT_REV_CHANNEL = 9 ;
     }
 
     public static final class SpindexerConstants{
@@ -147,7 +150,7 @@ public final class Constants {
             // cone, cube
             LOW(-0.03953, 0.552),
             MID(-0.0426, 0),
-            HIGH(-0.085, 1.3), //1.579
+            HIGH(-0.077, 1.3), //1.579
             SHELF(-0.055, 0),
             SPINDEXER(0, 0.5),
             INTAKE(0, 1);

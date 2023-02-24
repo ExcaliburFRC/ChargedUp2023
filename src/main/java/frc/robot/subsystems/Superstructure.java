@@ -24,7 +24,7 @@ public class Superstructure extends SubsystemBase {
 
     public Superstructure() {
       arm.setDefaultCommand(
-            arm.retractTelescopeCommand());
+            arm.defaultCommand());
     }
 
     private boolean isCone(){
@@ -64,7 +64,7 @@ public class Superstructure extends SubsystemBase {
         return new SequentialCommandGroup(
                 claw.closeClawCommand(),
                 arm.holdArmCommand(HIGH.dc, accel, HIGH.telescope)
-                            .alongWith(claw.releaseCommand(release))).until(release);
+                            .alongWith(claw.releaseCommand(release))).until(release.debounce(1));
     }
 
     public Command placeOnMidCommand(Trigger release, BooleanSupplier accel) {

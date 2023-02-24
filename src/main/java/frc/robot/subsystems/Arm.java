@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -30,6 +31,8 @@ public class Arm extends SubsystemBase {
 
   private final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
   private final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() > 0.92);
+
+  private final SparkMaxPIDController anglePIDController = angleMotor.getPIDController();
 
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
@@ -83,16 +86,37 @@ public class Arm extends SubsystemBase {
   }
 
   public Command retractTelescopeCommand(){
-    return Commands.runEnd(()-> lengthMotor.set(-0.45), lengthMotor::stopMotor, this).until(armFullyClosedTrigger);
+    return Commands.runEnd(()-> lengthMotor.set(-0.45), lengthMotor::stopMotor, this)
+          .until(armFullyClosedTrigger);
   }
 
-  private CommandBase moveToDutyCycleCommand(double dc, BooleanSupplier accel) {
+  public Command defaultCommand(){
+    return retractTelescopeCommand().andThen(new WaitUntilCommand(()-> false));
+  }
+
+  private Command moveToDutyCycleCommand(double dc, BooleanSupplier accel) {
     return Commands.runEnd(() -> {
             double a = accel.getAsBoolean() ? -0.05 : 0;
             angleMotor.set(dc + a);
           }, angleMotor::stopMotor,
           this);
   }
+
+  private Command moveToAngleCommand(double angle){
+    double kp = 0.1;
+    double kg = getArmDegrees() * 0;
+    double ff = kg * Math.cos(angle);
+    return Commands.runEnd(
+          ()-> {
+            angleMotor.set(ff + kp * (angle - getArmDegrees()));
+            System.out.println("ff: " + ff);
+            System.out.println("output: " + kp * (angle - getArmDegrees()));
+          },
+          angleMotor::stopMotor
+    );
+  }
+
+//  private final
 
   private ParallelRaceGroup extendLengthCommand(double telescope) {
     return Commands.runEnd(() -> {
