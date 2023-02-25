@@ -23,8 +23,8 @@ public class Superstructure extends SubsystemBase {
     static AtomicReference<GamePiece> lastRequestedGamePiece = new AtomicReference<>();
 
     public Superstructure() {
-      arm.setDefaultCommand(
-            arm.defaultCommand());
+//      arm.setDefaultCommand(
+//            arm.defaultCommand());
     }
 
     private boolean isCone(){

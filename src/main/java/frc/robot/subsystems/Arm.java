@@ -149,6 +149,11 @@ public class Arm extends SubsystemBase {
     );
   }
 
+  private Command disableArmCommand(){
+    return new RunCommand(angleMotor::stopMotor, this).until(()-> getArmDegrees() > 180)
+          .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
+  }
+
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Subsystem");
@@ -166,5 +171,7 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("angle encoder", angleMotor.getEncoder().getPosition());
 
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(0);
+
+    if (getArmDegrees() < 180) disableArmCommand().schedule();
   }
 }
