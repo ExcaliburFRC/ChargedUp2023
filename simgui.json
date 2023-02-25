@@ -1,0 +1,31 @@
+{
+  "HALProvider": {
+    "RoboRIO": {
+      "window": {
+        "visible": true
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/intake subsystem": "Subsystem"
+    }
+  },
+  "NetworkTables": {
+    "Persistent Values": {
+      "open": false
+    },
+    "transitory": {
+      "Shuffleboard": {
+        "open": true
+      },
+      "SmartDashboard": {
+        "intake subsystem": {
+          "open": true
+        },
+        "open": true
+      }
+    }
+  }
+}

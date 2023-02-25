@@ -29,21 +29,24 @@ public final class Constants {
         public static final int INTAKE_REV_CHANNEL = 3;
 
         public static final int EJECT_FWD_CHANNEL = 8;
-        public static final int EJECT_REV_CHANNEL = 9 ;
+        public static final int EJECT_REV_CHANNEL = 9;
+        public static final int BEAMBREAK_CHANNEL = 9;
     }
 
     public static final class SpindexerConstants{
-//        public static final int BEAMBREAK_CHANNEL = 6;
-//        public static final int BUTTON_CHANNEL = 4;
+        public static final int BEAMBREAK_CHANNEL = 0;
+        public static final int BUTTON_CHANNEL = 0;
 
-        public static final int SPINDEXER_MOTOR_ID = 31;
-        public static final int SPINDEXER_CURRENT_LIMIT = 50; // TODO: calculate
+        public static final int SPINDEXER_MOTOR_ID = 0;
+        public static final int SPINDEXER_CURRENT_LIMIT = 0; // TODO: calculate
     }
 
     public static final class ClawConstants {
         public static final int FORWARD_CHANNEL = 0;
         public static final int REVERSE_CHANNEL = 1;
         public static final int BEAMBREAK_CHANNEL = 5;
+
+        public static final int ROLLER_ID = 5;
 
         public enum GamePiece {
             EMPTY,

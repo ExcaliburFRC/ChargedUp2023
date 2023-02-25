@@ -27,14 +27,10 @@ import static frc.robot.utiliy.Calculation.deadband;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Superstructure superstructure = new Superstructure();
-//  private final Swerve swerve = new Swerve();
+  Intake intake = new Intake();
+  //  private final Swerve swerve = new Swerve();
   //  private final LEDs leds = new LEDs();
   Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
-
-  // testing
-//  Arm arm = new Arm();
-//  Claw claw = new Claw();
-  Intake intake = new Intake();
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandJoystick armJoystick = new CommandJoystick(1);
@@ -43,10 +39,9 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    // Configure the trigger bindings
     configureBindings();
-    SmartDashboard.putData("arm subsystem", superstructure.arm);
-//    SmartDashboard.putData("claw", claw);
+
+    SmartDashboard.putData("intake subsystem", intake);
   }
 
   /**
@@ -69,13 +64,13 @@ public class RobotContainer {
 //                driveJoystick.L2().negate()));
 
     // intake commands
-    driveJoystick.square().onTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1()));
+//    driveJoystick.square().onTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1()));
     driveJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.3));
 
     // place commands
-    driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.R1(), driveJoystick.L1()));
-    driveJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R1(), driveJoystick.L1()));
-    driveJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R1(), driveJoystick.L1()));
+//    driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.R1(), driveJoystick.L1()));
+//    driveJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R1(), driveJoystick.L1()));
+//    driveJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R1(), driveJoystick.L1()));
 
     driveJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(3));
     driveJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(2));
@@ -108,7 +103,14 @@ public class RobotContainer {
   void manual(){
     CommandScheduler.getInstance().cancelAll();
 
-    superstructure.arm.setDefaultCommand(superstructure.manualCommand(driveJoystick::getRightY, () -> driveJoystick.getHID().getPOV(), driveJoystick.triangle()));
+    superstructure.arm.setDefaultCommand(
+          superstructure.manualCommand(
+                driveJoystick::getRightY,
+                () -> driveJoystick.getHID().getPOV(),
+                driveJoystick.square(),
+                driveJoystick.circle(),
+                driveJoystick.triangle()
+          ));
     driveJoystick.R1().toggleOnTrue(superstructure.floatCommand());
   }
 

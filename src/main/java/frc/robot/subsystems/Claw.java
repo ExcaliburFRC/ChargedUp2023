@@ -12,6 +12,7 @@ import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ClawConstants.*;
 
+@Deprecated
 public class Claw extends SubsystemBase {
     private final DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.REVPH, FORWARD_CHANNEL, REVERSE_CHANNEL);
 

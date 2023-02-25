@@ -172,6 +172,6 @@ public class Arm extends SubsystemBase {
 
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(0);
 
-    if (getArmDegrees() < 180) disableArmCommand().schedule();
+//    if (getArmDegrees() < 180) disableArmCommand().schedule();
   }
 }
