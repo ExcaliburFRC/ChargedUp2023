@@ -163,15 +163,9 @@ public class Arm extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("dc", Calculation.floatDutyCycle);
-    SmartDashboard.putNumber("angle", getArmDegrees());
-    SmartDashboard.putNumber("length", lengthEncoder.getPosition());
-    SmartDashboard.putBoolean("closed", armFullyClosedTrigger.getAsBoolean());
-
-    SmartDashboard.putNumber("angle encoder", angleMotor.getEncoder().getPosition());
-
+    SmartDashboard.putNumber("arm angle", getArmDegrees());
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(0);
 
-//    if (getArmDegrees() < 180) disableArmCommand().schedule();
+    if (getArmDegrees() < 180) disableArmCommand().schedule();
   }
 }

@@ -1,12 +1,8 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
-import frc.robot.utiliy.ToggleCommand;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static edu.wpi.first.wpilibj.PneumaticsModuleType.REVPH;
@@ -18,9 +14,9 @@ public class Intake extends SubsystemBase {
     private final DoubleSolenoid intakePiston = new DoubleSolenoid(REVPH, INTAKE_FWD_CHANNEL, INTAKE_REV_CHANNEL);
     private final DoubleSolenoid ejectPiston = new DoubleSolenoid(REVPH, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
 
-    private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
+//    private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
 
-    private final Trigger beambreakTrigger = new Trigger(()-> !beambreak.get());
+//    private final Trigger beambreakTrigger = new Trigger(()-> beambreak.get());
 
     public Intake() {
         intakeMotor.restoreFactoryDefaults();
@@ -41,17 +37,18 @@ public class Intake extends SubsystemBase {
         },this);
     }
 
-    public Command intakeCommand(double intakeSpeed){
+    public Command intakeCommand(double intakeSpeed){ //, LEDs leds
         return new StartEndCommand(
               ()-> {
+//                  leds.setColorCommand(LEDs.LEDcolor.GREEN).schedule();
                   intakePiston.set(DoubleSolenoid.Value.kForward);
                   intakeMotor.set(intakeSpeed);
               },
               ()-> {
+//                  leds.restoreDefualtColorCommand().schedule();
                   intakePiston.set(DoubleSolenoid.Value.kReverse);
                   intakeMotor.stopMotor();
-              }, this)
-              .until(beambreakTrigger);
+              }, this);
     }
 
     private Command ejectCubeCommand(){
@@ -63,28 +60,33 @@ public class Intake extends SubsystemBase {
     }
 
     public Command pulseMotorCommand(){
-        return new RunCommand(()-> intakeMotor.set(-0.3)).withTimeout(0.1);
+        return new RunCommand(()-> intakeMotor.set(-0.4)).withTimeout(0.05);
     }
 
     public Command shootCubeCommand(int height){
         switch (height){
             case 1:
                 return Commands.repeatingSequence(
-                      Commands.runEnd(()-> intakeMotor.set(-0.01), intakeMotor::stopMotor, this).withTimeout(0.3), pulseMotorCommand())
+                      Commands.runEnd(()-> intakeMotor.set(-0.1), intakeMotor::stopMotor, this).withTimeout(0.3), pulseMotorCommand())
                       .alongWith(ejectCubeCommand())
-                      .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kForward));
+                      .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             case 2:
-                return Commands.runEnd(()-> intakeMotor.set(-0.3), intakeMotor::stopMotor, this)
+                return Commands.runEnd(()-> intakeMotor.set(-0.35), intakeMotor::stopMotor, this)
                       .alongWith(new WaitCommand(0.2).andThen(ejectCubeCommand()))
-                      .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kForward));
+                      .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             case 3:
-                return Commands.runEnd(()-> intakeMotor.set(-0.54), intakeMotor::stopMotor, this)
-                      .alongWith(new WaitCommand(0.4).andThen(ejectCubeCommand()))
-                      .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kForward));
+                return Commands.runEnd(()-> intakeMotor.set(-0.65), intakeMotor::stopMotor, this)
+                      .alongWith(new WaitCommand(0.35).andThen(ejectCubeCommand()))
+                      .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             default:
               return new InstantCommand(()-> {});
         }
     }
+
+//    @Override
+//    public void periodic() {
+//        SmartDashboard.putBoolean("intake bb", beambreakTrigger.getAsBoolean());
+//    }
 
     // top - 54
     // middle - 30

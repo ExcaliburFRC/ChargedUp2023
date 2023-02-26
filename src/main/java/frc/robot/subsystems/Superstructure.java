@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
@@ -44,19 +43,22 @@ public class Superstructure extends SubsystemBase {
     public Command placeOnHighCommand(Trigger release, BooleanSupplier accel) {
         return new ParallelCommandGroup(
                 arm.holdArmCommand(HIGH.dc, accel, HIGH.telescope),
-              rollerGripper.releaseCommand(release));
+              rollerGripper.releaseCommand(release))
+              .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }
 
     public Command placeOnMidCommand(Trigger release, BooleanSupplier accel) {
       return new ParallelCommandGroup(
             arm.holdArmCommand(MID.dc, accel, MID.telescope),
-            rollerGripper.releaseCommand(release));
+            rollerGripper.releaseCommand(release))
+            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }
 
     public Command placeOnLowCommand(Trigger release, BooleanSupplier accel) {
       return new ParallelCommandGroup(
             arm.holdArmCommand(LOW.dc, accel, LOW.telescope),
-            rollerGripper.releaseCommand(release));
+            rollerGripper.releaseCommand(release))
+            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }
 
     public Command manualCommand(

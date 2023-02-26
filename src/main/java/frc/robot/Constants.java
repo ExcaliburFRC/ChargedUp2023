@@ -22,15 +22,14 @@ import static java.lang.Math.PI;
  */
 public final class Constants {
     public static class IntakeConstants {
-        public static final int INTAKE_MOTOR_ID = 32;
+        public static final int INTAKE_MOTOR_ID = 41;
         public static final int INTAKE_MOTOR_CURRENT_LIMIT = 80; // TODO: calculate
 
         public static final int INTAKE_FWD_CHANNEL = 2;
         public static final int INTAKE_REV_CHANNEL = 3;
 
-        public static final int EJECT_FWD_CHANNEL = 8;
-        public static final int EJECT_REV_CHANNEL = 9;
-        public static final int BEAMBREAK_CHANNEL = 9;
+        public static final int EJECT_FWD_CHANNEL = 0;
+        public static final int EJECT_REV_CHANNEL = 1;
     }
 
     public static final class SpindexerConstants{
@@ -44,15 +43,19 @@ public final class Constants {
     public static final class ClawConstants {
         public static final int FORWARD_CHANNEL = 0;
         public static final int REVERSE_CHANNEL = 1;
-        public static final int BEAMBREAK_CHANNEL = 5;
-
-        public static final int ROLLER_ID = 5;
 
         public enum GamePiece {
             EMPTY,
             CUBE,
             CONE;
         }
+    }
+
+    public static final class RollerGripperConstants{
+        public static final int BUTTON_CHANNEL = 4;
+        public static final int RIGHT_ROLLER_MOTOR_ID = 31;
+        public static final int LEFT_ROLLER_MOTOR_ID = 32;
+
     }
 
     public static final class SwerveConstants {

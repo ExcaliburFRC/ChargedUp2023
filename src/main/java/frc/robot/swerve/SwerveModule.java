@@ -1,4 +1,4 @@
-package frc.robot.drivetrain;
+package frc.robot.swerve;
 
 import com.revrobotics.*;
 import edu.wpi.first.math.controller.PIDController;
@@ -8,7 +8,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 
@@ -49,7 +48,7 @@ public class SwerveModule implements Sendable {
     _driveMotor.setInverted(driveMotorReversed);
     _spinningMotor.setInverted(spinningMotorReversed);
 
-    _driveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    _driveMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
     _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
 
     _spinningMotor.setSmartCurrentLimit(20);

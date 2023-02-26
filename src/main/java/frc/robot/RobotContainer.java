@@ -29,7 +29,7 @@ public class RobotContainer {
   private final Superstructure superstructure = new Superstructure();
   Intake intake = new Intake();
   //  private final Swerve swerve = new Swerve();
-  //  private final LEDs leds = new LEDs();
+    private final LEDs leds = new LEDs();
   Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
@@ -65,7 +65,7 @@ public class RobotContainer {
 
     // intake commands
 //    driveJoystick.square().onTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1()));
-    driveJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.3));
+    driveJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4)); //, leds
 
     // place commands
 //    driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.R1(), driveJoystick.L1()));
@@ -86,7 +86,7 @@ public class RobotContainer {
 //    driveJoystick.R1().onTrue(swerve.resetGyroCommand());
 
 //     --- testing ---
-    compressor.disable();
+//    compressor.disable();
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -101,8 +101,6 @@ public class RobotContainer {
 //  }
 
   void manual(){
-    CommandScheduler.getInstance().cancelAll();
-
     superstructure.arm.setDefaultCommand(
           superstructure.manualCommand(
                 driveJoystick::getRightY,
@@ -111,6 +109,7 @@ public class RobotContainer {
                 driveJoystick.circle(),
                 driveJoystick.triangle()
           ));
+
     driveJoystick.R1().toggleOnTrue(superstructure.floatCommand());
   }
 

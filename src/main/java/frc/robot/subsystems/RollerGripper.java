@@ -1,44 +1,59 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
 
 import java.util.function.BooleanSupplier;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
-import static frc.robot.Constants.ClawConstants.*;
+import static frc.robot.Constants.RollerGripperConstants.*;
 
 public class RollerGripper extends SubsystemBase {
-  private final CANSparkMax roller = new CANSparkMax(ROLLER_ID, kBrushless);
+  private final CANSparkMax rightRoller = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
+  private final CANSparkMax leftRoller = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
 
-  private final DigitalInput button = new DigitalInput(BEAMBREAK_CHANNEL);
+  private final DigitalInput button = new DigitalInput(BUTTON_CHANNEL);
 
   public final Trigger buttonTrigger = new Trigger(()-> !button.get());
 
   public RollerGripper(){
-    roller.restoreFactoryDefaults();
-    roller.clearFaults();
-    roller.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    rightRoller.restoreFactoryDefaults();
+    rightRoller.clearFaults();
+    rightRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
+
+    leftRoller.restoreFactoryDefaults();
+    leftRoller.clearFaults();
+    leftRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
   }
 
   public Command intakeCommand(){
     return Commands.runEnd(
-          ()-> roller.set(0.3),
-          roller::stopMotor,
+          ()-> {
+            rightRoller.set(0.3);
+            leftRoller.set(0.3);
+            },
+                () -> {
+            rightRoller.stopMotor();
+            leftRoller.stopMotor();
+            },
                 this)
           .until(buttonTrigger);
   }
 
   public Command ejectCommand(){
     return Commands.runEnd(
-          ()-> roller.set(-0.2),
-          roller::stopMotor,
+          ()-> {
+            rightRoller.set(-0.2);
+            leftRoller.set(-0.2);
+          },
+                () -> {
+            rightRoller.stopMotor();
+            leftRoller.stopMotor();
+                },
                 this)
-          .withTimeout(0.2);
+          .until(buttonTrigger.negate().debounce(0.2));
   }
 
   public Command releaseCommand(BooleanSupplier release){
@@ -48,9 +63,18 @@ public class RollerGripper extends SubsystemBase {
   public Command manualCommand(BooleanSupplier intake, BooleanSupplier outtake, BooleanSupplier stop){
     return new RunCommand(
           ()-> {
-            if (intake.getAsBoolean()) roller.set(0.2);
-            if (outtake.getAsBoolean()) roller.set(-0.2);
-            if (stop.getAsBoolean()) roller.set(0);
+            if (intake.getAsBoolean()) {
+              rightRoller.set(0.2);
+              leftRoller.set(0.2);
+            }
+            if (outtake.getAsBoolean()) {
+              rightRoller.set(-0.2);
+              leftRoller.set(-0.2);
+            }
+            if (stop.getAsBoolean()) {
+              rightRoller.set(0);
+              leftRoller.set(0);
+            }
           }
     );
   }
