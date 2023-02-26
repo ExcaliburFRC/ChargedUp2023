@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -13,7 +14,12 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.autonomous.noRamsete.cube.CubeAndClimb;
+import frc.robot.commands.autonomous.noRamsete.cube.CubeAndLeave;
+import frc.robot.commands.autonomous.noRamsete.noGamePiece.ClimbRamp;
+import frc.robot.commands.autonomous.noRamsete.noGamePiece.LeaveCommunity;
 import frc.robot.subsystems.*;
+import frc.robot.swerve.Swerve;
 
 import static frc.robot.utiliy.Calculation.deadband;
 
@@ -27,10 +33,13 @@ import static frc.robot.utiliy.Calculation.deadband;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Superstructure superstructure = new Superstructure();
-  Intake intake = new Intake();
-  //  private final Swerve swerve = new Swerve();
-    private final LEDs leds = new LEDs();
-  Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
+  private final Intake intake = new Intake();
+  private final Swerve swerve = new Swerve();
+
+  private final Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
+
+  private final SendableChooser<Command> autoChooser = new SendableChooser();
+  private final SendableChooser<Integer> heightChooser = new SendableChooser();
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandJoystick armJoystick = new CommandJoystick(1);
@@ -40,8 +49,6 @@ public class RobotContainer {
    */
   public RobotContainer() {
     configureBindings();
-
-    SmartDashboard.putData("intake subsystem", intake);
   }
 
   /**
@@ -54,6 +61,17 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    // auto configuration
+    heightChooser.addOption("1", new Integer(1));
+    heightChooser.addOption("2", new Integer(2));
+    heightChooser.addOption("3", new Integer(3));
+
+    autoChooser.addOption("CubeAndLeave", new CubeAndLeave(swerve, intake, heightChooser.getSelected().intValue()));
+    autoChooser.addOption("CubeAnClimb", new CubeAndClimb(swerve, intake, heightChooser.getSelected().intValue()));
+
+    autoChooser.addOption("LeaveCommunity", new LeaveCommunity(swerve));
+    autoChooser.addOption("ClimbRamp", new ClimbRamp(swerve));
+
     // default command configurations
 //    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 //    swerve.setDefaultCommand(
@@ -128,6 +146,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return null;
+    return autoChooser.getSelected();
   }
 }

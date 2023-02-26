@@ -12,7 +12,7 @@ import static frc.robot.Constants.ClawConstants.GamePiece;
 
 public class Superstructure extends SubsystemBase {
    public final Arm arm = new Arm();
-   private final RollerGripper rollerGripper = new RollerGripper();
+   public final RollerGripper rollerGripper = new RollerGripper();
 
     static AtomicReference<GamePiece> currentGamePiece = new AtomicReference<>(GamePiece.EMPTY);
     static AtomicReference<GamePiece> lastRequestedGamePiece = new AtomicReference<>();

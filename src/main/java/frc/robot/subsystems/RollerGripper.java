@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -77,5 +78,10 @@ public class RollerGripper extends SubsystemBase {
             }
           }
     );
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putBoolean("rollerGripper button", buttonTrigger.getAsBoolean());
   }
 }
