@@ -18,6 +18,7 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+  private PowerDistribution m_pdp;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -28,6 +29,7 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+    m_pdp = new PowerDistribution();
   }
 
   /**
@@ -44,6 +46,7 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    checkPowerDistributionErrors();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -100,4 +103,59 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+
+  public void checkPowerDistributionErrors() {
+    var faults = m_pdp.getFaults();
+    if (faults.Brownout) DriverStation.reportError("PowerDistribution: Brownout", false);
+    if (faults.CanWarning) DriverStation.reportError("PowerDistribution: CanWarning", false);
+    if (faults.Channel0BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel0BreakerFault", false);
+    if (faults.Channel1BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel1BreakerFault", false);
+    if (faults.Channel2BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel2BreakerFault", false);
+    if (faults.Channel3BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel3BreakerFault", false);
+    if (faults.Channel4BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel4BreakerFault", false);
+    if (faults.Channel5BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel5BreakerFault", false);
+    if (faults.Channel6BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel6BreakerFault", false);
+    if (faults.Channel7BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel7BreakerFault", false);
+    if (faults.Channel8BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel8BreakerFault", false);
+    if (faults.Channel9BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel9BreakerFault", false);
+    if (faults.Channel10BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel10BreakerFault", false);
+    if (faults.Channel11BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel11BreakerFault", false);
+    if (faults.Channel12BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel12BreakerFault", false);
+    if (faults.Channel13BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel13BreakerFault", false);
+    if (faults.Channel14BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel14BreakerFault", false);
+    if (faults.Channel15BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel15BreakerFault", false);
+    if (faults.Channel16BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel16BreakerFault", false);
+    if (faults.Channel17BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel17BreakerFault", false);
+    if (faults.Channel18BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel18BreakerFault", false);
+    if (faults.Channel19BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel19BreakerFault", false);
+    if (faults.Channel20BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel20BreakerFault", false);
+    if (faults.Channel21BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel21BreakerFault", false);
+    if (faults.Channel22BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel22BreakerFault", false);
+    if (faults.Channel23BreakerFault)
+      DriverStation.reportError("PowerDistribution: Channel23BreakerFault", false);
+  }
 }
