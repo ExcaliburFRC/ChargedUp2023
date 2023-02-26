@@ -15,11 +15,11 @@ public class RollerGripper extends SubsystemBase {
   private final CANSparkMax rightRoller = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
   private final CANSparkMax leftRoller = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
 
-  private final DigitalInput button = new DigitalInput(BUTTON_CHANNEL);
+  private final DigitalInput beambreak = new DigitalInput(INTAKE_BEAMBREAK);
 
-  public final Trigger buttonTrigger = new Trigger(()-> !button.get());
+  public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 
-  public RollerGripper(){
+  public RollerGripper() {
     rightRoller.restoreFactoryDefaults();
     rightRoller.clearFaults();
     rightRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -27,61 +27,85 @@ public class RollerGripper extends SubsystemBase {
     leftRoller.restoreFactoryDefaults();
     leftRoller.clearFaults();
     leftRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
+
+    leftRoller.setInverted(false);
+    rightRoller.setInverted(true);
   }
 
-  public Command intakeCommand(){
-    return Commands.runEnd(
-          ()-> {
-            rightRoller.set(0.3);
-            leftRoller.set(0.3);
-            },
-                () -> {
-            rightRoller.stopMotor();
-            leftRoller.stopMotor();
-            },
-                this)
-          .until(buttonTrigger);
+  private Command setRollerGripperMotor(double speed) {
+    return new RunCommand(() -> {
+            rightRoller.set(speed);
+            leftRoller.set(speed);
+          }, this);
   }
 
-  public Command ejectCommand(){
+  public Command intakeCommand() {
     return Commands.runEnd(
-          ()-> {
-            rightRoller.set(-0.2);
-            leftRoller.set(-0.2);
-          },
                 () -> {
-            rightRoller.stopMotor();
-            leftRoller.stopMotor();
+                  rightRoller.set(0.6);
+                  leftRoller.set(0.6);
+                },
+                () -> {
+                  rightRoller.stopMotor();
+                  leftRoller.stopMotor();
                 },
                 this)
-          .until(buttonTrigger.negate().debounce(0.2));
+          .until(beambreakTrigger);
   }
 
-  public Command releaseCommand(BooleanSupplier release){
-    return new RunCommand(()-> {}).until(release).andThen(ejectCommand());
+  public Command ejectCommand() {
+    return Commands.runEnd(
+                () -> {
+                  rightRoller.set(-0.05);
+                  leftRoller.set(-0.05);
+                },
+                () -> {
+                  rightRoller.stopMotor();
+                  leftRoller.stopMotor();
+                },
+                this)
+          .until(beambreakTrigger.negate().debounce(0.2));
   }
 
-  public Command manualCommand(BooleanSupplier intake, BooleanSupplier outtake, BooleanSupplier stop){
-    return new RunCommand(
-          ()-> {
+  public Command releaseCommand(BooleanSupplier release) {
+    return new RunCommand(() -> {
+    }).until(release).andThen(ejectCommand());
+  }
+
+  public Command holdConeCommand() {
+    return new ConditionalCommand(
+          setRollerGripperMotor(0.05).until(()-> true),
+          setRollerGripperMotor(0).until(()-> true),
+          beambreakTrigger)
+          .repeatedly();
+  }
+
+  public Command manualCommand(BooleanSupplier intake, BooleanSupplier outtake, BooleanSupplier stop) {
+    return Commands.runEnd(
+          () -> {
             if (intake.getAsBoolean()) {
-              rightRoller.set(0.2);
-              leftRoller.set(0.2);
+              rightRoller.set(0.6);
+              leftRoller.set(0.6);
             }
             if (outtake.getAsBoolean()) {
-              rightRoller.set(-0.2);
-              leftRoller.set(-0.2);
+              rightRoller.set(-0.1);
+              leftRoller.set(-0.1);
             }
             if (stop.getAsBoolean()) {
               rightRoller.set(0);
               leftRoller.set(0);
             }
-          }
+          },
+          () -> {
+            rightRoller.set(0);
+            leftRoller.set(0);
+          },
+          this
     );
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putBoolean("rollerGripper button", buttonTrigger.getAsBoolean());
+    SmartDashboard.putBoolean("rollerGripper button", beambreakTrigger.getAsBoolean());
   }
 }

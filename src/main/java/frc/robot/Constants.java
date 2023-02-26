@@ -6,8 +6,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 
 import static java.lang.Math.PI;
@@ -52,7 +50,7 @@ public final class Constants {
     }
 
     public static final class RollerGripperConstants{
-        public static final int BUTTON_CHANNEL = 9;
+        public static final int INTAKE_BEAMBREAK = 9;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
         public static final int LEFT_ROLLER_MOTOR_ID = 32;
 
@@ -61,10 +59,10 @@ public final class Constants {
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
-            FL(18, 17, 1, 0.345, false, false),
-            FR(12, 11, 0, 0.616, false, false),
-            BL(16, 15, 2, 0.037, false, false),
-            BR(14, 13, 3, 0.834, false, false);
+            FL(18, 17, 1, 0.093 + 0.25, false, false),
+            FR(12, 11, 0, 0.372 + 0.25, false, false),
+            BL(16, 15, 2, 0.05, false, false),
+            BR(14, 13, 3, 0.570 + 0.25, false, false);
 
             public int DRIVE_MOTOR_ID;
             public int SPIN_MOTOR_ID;
@@ -113,7 +111,7 @@ public final class Constants {
 
         // intentional limitations
 
-        public static final double kSpeedPercantageLimit = 25; // %
+        public static final double kSpeedPercantageLimit = 75; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -123,20 +121,6 @@ public final class Constants {
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
 
         // autonomous constants
-        public static final TrajectoryConfig kConfig =
-                new TrajectoryConfig(
-                        kMaxDriveSpeed,
-                        kMaxAccelerationMetersPerSecondSquared)
-                        .setKinematics(kSwerveKinematics);
-
-        public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
-                new TrapezoidProfile.Constraints(
-                        kMaxDriveTurningSpeed,
-                        kMaxTurningAcceleration);
-
-        public static final double kp_x_AUTO = 0; //TODO: find
-        public static final double kp_y_AUTO = 0; //TODO: find
-        public static final double kp_Theta_AUTO = 0; //TODO: find
         public static final double kp_Theta_TELEOP = 0.0145; //TODO: find
     }
 
@@ -148,23 +132,23 @@ public final class Constants {
         public static final double kTurningMotorGearRatio = 1 / 21.4285714;
         public static final double kTurningEncoderRotationsToRadians = kTurningMotorGearRatio * 2 * PI;
         public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
-        public static final double kPTurning = 0.6;
+        public static final double kPTurning = 0.75;
     }
 
     public static final class ArmConstants {
-        public enum CubeDutyCycle {
+        public enum ConeDutyCycle {
             // cone, cube
-            LOW(-0.03953, 0.552),
-            MID(-0.0426, 0),
-            HIGH(-0.077, 1.3), //1.579
-            SHELF(-0.055, 0),
+            LOW(-0.02953, 0.552),
+            MID(-0.0326, 0),
+            HIGH(-0.05, 1.3), //1.58
+            SHELF(-0.0425, 0.4),
             SPINDEXER(0, 0.5),
             INTAKE(0, 1);
 
             public double dc;
             public double telescope;
 
-            CubeDutyCycle(double dc, double telescope) {
+            ConeDutyCycle(double dc, double telescope) {
                 this.dc = dc;
                 this.telescope = telescope;
             }

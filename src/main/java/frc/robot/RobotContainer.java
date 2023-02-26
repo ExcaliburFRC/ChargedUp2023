@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
@@ -20,9 +19,6 @@ import frc.robot.commands.autonomous.noRamsete.noGamePiece.ClimbRamp;
 import frc.robot.commands.autonomous.noRamsete.noGamePiece.LeaveCommunity;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
-
-import static frc.robot.utiliy.Calculation.deadband;
-
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -62,38 +58,40 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // auto configuration
-    heightChooser.addOption("1", new Integer(1));
+    heightChooser.setDefaultOption("1", new Integer(1));
     heightChooser.addOption("2", new Integer(2));
     heightChooser.addOption("3", new Integer(3));
 
-    autoChooser.addOption("CubeAndLeave", new CubeAndLeave(swerve, intake, heightChooser.getSelected().intValue()));
-    autoChooser.addOption("CubeAnClimb", new CubeAndClimb(swerve, intake, heightChooser.getSelected().intValue()));
+//    autoChooser.setDefaultOption("LeaveCommunity", new LeaveCommunity(swerve));
+//    autoChooser.addOption("ClimbRamp", new ClimbRamp(swerve));
+//
+//    autoChooser.addOption("CubeAndLeave", new CubeAndLeave(swerve, intake, heightChooser.getSelected().intValue()));
+//    autoChooser.addOption("CubeAndClimb", new CubeAndClimb(swerve, intake, heightChooser.getSelected().intValue()));
+//
+//    SmartDashboard.putData(autoChooser);
+//    SmartDashboard.putData(heightChooser);
 
-    autoChooser.addOption("LeaveCommunity", new LeaveCommunity(swerve));
-    autoChooser.addOption("ClimbRamp", new ClimbRamp(swerve));
-
-    // default command configurations
 //    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
-//    swerve.setDefaultCommand(
-//          swerve.driveSwerveCommand(
-//                driveJoystick::getLeftX,
-//                driveJoystick::getLeftY,
-//                driveJoystick::getRightX,
-//                driveJoystick.L2().negate()));
+
+    swerve.setDefaultCommand(
+          swerve.driveSwerveCommand(
+                ()-> -driveJoystick.getLeftY(),
+                driveJoystick::getLeftX,
+                driveJoystick::getRightX,
+                driveJoystick.R2().negate()));
 
     // intake commands
-//    driveJoystick.square().onTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1()));
+    driveJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1(), driveJoystick.R1()));
     driveJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4)); //, leds
 
     // place commands
-//    driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.R1(), driveJoystick.L1()));
-//    driveJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R1(), driveJoystick.L1()));
-//    driveJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R1(), driveJoystick.L1()));
+    driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1()));
+//    driveJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1()));
+//    driveJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1()));
 
     driveJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(3));
     driveJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(2));
     driveJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(1));
-
 
     // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
@@ -101,10 +99,9 @@ public class RobotContainer {
 
     // other
     driveJoystick.PS().toggleOnTrue(toggleCompressorCommand());
-//    driveJoystick.R1().onTrue(swerve.resetGyroCommand());
-
-//     --- testing ---
-//    compressor.disable();
+    driveJoystick.touchpad().onTrue(swerve.resetGyroCommand());
+    new Trigger(()-> driveJoystick.getHID().getRawButtonPressed(15))
+          .toggleOnTrue(superstructure.arm.lowerArmCommand());
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -117,19 +114,6 @@ public class RobotContainer {
 //            .andThen(leds.restoreDefualtColorCommand())
 //            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
 //  }
-
-  void manual(){
-    superstructure.arm.setDefaultCommand(
-          superstructure.manualCommand(
-                driveJoystick::getRightY,
-                () -> driveJoystick.getHID().getPOV(),
-                driveJoystick.square(),
-                driveJoystick.circle(),
-                driveJoystick.triangle()
-          ));
-
-    driveJoystick.R1().toggleOnTrue(superstructure.floatCommand());
-  }
 
   public Command toggleCompressorCommand() {
     return new StartEndCommand(

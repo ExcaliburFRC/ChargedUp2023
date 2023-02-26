@@ -44,8 +44,8 @@ public class Arm extends SubsystemBase {
     lengthMotor.setInverted(true);
 
     angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-    lengthMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    lengthMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
     lengthEncoder.setPositionConversionFactor(ROT_TO_METER);
     lengthEncoder.setVelocityConversionFactor(RPM_TO_METER_PER_SEC);
@@ -73,16 +73,16 @@ public class Arm extends SubsystemBase {
           lengthMotor.set(-0.35);
       }
 
-      angleMotor.set(angleJoystick.getAsDouble());
+      angleMotor.set(angleJoystick.getAsDouble() / 4);
       Calculation.floatDutyCycle = MathUtil.clamp(angleJoystick.getAsDouble(), -1, 0);
     }, this);
   }
 
-  public Command holdArmCommand(double dc, BooleanSupplier accel, double telescope) {
+  public Command holdArmCommand(double dc, BooleanSupplier accel, BooleanSupplier reduce, double telescope) {
     return new ParallelCommandGroup(
           new WaitCommand(0.2).andThen(
                 extendLengthCommand(telescope)),
-          moveToDutyCycleCommand(dc, accel));
+          moveToDutyCycleCommand(dc, accel, reduce));
   }
 
   public Command retractTelescopeCommand(){
@@ -90,14 +90,31 @@ public class Arm extends SubsystemBase {
           .until(armFullyClosedTrigger);
   }
 
-  public Command defaultCommand(){
-    return retractTelescopeCommand().andThen(new WaitUntilCommand(()-> false));
+  private Command retractArmCommand(){
+    return Commands.runEnd(()-> angleMotor.set(0.06), angleMotor::stopMotor).until(()-> armAngleClosed());
   }
 
-  private Command moveToDutyCycleCommand(double dc, BooleanSupplier accel) {
+  private boolean armAngleClosed(){
+    return Math.abs(270 - getArmDegrees()) < 10;
+  }
+
+  public Command lowerArmCommand(){
+    return new RunCommand(()-> lengthMotor.set(0.3), this)
+          .until(()-> lengthInRange(1.58))
+          .andThen(new InstantCommand(lengthMotor::stopMotor), new WaitUntilCommand(()-> false));
+  }
+
+  public Command defaultCommand(){
+    return retractTelescopeCommand()
+          .alongWith(retractArmCommand())
+          .andThen(new WaitUntilCommand(()-> false));
+  }
+
+  private Command moveToDutyCycleCommand(double dc, BooleanSupplier accel, BooleanSupplier reduce) {
     return Commands.runEnd(() -> {
-            double a = accel.getAsBoolean() ? -0.05 : 0;
-            angleMotor.set(dc + a);
+            double a = accel.getAsBoolean() ? -0.075 : 0;
+            double r = reduce.getAsBoolean() ? 0.075 : 0;
+            angleMotor.set(dc + a + r);
           }, angleMotor::stopMotor,
           this);
   }
@@ -164,8 +181,9 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("arm angle", getArmDegrees());
+    SmartDashboard.putBoolean("fully closed", armFullyClosedTrigger.getAsBoolean());
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(0);
 
-    if (getArmDegrees() < 180) disableArmCommand().schedule();
+//    if (getArmDegrees() < 180) disableArmCommand().schedule();
   }
 }

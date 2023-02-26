@@ -48,7 +48,7 @@ public class Intake extends SubsystemBase {
 //                  leds.restoreDefualtColorCommand().schedule();
                   intakePiston.set(DoubleSolenoid.Value.kReverse);
                   intakeMotor.stopMotor();
-              }, this);
+              }, this).andThen();
     }
 
     private Command ejectCubeCommand(){

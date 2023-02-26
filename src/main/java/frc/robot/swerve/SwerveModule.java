@@ -48,8 +48,11 @@ public class SwerveModule implements Sendable {
     _driveMotor.setInverted(driveMotorReversed);
     _spinningMotor.setInverted(spinningMotorReversed);
 
-    _driveMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
-    _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+    _driveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+
+    _driveMotor.clearFaults();
+    _spinningMotor.clearFaults();
 
     _spinningMotor.setSmartCurrentLimit(20);
 

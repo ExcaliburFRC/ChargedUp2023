@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.Constants.ArmConstants.CubeDutyCycle.*;
+import static frc.robot.Constants.ArmConstants.ConeDutyCycle.*;
 import static frc.robot.Constants.ClawConstants.GamePiece;
 
 public class Superstructure extends SubsystemBase {
@@ -18,8 +18,11 @@ public class Superstructure extends SubsystemBase {
     static AtomicReference<GamePiece> lastRequestedGamePiece = new AtomicReference<>();
 
     public Superstructure() {
-//      arm.setDefaultCommand(
-//            arm.defaultCommand());
+      arm.setDefaultCommand(
+            arm.defaultCommand());
+
+      rollerGripper.setDefaultCommand(
+            rollerGripper.holdConeCommand());
     }
 
     private boolean isCone(){
@@ -33,34 +36,34 @@ public class Superstructure extends SubsystemBase {
         return new InstantCommand(()-> lastRequestedGamePiece.set(gamePiece));
     }
 
-    public Command intakeFromShelfCommand(BooleanSupplier accel){
+    public Command intakeFromShelfCommand(BooleanSupplier accel, BooleanSupplier reduce){
         return new ParallelCommandGroup(
                 rollerGripper.intakeCommand(),
-                arm.holdArmCommand(SHELF.dc, accel, SHELF.telescope))
-              .until(rollerGripper.buttonTrigger);
+                arm.holdArmCommand(SHELF.dc, accel, reduce, SHELF.telescope))
+              .until(rollerGripper.beambreakTrigger);
     }
 
-    public Command placeOnHighCommand(Trigger release, BooleanSupplier accel) {
+    public Command placeOnHighCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce) {
         return new ParallelCommandGroup(
-                arm.holdArmCommand(HIGH.dc, accel, HIGH.telescope),
+                arm.holdArmCommand(HIGH.dc, accel, reduce, HIGH.telescope),
               rollerGripper.releaseCommand(release))
-              .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
+              .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
     }
-
-    public Command placeOnMidCommand(Trigger release, BooleanSupplier accel) {
-      return new ParallelCommandGroup(
-            arm.holdArmCommand(MID.dc, accel, MID.telescope),
-            rollerGripper.releaseCommand(release))
-            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
-    }
-
-    public Command placeOnLowCommand(Trigger release, BooleanSupplier accel) {
-      return new ParallelCommandGroup(
-            arm.holdArmCommand(LOW.dc, accel, LOW.telescope),
-            rollerGripper.releaseCommand(release))
-            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
-    }
-
+//
+//    public Command placeOnMidCommand(Trigger release, BooleanSupplier accel) {
+//      return new ParallelCommandGroup(
+//            arm.holdArmCommand(MID.dc, accel, MID.telescope),
+//            rollerGripper.releaseCommand(release))
+//            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
+//    }
+//
+//    public Command placeOnLowCommand(Trigger release, BooleanSupplier accel) {
+//      return new ParallelCommandGroup(
+//            arm.holdArmCommand(LOW.dc, accel, LOW.telescope),
+//            rollerGripper.releaseCommand(release))
+//            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
+//    }
+//
     public Command manualCommand(
           DoubleSupplier angle,
           DoubleSupplier pov,
