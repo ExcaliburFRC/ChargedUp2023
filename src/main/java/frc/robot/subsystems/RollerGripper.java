@@ -63,8 +63,8 @@ public class RollerGripper extends SubsystemBase {
                   rightRoller.stopMotor();
                   leftRoller.stopMotor();
                 },
-                this)
-          .until(buttonTrigger.negate().debounce(0.2));
+                this);
+//          .until(buttonTrigger.negate().debounce(0.2));
   }
 
   public Command releaseCommand(BooleanSupplier release) {

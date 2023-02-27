@@ -56,8 +56,8 @@ public class Arm extends SubsystemBase {
   public Command joystickManualCommand(DoubleSupplier angleJoystick, DoubleSupplier lengthJoystick) {
     return new RunCommand(
           () -> {
-            lengthMotor.set(lengthJoystick.getAsDouble());
-            angleMotor.set(angleJoystick.getAsDouble());
+            lengthMotor.set(lengthJoystick.getAsDouble() / 4);
+            angleMotor.set(angleJoystick.getAsDouble() / 4);
 
             Calculation.floatDutyCycle = MathUtil.clamp(angleJoystick.getAsDouble(), -1, 0);
           }, this);
@@ -78,11 +78,12 @@ public class Arm extends SubsystemBase {
     }, this);
   }
 
-  public Command holdArmCommand(double dc, BooleanSupplier accel, BooleanSupplier reduce, double telescope) {
-    return new ParallelCommandGroup(
-          new WaitCommand(0.2).andThen(
-                extendLengthCommand(telescope)),
-          moveToDutyCycleCommand(dc, accel, reduce));
+  public Command manualLengthCommand(DoubleSupplier lengthSpeed){
+    return new RunCommand(()-> lengthMotor.set(lengthSpeed.getAsDouble()));
+  }
+
+  public Command holdArmCommand(double dc, BooleanSupplier accel, BooleanSupplier reduce ) {
+    return moveToDutyCycleCommand(dc, accel, reduce);
   }
 
   public Command retractTelescopeCommand(){
@@ -98,14 +99,14 @@ public class Arm extends SubsystemBase {
     return Math.abs(270 - getArmDegrees()) < 10;
   }
 
-  public Command lowerArmCommand(){
+  public Command lowerTelescopeCommand(){
     return new RunCommand(()-> lengthMotor.set(0.3), this)
           .until(()-> lengthInRange(1.58))
           .andThen(new InstantCommand(lengthMotor::stopMotor), new WaitUntilCommand(()-> false));
   }
 
   public Command defaultCommand(){
-    return retractTelescopeCommand()
+    return lowerTelescopeCommand()
           .alongWith(retractArmCommand())
           .andThen(new WaitUntilCommand(()-> false));
   }
@@ -117,6 +118,10 @@ public class Arm extends SubsystemBase {
             angleMotor.set(dc + a + r);
           }, angleMotor::stopMotor,
           this);
+  }
+
+  public Command flipRopeCommand(){
+    return new RunCommand(()-> lengthMotor.set(-0.3), this);
   }
 
   private Command moveToAngleCommand(double angle){
@@ -182,6 +187,7 @@ public class Arm extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("arm angle", getArmDegrees());
     SmartDashboard.putBoolean("fully closed", armFullyClosedTrigger.getAsBoolean());
+    SmartDashboard.putNumber("length", lengthEncoder.getPosition());
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(0);
 
 //    if (getArmDegrees() < 180) disableArmCommand().schedule();

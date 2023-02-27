@@ -71,12 +71,12 @@ public class Intake extends SubsystemBase {
                       .alongWith(ejectCubeCommand())
                       .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             case 2:
-                return Commands.runEnd(()-> intakeMotor.set(-0.35), intakeMotor::stopMotor, this)
+                return Commands.runEnd(()-> intakeMotor.set(-0.4), intakeMotor::stopMotor, this)
                       .alongWith(new WaitCommand(0.2).andThen(ejectCubeCommand()))
                       .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             case 3:
                 return Commands.runEnd(()-> intakeMotor.set(-0.65), intakeMotor::stopMotor, this)
-                      .alongWith(new WaitCommand(0.35).andThen(ejectCubeCommand()))
+                      .alongWith(new WaitCommand(0.45).andThen(ejectCubeCommand()))
                       .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             default:
               return new InstantCommand(()-> {});

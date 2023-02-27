@@ -101,9 +101,9 @@ public class Swerve extends SubsystemBase {
     //TODO: check if works
     private double getRampAngle() {
         double pitch = _gyro.getPitch();
-        pitch *= -1;
-        if (pitch < 0) pitch += 360;
-        return pitch;
+//        pitch *= -1;
+//        if (pitch < 0) pitch += 360;
+        return pitch * 100;
     }
 
     public Command resetModulesCommand() {
@@ -170,7 +170,7 @@ public class Swerve extends SubsystemBase {
                         new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
 
                   //use the ChassisSpeedsObject to create an array of SwerveModuleStates
-                  SwerveModuleState moduleStates[] = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
+                  SwerveModuleState[] moduleStates = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
 
                   //apply the array to the swerve modules of the robot
                   setModulesStates(moduleStates);
@@ -223,10 +223,15 @@ public class Swerve extends SubsystemBase {
     public Command resetGyroCommand(){
         return new InstantCommand(this::resetGyro);
     }
+    public void setGyroCommand(int angle){
+        _gyro.setAngleAdjustment(
+              angle);
+    }
 
     @Override
     public void periodic() {
         SmartDashboard.putData("gyro angle", _gyro);
+        SmartDashboard.putNumber("ramp angle", getRampAngle());
     }
 
     private void setModulesStates(SwerveModuleState[] states) {
@@ -242,6 +247,11 @@ public class Swerve extends SubsystemBase {
         swerveModules[FRONT_RIGHT].resetEncoders();
         swerveModules[BACK_LEFT].resetEncoders();
         swerveModules[BACK_RIGHT].resetEncoders();
+    }
+
+    public Command driveToRampCommand(){
+        return driveSwerveCommand(()-> -0.2, ()-> 0, ()-> 0, ()-> false)
+              .until(()-> Math.abs(getRampAngle() - 424) > 50);
     }
 
     private void stopModules() {

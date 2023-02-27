@@ -18,11 +18,6 @@ public class Superstructure extends SubsystemBase {
     static AtomicReference<GamePiece> lastRequestedGamePiece = new AtomicReference<>();
 
     public Superstructure() {
-      arm.setDefaultCommand(
-            arm.defaultCommand());
-
-      rollerGripper.setDefaultCommand(
-            rollerGripper.holdConeCommand());
     }
 
     private boolean isCone(){
@@ -39,27 +34,30 @@ public class Superstructure extends SubsystemBase {
     public Command intakeFromShelfCommand(BooleanSupplier accel, BooleanSupplier reduce){
         return new ParallelCommandGroup(
                 rollerGripper.intakeCommand(),
-                arm.holdArmCommand(SHELF.dc, accel, reduce, SHELF.telescope))
+                arm.holdArmCommand(SHELF.dc, accel, reduce))
               .until(rollerGripper.buttonTrigger);
     }
 
-    public Command placeOnHighCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce) {
+    public Command placeOnHighCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce, DoubleSupplier lengthSpeed) {
         return new ParallelCommandGroup(
-                arm.holdArmCommand(HIGH.dc, accel, reduce, HIGH.telescope),
+                arm.holdArmCommand(HIGH.dc, accel, reduce),
+              arm.manualLengthCommand(lengthSpeed),
               rollerGripper.releaseCommand(release))
               .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }
 
-    public Command placeOnMidCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce) {
+    public Command placeOnMidCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce, DoubleSupplier lengthSpeed) {
       return new ParallelCommandGroup(
-            arm.holdArmCommand(MID.dc, accel, reduce, MID.telescope),
+            arm.holdArmCommand(MID.dc, accel, reduce),
+            arm.manualLengthCommand(lengthSpeed),
             rollerGripper.releaseCommand(release))
             .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }
 
-    public Command placeOnLowCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce) {
+    public Command placeOnLowCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce, DoubleSupplier lengthSpeed) {
       return new ParallelCommandGroup(
-            arm.holdArmCommand(LOW.dc, accel, reduce, LOW.telescope),
+            arm.holdArmCommand(LOW.dc, accel, reduce),
+            arm.manualLengthCommand(lengthSpeed),
             rollerGripper.releaseCommand(release))
             .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }

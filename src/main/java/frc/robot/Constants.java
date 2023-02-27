@@ -111,7 +111,7 @@ public final class Constants {
 
         // intentional limitations
 
-        public static final double kSpeedPercantageLimit = 75; // %
+        public static final double kSpeedPercantageLimit = 95; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -138,10 +138,10 @@ public final class Constants {
     public static final class ArmConstants {
         public enum ConeDutyCycle {
             // cone, cube
-            LOW(-0.02953, 0.552),
+            LOW(-0.02953, 0), // 0.552
             MID(-0.0326, 0),
-            HIGH(-0.05, 1.3), //1.58
-            SHELF(-0.0425, 0.4),
+            HIGH(-0.05, 0), //1.58
+            SHELF(-0.0425, 0), //0.4
             SPINDEXER(0, 0.5),
             INTAKE(0, 1);
 

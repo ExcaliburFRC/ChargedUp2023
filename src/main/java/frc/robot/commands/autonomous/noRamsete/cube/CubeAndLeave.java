@@ -8,9 +8,9 @@ public class CubeAndLeave extends SequentialCommandGroup {
 
   public CubeAndLeave(Swerve swerve, Intake intake, int height){
     super(
-          intake.shootCubeCommand(height).withTimeout(0.5),
-          swerve.driveSwerveCommand(()-> 0, ()-> 0.3, ()-> 0, ()-> true)
-                .withTimeout(4)
+          intake.shootCubeCommand(height).withTimeout(3),
+          swerve.driveSwerveCommand(()-> -0.25, ()-> 0, ()-> 0, ()-> false)
+                .withTimeout(8)
     );
   }
 }
