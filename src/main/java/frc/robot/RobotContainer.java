@@ -38,7 +38,7 @@ public class RobotContainer {
   private final SendableChooser<Integer> heightChooser = new SendableChooser();
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
-  public final CommandJoystick armJoystick = new CommandJoystick(1);
+  public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -78,29 +78,29 @@ public class RobotContainer {
                 ()-> -driveJoystick.getLeftY(),
                 driveJoystick::getLeftX,
                 driveJoystick::getRightX,
-                driveJoystick.R2().negate()));
+                ()-> true));
 
     // intake commands
-    driveJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1(), driveJoystick.R1()));
-    driveJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4)); //, leds
+    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1(), driveJoystick.R1()));
+    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4)); //, leds
 
     // place commands
-    driveJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1()));
-//    driveJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1()));
-//    driveJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1()));
+    armJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1()));
+    armJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1()));
+    armJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1()));
 
-    driveJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(3));
-    driveJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(2));
-    driveJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(1));
+    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(3));
+    armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(2));
+    armJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(1));
 
     // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
 //    driveJoystick.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
 
     // other
-    driveJoystick.PS().toggleOnTrue(toggleCompressorCommand());
-    driveJoystick.touchpad().onTrue(swerve.resetGyroCommand());
-    new Trigger(()-> driveJoystick.getHID().getRawButtonPressed(15))
+    driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
+    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
+    new Trigger(()-> armJoystick.getHID().getRawButtonPressed(15))
           .toggleOnTrue(superstructure.arm.lowerArmCommand());
   }
 

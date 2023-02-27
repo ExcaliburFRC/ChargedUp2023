@@ -17,7 +17,7 @@ public class RollerGripper extends SubsystemBase {
 
   private final DigitalInput beambreak = new DigitalInput(INTAKE_BEAMBREAK);
 
-  public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
+  public final Trigger buttonTrigger = new Trigger(() -> !beambreak.get());
 
   public RollerGripper() {
     rightRoller.restoreFactoryDefaults();
@@ -50,7 +50,7 @@ public class RollerGripper extends SubsystemBase {
                   leftRoller.stopMotor();
                 },
                 this)
-          .until(beambreakTrigger);
+          .until(buttonTrigger);
   }
 
   public Command ejectCommand() {
@@ -64,7 +64,7 @@ public class RollerGripper extends SubsystemBase {
                   leftRoller.stopMotor();
                 },
                 this)
-          .until(beambreakTrigger.negate().debounce(0.2));
+          .until(buttonTrigger.negate().debounce(0.2));
   }
 
   public Command releaseCommand(BooleanSupplier release) {
@@ -76,7 +76,7 @@ public class RollerGripper extends SubsystemBase {
     return new ConditionalCommand(
           setRollerGripperMotor(0.05).until(()-> true),
           setRollerGripperMotor(0).until(()-> true),
-          beambreakTrigger)
+          buttonTrigger)
           .repeatedly();
   }
 
@@ -106,6 +106,6 @@ public class RollerGripper extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putBoolean("rollerGripper button", beambreakTrigger.getAsBoolean());
+    SmartDashboard.putBoolean("rollerGripper button", buttonTrigger.getAsBoolean());
   }
 }

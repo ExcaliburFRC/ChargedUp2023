@@ -40,30 +40,30 @@ public class Superstructure extends SubsystemBase {
         return new ParallelCommandGroup(
                 rollerGripper.intakeCommand(),
                 arm.holdArmCommand(SHELF.dc, accel, reduce, SHELF.telescope))
-              .until(rollerGripper.beambreakTrigger);
+              .until(rollerGripper.buttonTrigger);
     }
 
     public Command placeOnHighCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce) {
         return new ParallelCommandGroup(
                 arm.holdArmCommand(HIGH.dc, accel, reduce, HIGH.telescope),
               rollerGripper.releaseCommand(release))
-              .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
+              .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }
-//
-//    public Command placeOnMidCommand(Trigger release, BooleanSupplier accel) {
-//      return new ParallelCommandGroup(
-//            arm.holdArmCommand(MID.dc, accel, MID.telescope),
-//            rollerGripper.releaseCommand(release))
-//            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
-//    }
-//
-//    public Command placeOnLowCommand(Trigger release, BooleanSupplier accel) {
-//      return new ParallelCommandGroup(
-//            arm.holdArmCommand(LOW.dc, accel, LOW.telescope),
-//            rollerGripper.releaseCommand(release))
-//            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
-//    }
-//
+
+    public Command placeOnMidCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce) {
+      return new ParallelCommandGroup(
+            arm.holdArmCommand(MID.dc, accel, reduce, MID.telescope),
+            rollerGripper.releaseCommand(release))
+            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
+    }
+
+    public Command placeOnLowCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce) {
+      return new ParallelCommandGroup(
+            arm.holdArmCommand(LOW.dc, accel, reduce, LOW.telescope),
+            rollerGripper.releaseCommand(release))
+            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
+    }
+
     public Command manualCommand(
           DoubleSupplier angle,
           DoubleSupplier pov,
