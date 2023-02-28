@@ -2,7 +2,11 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
+
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static edu.wpi.first.wpilibj.PneumaticsModuleType.REVPH;
@@ -13,6 +17,7 @@ public class Intake extends SubsystemBase {
 
     private final DoubleSolenoid intakePiston = new DoubleSolenoid(REVPH, INTAKE_FWD_CHANNEL, INTAKE_REV_CHANNEL);
     private final DoubleSolenoid ejectPiston = new DoubleSolenoid(REVPH, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
+
 
 //    private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
 
@@ -60,33 +65,30 @@ public class Intake extends SubsystemBase {
     }
 
     public Command pulseMotorCommand(){
-        return new RunCommand(()-> intakeMotor.set(-0.4)).withTimeout(0.05);
+        return new RunCommand(()-> intakeMotor.set(-0.5)).withTimeout(0.05);
     }
 
-    public Command shootCubeCommand(int height){
+    public Command shootCubeCommand(int height, DoubleSupplier offset) {
         switch (height){
             case 1:
                 return Commands.repeatingSequence(
-                      Commands.runEnd(()-> intakeMotor.set(-0.1), intakeMotor::stopMotor, this).withTimeout(0.3), pulseMotorCommand())
+                      Commands.runEnd(()-> intakeMotor.set(-0.2), intakeMotor::stopMotor, this).withTimeout(0.3), pulseMotorCommand())
                       .alongWith(ejectCubeCommand())
                       .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             case 2:
-                return Commands.runEnd(()-> intakeMotor.set(-0.4), intakeMotor::stopMotor, this)
+                return Commands.runEnd(()-> intakeMotor.set(-0.4 + offset.getAsDouble()), intakeMotor::stopMotor, this)
                       .alongWith(new WaitCommand(0.2).andThen(ejectCubeCommand()))
                       .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             case 3:
-                return Commands.runEnd(()-> intakeMotor.set(-0.65), intakeMotor::stopMotor, this)
+                return Commands.runEnd(()-> intakeMotor.set(-0.7 + offset.getAsDouble()), intakeMotor::stopMotor, this)
                       .alongWith(new WaitCommand(0.45).andThen(ejectCubeCommand()))
                       .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             default:
               return new InstantCommand(()-> {});
         }
     }
-
-//    @Override
-//    public void periodic() {
-//        SmartDashboard.putBoolean("intake bb", beambreakTrigger.getAsBoolean());
-//    }
+//    x. ontrue(new setSHoter s[eed command (13413)]);
+//    y. onture ( new instance commadn(()-> command scdulaer.get fin .sc(new )))
 
     // top - 54
     // middle - 30

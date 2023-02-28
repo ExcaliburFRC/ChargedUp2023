@@ -68,7 +68,7 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.schedule();
     }
 
-
+//    m_robotContainer.resetModulesCommand().schedule();
   }
 
 
@@ -90,6 +90,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    SmartDashboard.putNumber("offset", -m_robotContainer.offset * 100);
   }
 
   @Override

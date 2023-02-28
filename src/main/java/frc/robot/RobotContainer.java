@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -43,6 +44,8 @@ public class RobotContainer {
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
+
+  public double offset = 0;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -98,9 +101,9 @@ public class RobotContainer {
 //    armJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
 //    armJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
 
-    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(3));
-    armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(2));
-    armJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(1));
+    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(3, ()-> offset));
+    armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(2, ()-> offset));
+    armJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(1, ()-> offset));
 
     // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
@@ -111,6 +114,9 @@ public class RobotContainer {
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
 //    new Trigger(()-> armJoystick.getHID().getRawButtonPressed(15))
 //          .toggleOnTrue(superstructure.arm.lowerTelescopeCommand());
+
+    driveJoystick.povUp().onTrue(offsetShooter(0.05));
+    driveJoystick.povDown().onTrue(offsetShooter(-0.05));
 
     arm.setDefaultCommand(
           arm.joystickManualCommand(() -> Calculation.deadband(armJoystick.getLeftY(), 0.1), armJoystick::getRightY)
@@ -140,6 +146,10 @@ public class RobotContainer {
           compressor::enableDigital,
           compressor::disable
     );
+  }
+
+  public Command offsetShooter(double offset){
+    return new InstantCommand(()-> this.offset -= offset);
   }
 
   /**
