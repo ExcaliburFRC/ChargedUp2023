@@ -6,9 +6,7 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PWM;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 
 public class LEDs extends SubsystemBase {
     private final PWM leds = new PWM(LEDS_PORT);
@@ -19,7 +17,7 @@ public class LEDs extends SubsystemBase {
     }
 
     @SuppressWarnings("unused")
-    public enum LedMode {
+    public enum LEDcolor {
         BLUE(0.87),
         RED(0.61),
         ORANGE(0.65),
@@ -36,25 +34,29 @@ public class LEDs extends SubsystemBase {
         LIGHT_CHASE_BLUE(-0.29), // TODO: check if works, if so: https://www.revrobotics.com/content/docs/REV-11-1105-UM.pdf
         OFF(0.99);
 
-        LedMode(double c) {
+        LEDcolor(double c) {
             dutyCycle = c;
         }
 
         public final double dutyCycle;
     }
 
-    public LedMode getAlliance() {
+    public LEDcolor getAlliance() {
         switch (DriverStation.getAlliance()) {
             case Blue:
-                return LedMode.BLUE;
+                return LEDcolor.BLUE;
             case Red:
-                return LedMode.RED;
+                return LEDcolor.RED;
         }
-        return LedMode.LIGHT_CHASE_BLUE;
+        return LEDcolor.LIGHT_CHASE_BLUE;
     }
 
-    public Command setColorCommand(LedMode color) {
+    public Command setColorCommand(LEDcolor color) {
         return new RunCommand(() -> leds.setSpeed(color.dutyCycle), this);
+    }
+
+    public Command restoreDefualtColorCommand(){
+        return new InstantCommand(()-> CommandScheduler.getInstance().requiring(this).cancel());
     }
 
     @Override

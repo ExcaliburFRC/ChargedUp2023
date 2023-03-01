@@ -1,4 +1,4 @@
-package frc.robot.drivetrain;
+package frc.robot.swerve;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.controller.PIDController;
@@ -66,25 +66,9 @@ public class Swerve extends SubsystemBase {
 
     private final AHRS _gyro = new AHRS(SPI.Port.kMXP);
 
-    private final PIDController xAutoController = new PIDController(kp_x_AUTO, 0, 0);
-    private final PIDController yAutoController = new PIDController(kp_y_AUTO, 0, 0);
-    private final ProfiledPIDController thetaAutoController = new ProfiledPIDController(kp_Theta_AUTO, 0, 0, kThetaControllerConstraints);
-
     private final PIDController rampController = new PIDController(Constants.SwerveConstants.RAMP_BALANCE_KP, 0, 0);
     private final PIDController thetaTeleopController = new PIDController(kp_Theta_TELEOP, 0, 0);
 
-    private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
-            kSwerveKinematics,
-            getRotation2d(),
-            new SwerveModulePosition[]{
-                    swerveModules[FRONT_LEFT].getPosition(),
-                    swerveModules[FRONT_RIGHT].getPosition(),
-                    swerveModules[BACK_LEFT].getPosition(),
-                    swerveModules[BACK_RIGHT].getPosition()},
-            new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
-
-    private final Limelight limelight = new Limelight();
-    private final Field2d field = new Field2d();
     private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
     private final Trigger robotBalancedTrigger = new Trigger(()-> Math.abs(getRampAngle()) < 3);
 
@@ -105,13 +89,8 @@ public class Swerve extends SubsystemBase {
         _gyro.reset();
     }
 
-    // return the angle of the robot in degrees between 0 and 360
-    //TODO: check if works
     private double getDegrees() {
-        double deg = Math.IEEEremainder(_gyro.getAngle(), 360);
-        deg *= -1;
-        if (deg < 0) deg += 360;
-        return deg;
+        return Math.IEEEremainder(_gyro.getAngle(), 360);
     }
 
     public Rotation2d getRotation2d() {
@@ -122,19 +101,14 @@ public class Swerve extends SubsystemBase {
     //TODO: check if works
     private double getRampAngle() {
         double pitch = _gyro.getPitch();
-        pitch *= -1;
-        if (pitch < 0) pitch += 360;
-        return pitch;
-    }
-
-    public Command resetGyroCommand() {
-        return new InstantCommand(this::resetGyro);
+//        pitch *= -1;
+//        if (pitch < 0) pitch += 360;
+        return pitch * 100;
     }
 
     public Command resetModulesCommand() {
         return new FunctionalCommand(
-                () -> {
-                },
+                () -> {},
                 () -> {
                     swerveModules[FRONT_LEFT].spinTo(0);
                     swerveModules[FRONT_RIGHT].spinTo(0);
@@ -171,41 +145,42 @@ public class Swerve extends SubsystemBase {
 
     // turning speed based swerve drive
     public Command driveSwerveCommand(
-            DoubleSupplier xSpeedSupplier,
-            DoubleSupplier ySpeedSupplier,
-            DoubleSupplier spinningSpeedSupplier,
-            BooleanSupplier fieldOriented) {
+          DoubleSupplier xSpeedSupplier,
+          DoubleSupplier ySpeedSupplier,
+          DoubleSupplier spinningSpeedSupplier,
+          BooleanSupplier fieldOriented) {
 
         final SlewRateLimiter
-                xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
-                yLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
-                spinningLimiter = new SlewRateLimiter(kTeleDriveMaxAngularAccelerationUnitsPerSecond);
+              xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
+              yLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
+              spinningLimiter = new SlewRateLimiter(kTeleDriveMaxAngularAccelerationUnitsPerSecond);
 
         return resetModulesCommand().andThen(
-                new PrintCommand("began drive command"),
-                Commands.runEnd(
-                        () -> {
-                            //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
-                            double xSpeed = xLimiter.calculate(applyDeadband(xSpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveSpeed,
-                                    ySpeed = yLimiter.calculate(applyDeadband(ySpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveSpeed,
-                                    spinningSpeed = spinningLimiter.calculate(applyDeadband(spinningSpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveTurningSpeed;
+              new FunctionalCommand(
+              () -> {}, //resetModulesCommand().schedule(),
+              () -> {
+                  //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
+                  double xSpeed = xLimiter.calculate(applyDeadband(xSpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveSpeed,
+                        ySpeed = yLimiter.calculate(applyDeadband(ySpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveSpeed,
+                        spinningSpeed = spinningLimiter.calculate(applyDeadband(spinningSpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveTurningSpeed;
 
-                            // create a CassisSpeeds object and apply it the speeds
-                            ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
-                                    ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getRotation2d()) :
-                                    new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
+                  // create a CassisSpeeds object and apply it the speeds
+                  ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
+                        ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getRotation2d()) :
+                        new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
 
-                            //use the ChassisSpeedsObject to create an array of SwerveModuleStates
-                            SwerveModuleState moduleStates[] = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
+                  //use the ChassisSpeedsObject to create an array of SwerveModuleStates
+                  SwerveModuleState[] moduleStates = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
 
-                            //apply the array to the swerve modules of the robot
-                            setModulesStates(moduleStates);
-                        },
-                        () -> {
-                            stopModules();
-                            resetEncoders();
-                        },
-                        this));
+                  //apply the array to the swerve modules of the robot
+                  setModulesStates(moduleStates);
+              },
+              (__) -> {
+                  stopModules();
+                  resetEncoders();
+              },
+              () -> false,
+              this));
     }
 
     // angle based swerve drive
@@ -245,23 +220,18 @@ public class Swerve extends SubsystemBase {
         return new InstantCommand(() -> lastJoystickAngle.set(0));
     }
 
+    public Command resetGyroCommand(){
+        return new InstantCommand(this::resetGyro);
+    }
+    public void setGyroCommand(int angle){
+        _gyro.setAngleAdjustment(
+              angle);
+    }
+
     @Override
     public void periodic() {
-        limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
-
-        odometry.update(
-                getRotation2d(),
-                new SwerveModulePosition[]{
-                        swerveModules[FRONT_LEFT].getPosition(),
-                        swerveModules[FRONT_RIGHT].getPosition(),
-                        swerveModules[BACK_LEFT].getPosition(),
-                        swerveModules[BACK_RIGHT].getPosition()
-                });
-
-        field.setRobotPose(odometry.getEstimatedPosition());
-        SmartDashboard.putData(field);
-
         SmartDashboard.putData("gyro angle", _gyro);
+        SmartDashboard.putNumber("ramp angle", getRampAngle());
     }
 
     private void setModulesStates(SwerveModuleState[] states) {
@@ -279,91 +249,15 @@ public class Swerve extends SubsystemBase {
         swerveModules[BACK_RIGHT].resetEncoders();
     }
 
+    public Command driveToRampCommand(){
+        return driveSwerveCommand(()-> -0.2, ()-> 0, ()-> 0, ()-> false)
+              .until(()-> Math.abs(getRampAngle() - 424) > 50);
+    }
+
     private void stopModules() {
         swerveModules[FRONT_LEFT].stop();
         swerveModules[FRONT_RIGHT].stop();
         swerveModules[BACK_LEFT].stop();
         swerveModules[BACK_RIGHT].stop();
-    }
-
-    // autonomous code
-
-    public Command followTrajectoryCommand(List<Translation2d> wayPoints, Pose2d end) {
-        return followTrajectoryCommand(
-                TrajectoryGenerator.generateTrajectory(
-                        odometry.getEstimatedPosition(),
-                        wayPoints,
-                        end,
-                        kConfig)
-        );
-    }
-
-    public Command followTrajectoryCommand(Trajectory trajectory) {
-        return new SwerveControllerCommand(
-                trajectory,
-                odometry::getEstimatedPosition,
-                kSwerveKinematics,
-                xAutoController,
-                yAutoController,
-                thetaAutoController,
-                this::setModulesStates,
-                this);
-    }
-
-    public Command spinVectorTo(Pose2d desiredPose) {
-        return followTrajectoryCommand(new ArrayList<>(), desiredPose);
-    }
-
-    public Command vectorTo(Translation2d desiredTranslation) {
-        return spinVectorTo(new Pose2d(desiredTranslation, getRotation2d()));
-    }
-
-    public Command turnToAngleCommand(double degrees) {
-        return driveSwerveCommand(
-                () -> 0,
-                () -> 0,
-                () -> thetaTeleopController.calculate(getDegrees(), degrees),
-                () -> false)
-                .until(thetaTeleopController::atSetpoint);
-    }
-
-    public Command rotateToGridCommand() {
-        return turnToAngleCommand(180);
-    }
-
-    public Command PIDdriveToRampCommand(RampLocations location) {
-        return driveSwerveCommand(
-                () -> xAutoController.calculate(
-                        odometry.getEstimatedPosition().getX(),
-                        Calculation.isBlueAlliance() ? location.blue.getX() : location.red.getX()),
-                () -> 0,
-                () -> 0,
-                () -> true)
-                .until(()-> Math.abs(getRampAngle()) > 5);
-    }
-
-    public Command slowDriveToRampCommand(){
-        return driveSwerveCommand(
-                ()-> 0.1,
-                ()-> 0,
-                ()-> 0,
-                ()-> true)
-                .until(robotBalancedTrigger.negate());
-    }
-
-    public Command balanceRampCommand() {
-        return driveSwerveCommand(
-                () -> 0,
-                () -> rampController.calculate(getRampAngle(), 0) / 2,
-                () -> 0,
-                () -> true
-        );
-    }
-
-    public Command autoClimbCommand() {
-        return Commands.sequence(
-                turnToAngleCommand(0),
-                slowDriveToRampCommand(),
-                balanceRampCommand());
     }
 }

@@ -2,28 +2,22 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ArmConstants.Setpoints;
-import frc.robot.drivetrain.Swerve;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
+import static frc.robot.Constants.ArmConstants.ConeDutyCycle.*;
 import static frc.robot.Constants.ClawConstants.GamePiece;
-import static frc.robot.subsystems.LEDs.LedMode.*;
 
 public class Superstructure extends SubsystemBase {
+   public final Arm arm = new Arm();
+   public final RollerGripper rollerGripper = new RollerGripper();
 
-   private final Arm arm = new Arm();
-   private final Claw claw = new Claw();
-   private final Spindexer spindexer = new Spindexer();
-   private final Intake intake = new Intake();
-
-    static AtomicReference<GamePiece> currentGamePiece;
-    static AtomicReference<GamePiece> lastRequestedGamePiece;
+    static AtomicReference<GamePiece> currentGamePiece = new AtomicReference<>(GamePiece.EMPTY);
+    static AtomicReference<GamePiece> lastRequestedGamePiece = new AtomicReference<>();
 
     public Superstructure() {
-        currentGamePiece.set(GamePiece.EMPTY);
-
-        arm.setDefaultCommand(arm.holdSetpointCommand(Setpoints.SPINDEXER.gamePiece));
     }
 
     private boolean isCone(){
@@ -37,51 +31,48 @@ public class Superstructure extends SubsystemBase {
         return new InstantCommand(()-> lastRequestedGamePiece.set(gamePiece));
     }
 
-    public Command intakeFromClawCommand() {
-        return new SequentialCommandGroup(
-                claw.openClawCommand(),
-                arm.holdSetpointCommand(Setpoints.INTAKE.gamePiece),
-                claw.autoCloseCommand(),
-                setCurrentGamePiece(lastRequestedGamePiece.get()));
+    public Command intakeFromShelfCommand(BooleanSupplier accel, BooleanSupplier reduce){
+        return new ParallelCommandGroup(
+                rollerGripper.intakeCommand(),
+                arm.holdArmCommand(SHELF.dc, accel, reduce))
+              .until(rollerGripper.buttonTrigger);
     }
 
-    public Command intakeCommand(){
-        return new SequentialCommandGroup(
-                claw.openClawCommand(),
-                intake.intakeCommand().until(spindexer.beambreakTrigger),
-                spindexer.straightenGamePieceCommand(),
-                setCurrentGamePiece(spindexer.getCurrentGamePiece()));
+    public Command placeOnHighCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce, DoubleSupplier lengthSpeed) {
+        return new ParallelCommandGroup(
+                arm.holdArmCommand(HIGH.dc, accel, reduce),
+              arm.manualLengthCommand(lengthSpeed),
+              rollerGripper.releaseCommand(release))
+              .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }
 
-    public Command intakeFromShelfCommand(){
-        return new SequentialCommandGroup(
-                claw.openClawCommand(),
-                arm.holdSetpointCommand(Setpoints.SHELF.gamePiece),
-                claw.autoCloseCommand(),
-                setCurrentGamePiece(lastRequestedGamePiece.get()));
+    public Command placeOnMidCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce, DoubleSupplier lengthSpeed) {
+      return new ParallelCommandGroup(
+            arm.holdArmCommand(MID.dc, accel, reduce),
+            arm.manualLengthCommand(lengthSpeed),
+            rollerGripper.releaseCommand(release))
+            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }
 
-    public Command placeOnHighCommand(Trigger release) {
-        return new SequentialCommandGroup(
-                claw.closeClawCommand(),
-                arm.holdSetpointCommand(isCone()? Setpoints.HIGH.cone : Setpoints.HIGH.cube),
-                claw.releaseCommand(release),
-                setCurrentGamePiece(GamePiece.EMPTY));
+    public Command placeOnLowCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce, DoubleSupplier lengthSpeed) {
+      return new ParallelCommandGroup(
+            arm.holdArmCommand(LOW.dc, accel, reduce),
+            arm.manualLengthCommand(lengthSpeed),
+            rollerGripper.releaseCommand(release))
+            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
     }
 
-    public Command placeOnMidCommand(Trigger release) {
-        return new SequentialCommandGroup(
-                claw.closeClawCommand(),
-                arm.holdSetpointCommand(isCone()? Setpoints.MID.cone : Setpoints.MID.cube),
-                claw.releaseCommand(release),
-                setCurrentGamePiece(GamePiece.EMPTY));
+    public Command manualCommand(
+          DoubleSupplier angle,
+          DoubleSupplier pov,
+          BooleanSupplier intake,
+          BooleanSupplier outtake,
+          BooleanSupplier stop){
+      return arm.povManualCommand(()-> angle.getAsDouble() / 4, pov)
+            .alongWith(rollerGripper.manualCommand(intake, outtake, stop));
     }
 
-    public Command placeOnLowCommand(Trigger release) {
-        return new SequentialCommandGroup(
-                claw.closeClawCommand(),
-                arm.holdSetpointCommand(isCone()? Setpoints.LOW.cone : Setpoints.LOW.cube),
-                claw.releaseCommand(release),
-                setCurrentGamePiece(GamePiece.EMPTY));
+    public Command floatCommand(){
+      return arm.floatCommand();
     }
 }

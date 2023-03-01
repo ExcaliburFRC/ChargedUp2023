@@ -1,11 +1,15 @@
 package frc.robot.utiliy;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.Constants;
 
 import static frc.robot.Constants.Coordinates.middleAxisXValue;
 
 public class Calculation {
+    public static double floatDutyCycle = 0;
+
     public static boolean isBlueAlliance(){
         return DriverStation.getAlliance().equals(DriverStation.Alliance.Blue);
     }
@@ -15,5 +19,13 @@ public class Calculation {
         return new Translation2d(
                 lastPoint.getX() < middleAxisXValue ? middleAxisXValue + dis : middleAxisXValue - dis,
                 lastPoint.getY());
+    }
+
+    public static double deadband(double value){
+        return deadband(value, Constants.SwerveConstants.kDeadband);
+    }
+
+    public static double deadband(double value, double deadband){
+        return MathUtil.applyDeadband(value, deadband);
     }
 }

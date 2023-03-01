@@ -1,4 +1,4 @@
-package frc.robot.drivetrain;
+package frc.robot.swerve;
 
 import com.revrobotics.*;
 import edu.wpi.first.math.controller.PIDController;
@@ -8,7 +8,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 
@@ -30,6 +29,7 @@ public class SwerveModule implements Sendable {
   private final PIDController _spinningPIDController;
 
   public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < kTolerance).debounce(0.1);
+
   // construct the class
   public SwerveModule(
           int driveMotorId,
@@ -51,7 +51,11 @@ public class SwerveModule implements Sendable {
     _driveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
+    _driveMotor.clearFaults();
+    _spinningMotor.clearFaults();
+
     _spinningMotor.setSmartCurrentLimit(20);
+    _driveMotor.setSmartCurrentLimit(50);
 
     _driveEncoder = _driveMotor.getEncoder();
     _spinningEncoder = _spinningMotor.getEncoder();
@@ -149,7 +153,6 @@ public class SwerveModule implements Sendable {
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Gyro");
     builder.addDoubleProperty("Value", () -> Math.toDegrees(getAbsEncoderRad()), null);
-    builder.addDoubleProperty("abs value", this::getAbsPos, null);
     builder.addDoubleProperty("absEncoderPos", this::getAbsPos, null);
   }
 }
