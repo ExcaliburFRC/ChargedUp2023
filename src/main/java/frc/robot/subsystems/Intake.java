@@ -1,8 +1,10 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -19,16 +21,19 @@ public class Intake extends SubsystemBase {
     private final DoubleSolenoid intakePiston = new DoubleSolenoid(REVPH, INTAKE_FWD_CHANNEL, INTAKE_REV_CHANNEL);
     private final DoubleSolenoid ejectPiston = new DoubleSolenoid(REVPH, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
 
-    private final PIDController pidController = new PIDController(kP, kI, kD);
+    private final PIDController pidController = new PIDController(kP, 0, 0);
     private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV);
 
-    public final Trigger isAtTargetVelocity = new Trigger(()-> pidController.getVelocityError() > TOLERANCE);
+    public final Trigger isAtTargetVelocity = new Trigger(()-> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.15);
+    private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
     public Intake() {
         intakeMotor.restoreFactoryDefaults();
-        intakeMotor.setSmartCurrentLimit(INTAKE_MOTOR_CURRENT_LIMIT);
         intakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         intakeMotor.clearFaults();
+        intakeEncoder.setAverageDepth(8);
+        intakeEncoder.setMeasurementPeriod(32);
+//        intakeMotor.getFault()
     }
 
     public Command openPistonCommand() {
@@ -90,24 +95,24 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public double getVelocity(){
-        return intakeMotor.getEncoder().getVelocity();
-    }
-
-    private Command accelarateMotorCommand(int rpm){
-        return Commands.runEnd(
+    public Command shootCubeCommand(double rpm){
+        return this.run(
               ()-> {
-                  double pid = pidController.calculate(getVelocity(), rpm);
+                  double pid = pidController.calculate(intakeEncoder.getVelocity(), rpm);
                   double ff = feedforward.calculate(rpm);
 
                   intakeMotor.setVoltage(pid + ff);
-              },
-              intakeMotor::stopMotor
-        );
+              }).alongWith(new WaitUntilCommand(isAtTargetVelocity)
+              .andThen(pushCubeCommand()))
+              .finallyDo((__)-> {
+                  intakeMotor.stopMotor();
+                  ejectPiston.set(DoubleSolenoid.Value.kReverse);
+              });
     }
 
-    public Command shootCubeCommand(int rpm){
-        return accelarateMotorCommand(rpm)
-              .alongWith(new WaitUntilCommand(isAtTargetVelocity).andThen(pushCubeCommand()));
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty("shooter current", intakeMotor::getOutputCurrent, null);
+        builder.addDoubleProperty("shooter velocity", intakeEncoder::getVelocity, null);
     }
 }

@@ -14,6 +14,8 @@ public class FaultReporter {
   PowerDistribution pd = new PowerDistribution();
   PneumaticHub ph = new PneumaticHub();
 
+  int[] toIgnore = new int[]{10, 11, 12, 13, 14};
+
   public void check() {
     // pdh checks
     try {

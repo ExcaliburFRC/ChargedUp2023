@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.autonomous.noRamsete.EmptyCommand;
 import frc.robot.commands.autonomous.noRamsete.cube.CubeAndClimb;
 import frc.robot.commands.autonomous.noRamsete.cube.CubeAndLeave;
 import frc.robot.commands.autonomous.noRamsete.noGamePiece.ClimbRamp;
@@ -40,9 +39,9 @@ public class RobotContainer {
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
-  public final SendableChooser<Command> autoChooser = new SendableChooser();
-  public final SendableChooser<Integer> heightChooser = new SendableChooser();
-  public final SendableChooser<Integer> facingChooser = new SendableChooser();
+  public final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  public final SendableChooser<Integer> heightChooser = new SendableChooser<>();
+  public final SendableChooser<Integer> facingChooser = new SendableChooser<>();
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
@@ -54,6 +53,8 @@ public class RobotContainer {
    */
   public RobotContainer() {
     configureBindings();
+
+    SmartDashboard.putData("intake", intake);
   }
 
   /**
@@ -67,9 +68,9 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // auto configuration
-    heightChooser.setDefaultOption("1", new Integer(1));
-    heightChooser.addOption("2", new Integer(2));
-    heightChooser.addOption("3", new Integer(3));
+    heightChooser.setDefaultOption("1", 1);
+    heightChooser.addOption("2", 2);
+    heightChooser.addOption("3", 3);
 
     autoChooser.setDefaultOption("LeaveCommunity", new LeaveCommunity(swerve));
     autoChooser.addOption("ClimbRamp", new ClimbRamp(swerve));
@@ -77,7 +78,6 @@ public class RobotContainer {
     autoChooser.addOption("CubeAndLeave", new CubeAndLeave(swerve, intake,3));
     autoChooser.addOption("CubeAndClimb", new CubeAndClimb(swerve, intake, 3));
 
-    autoChooser.addOption("empty", new EmptyCommand());
 
     facingChooser.setDefaultOption("forward", 0);
     facingChooser.addOption("backwards", 180);
@@ -103,9 +103,9 @@ public class RobotContainer {
 //    armJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
 //    armJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
 
-    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(LOW_RPM));
+    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
-    armJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
+    armJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(LOW_RPM));
 
     // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
