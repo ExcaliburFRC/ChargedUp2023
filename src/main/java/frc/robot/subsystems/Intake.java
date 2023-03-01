@@ -87,10 +87,4 @@ public class Intake extends SubsystemBase {
               return new InstantCommand(()-> {});
         }
     }
-//    x. ontrue(new setSHoter s[eed command (13413)]);
-//    y. onture ( new instance commadn(()-> command scdulaer.get fin .sc(new )))
-
-    // top - 54
-    // middle - 30
-    // low - 5
 }
