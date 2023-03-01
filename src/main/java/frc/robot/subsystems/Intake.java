@@ -1,11 +1,12 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
@@ -18,10 +19,10 @@ public class Intake extends SubsystemBase {
     private final DoubleSolenoid intakePiston = new DoubleSolenoid(REVPH, INTAKE_FWD_CHANNEL, INTAKE_REV_CHANNEL);
     private final DoubleSolenoid ejectPiston = new DoubleSolenoid(REVPH, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
 
+    private final PIDController pidController = new PIDController(kP, kI, kD);
+    private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV);
 
-//    private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_CHANNEL);
-
-//    private final Trigger beambreakTrigger = new Trigger(()-> beambreak.get());
+    public final Trigger isAtTargetVelocity = new Trigger(()-> pidController.getVelocityError() > TOLERANCE);
 
     public Intake() {
         intakeMotor.restoreFactoryDefaults();
@@ -56,7 +57,7 @@ public class Intake extends SubsystemBase {
               }, this).andThen();
     }
 
-    private Command ejectCubeCommand(){
+    private Command pushCubeCommand(){
         return new InstantCommand((()-> ejectPiston.set(DoubleSolenoid.Value.kForward)));
     }
 
@@ -68,29 +69,45 @@ public class Intake extends SubsystemBase {
         return new RunCommand(()-> intakeMotor.set(-0.5)).withTimeout(0.05);
     }
 
+    @Deprecated
     public Command shootCubeCommand(int height, DoubleSupplier offset) {
         switch (height){
             case 1:
                 return Commands.repeatingSequence(
                       Commands.runEnd(()-> intakeMotor.set(-0.2), intakeMotor::stopMotor, this).withTimeout(0.3), pulseMotorCommand())
-                      .alongWith(ejectCubeCommand())
+                      .alongWith(pushCubeCommand())
                       .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             case 2:
                 return Commands.runEnd(()-> intakeMotor.set(-0.4 + offset.getAsDouble()), intakeMotor::stopMotor, this)
-                      .alongWith(new WaitCommand(0.2).andThen(ejectCubeCommand()))
+                      .alongWith(new WaitCommand(0.2).andThen(pushCubeCommand()))
                       .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             case 3:
                 return Commands.runEnd(()-> intakeMotor.set(-0.7 + offset.getAsDouble()), intakeMotor::stopMotor, this)
-                      .alongWith(new WaitCommand(0.45).andThen(ejectCubeCommand()))
+                      .alongWith(new WaitCommand(0.45).andThen(pushCubeCommand()))
                       .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
             default:
               return new InstantCommand(()-> {});
         }
     }
-//    x. ontrue(new setSHoter s[eed command (13413)]);
-//    y. onture ( new instance commadn(()-> command scdulaer.get fin .sc(new )))
 
-    // top - 54
-    // middle - 30
-    // low - 5
+    public double getVelocity(){
+        return intakeMotor.getEncoder().getVelocity();
+    }
+
+    private Command accelarateMotorCommand(int rpm){
+        return Commands.runEnd(
+              ()-> {
+                  double pid = pidController.calculate(getVelocity(), rpm);
+                  double ff = feedforward.calculate(rpm);
+
+                  intakeMotor.setVoltage(pid + ff);
+              },
+              intakeMotor::stopMotor
+        );
+    }
+
+    public Command shootCubeCommand(int rpm){
+        return accelarateMotorCommand(rpm)
+              .alongWith(new WaitUntilCommand(isAtTargetVelocity).andThen(pushCubeCommand()));
+    }
 }

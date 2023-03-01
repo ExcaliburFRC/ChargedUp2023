@@ -22,6 +22,8 @@ import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 import frc.robot.utiliy.Calculation;
 
+import static frc.robot.Constants.IntakeConstants.*;
+
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -101,19 +103,18 @@ public class RobotContainer {
 //    armJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
 //    armJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
 
-    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(3, ()-> offset));
-    armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(2, ()-> offset));
-    armJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(1, ()-> offset));
+    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(LOW_RPM));
+    armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
+    armJoystick.povDown().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
 
     // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
 //    driveJoystick.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
 
     // other
+
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
-//    new Trigger(()-> armJoystick.getHID().getRawButtonPressed(15))
-//          .toggleOnTrue(superstructure.arm.lowerTelescopeCommand());
 
     driveJoystick.povUp().onTrue(offsetShooter(0.05));
     driveJoystick.povDown().onTrue(offsetShooter(-0.05));

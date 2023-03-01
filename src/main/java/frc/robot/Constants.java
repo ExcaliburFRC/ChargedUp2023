@@ -28,6 +28,19 @@ public final class Constants {
 
         public static final int EJECT_FWD_CHANNEL = 0;
         public static final int EJECT_REV_CHANNEL = 1;
+
+        public static final int LOW_RPM = 0;
+        public static final int MID_RPM = 0;
+        public static final int HIGH_RPM = 0;
+
+        public static double kP = 0;
+        public static double kI = 0;
+        public static double kD = 0;
+
+        public static double kS = 0;
+        public static double kV = 0;
+
+        public static final double TOLERANCE = 3;
     }
 
     public static final class SpindexerConstants{
