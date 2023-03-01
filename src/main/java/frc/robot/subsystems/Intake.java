@@ -70,10 +70,6 @@ public class Intake extends SubsystemBase {
         return new InstantCommand((()-> ejectPiston.set(DoubleSolenoid.Value.kReverse)));
     }
 
-    public Command pulseMotorCommand(){
-        return new RunCommand(()-> intakeMotor.set(-0.5)).withTimeout(0.05);
-    }
-
     @Deprecated
     public Command shootCubeCommand(int height, DoubleSupplier offset) {
         switch (height){
@@ -103,11 +99,26 @@ public class Intake extends SubsystemBase {
 
                   intakeMotor.setVoltage(pid + ff);
               }).alongWith(new WaitUntilCommand(isAtTargetVelocity)
-              .andThen(pushCubeCommand()))
+              .andThen(
+                    pushCubeCommand()
+              ))
               .finallyDo((__)-> {
                   intakeMotor.stopMotor();
                   ejectPiston.set(DoubleSolenoid.Value.kReverse);
               });
+    }
+
+    public Command shootCubeToLowCommand(){
+        return Commands.repeatingSequence(
+                    Commands.runEnd(()-> intakeMotor.setVoltage(-1), intakeMotor::stopMotor, this)
+                          .withTimeout(0.2), //-1, 0.2
+                    pulseMotorCommand())
+              .alongWith(pushCubeCommand())
+              .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
+    }
+
+    public Command pulseMotorCommand(){ // -10, 0.07
+        return Commands.runEnd(()-> intakeMotor.setVoltage(-10), intakeMotor::stopMotor).withTimeout(0.07);
     }
 
     @Override

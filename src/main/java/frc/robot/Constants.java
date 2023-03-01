@@ -31,13 +31,12 @@ public final class Constants {
         public static double kS = 0.070785;
         public static double kV = 0.12968 / 60;
 
-//        public static double kP = 7.1211E-07;
-        public static double kP = 0;
+        public static double kP = 7.1211E-07;
+//        public static double kP = 0;
 
-        public static final double LOW_RPM = -(0.1 * 12) / kV;
-        public static final double MID_RPM = -(0.3 * 12) / kV;
-//        public static final double HIGH_RPM = -(0.65 * 12) / kV;
-        public static final double HIGH_RPM = -3500;
+        public static final double LOW_RPM = -800;
+        public static final double MID_RPM = -1800;
+        public static final double HIGH_RPM = -3350;
 
         public static final double TOLERANCE = 100;
     }
