@@ -2,16 +2,21 @@ package frc.robot.swerve;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.utility.Limelight;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -60,6 +65,20 @@ public class Swerve extends SubsystemBase {
     private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
     private final Trigger robotBalancedTrigger = new Trigger(()-> Math.abs(getRampAngle()) < 3);
 
+    private final Limelight limelight = new Limelight();
+
+    private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
+            kSwerveKinematics,
+            getGyroRotation(),
+            new SwerveModulePosition[]{
+                    swerveModules[FRONT_LEFT].getPosition(),
+                    swerveModules[FRONT_RIGHT].getPosition(),
+                    swerveModules[BACK_LEFT].getPosition(),
+                    swerveModules[BACK_RIGHT].getPosition()},
+            new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
+
+    private final Field2d field = new Field2d();
+
     public Swerve() {
         resetGyro();
 
@@ -81,9 +100,14 @@ public class Swerve extends SubsystemBase {
         return Math.IEEEremainder(_gyro.getAngle(), 360);
     }
 
-    public Rotation2d getRotation2d() {
+    public Rotation2d getGyroRotation() {
         return Rotation2d.fromDegrees(getDegrees());
     }
+
+    public Rotation2d getRotation(){
+        return odometry.getEstimatedPosition().getRotation();
+    }
+
 
     // return the pitch of the robot
     //TODO: check if works
@@ -126,7 +150,7 @@ public class Swerve extends SubsystemBase {
             BooleanSupplier withAngle) {
         return new RepeatCommand(
                 driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, xAngle, fieldOriented)
-                        .until(() -> withAngle.getAsBoolean())
+                        .until(withAngle)
                         .andThen(driveSwerveWithAngleCommand(xSpeedSupplier, ySpeedSupplier, () -> -xAngle.getAsDouble(), () -> yAngle.getAsDouble(), fieldOriented)
                                 .until(() -> !withAngle.getAsBoolean())));
     }
@@ -154,7 +178,7 @@ public class Swerve extends SubsystemBase {
 
                   // create a CassisSpeeds object and apply it the speeds
                   ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
-                        ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getRotation2d()) :
+                        ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getRotation()) :
                         new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
 
                   //use the ChassisSpeedsObject to create an array of SwerveModuleStates
@@ -179,7 +203,7 @@ public class Swerve extends SubsystemBase {
             DoubleSupplier yAngle,
             BooleanSupplier fieldOriented) {
         return new InstantCommand(() -> lastJoystickAngle.set((int) getDegrees()))
-                .andThen(new ParallelRaceGroup(
+                .andThen(new ParallelCommandGroup(
                         new RunCommand(() -> updateJoystickAngle(xAngle.getAsDouble(), yAngle.getAsDouble())),
                         driveSwerveCommand(xSpeed, ySpeed, () -> -thetaTeleopController.calculate(getDegrees(), lastJoystickAngle.get()), fieldOriented))
                 );
@@ -208,18 +232,50 @@ public class Swerve extends SubsystemBase {
         return new InstantCommand(() -> lastJoystickAngle.set(0));
     }
 
-    public Command resetGyroCommand(){
-        return new InstantCommand(this::resetGyro);
+    public Command resetOdometryCommand(Pose2d newPose){
+        return new InstantCommand(()-> odometry.resetPosition(
+                getGyroRotation(),
+                new SwerveModulePosition[]{
+                        swerveModules[FRONT_LEFT].getPosition(),
+                        swerveModules[FRONT_RIGHT].getPosition(),
+                        swerveModules[BACK_LEFT].getPosition(),
+                        swerveModules[BACK_RIGHT].getPosition()
+                },
+                newPose)
+        );
     }
-    public void setGyroCommand(int angle){
-        _gyro.setAngleAdjustment(
-              angle);
+
+    public Command resetGyroCommand(){
+        return new InstantCommand(()->
+                odometry.resetPosition(
+                new Rotation2d(0),
+                new SwerveModulePosition[]{
+                        swerveModules[FRONT_LEFT].getPosition(),
+                        swerveModules[FRONT_RIGHT].getPosition(),
+                        swerveModules[BACK_LEFT].getPosition(),
+                        swerveModules[BACK_RIGHT].getPosition()},
+                odometry.getEstimatedPosition()
+                ));
     }
 
     @Override
     public void periodic() {
         SmartDashboard.putData("gyro angle", _gyro);
         SmartDashboard.putNumber("ramp angle", getRampAngle());
+
+        odometry.update(
+                getGyroRotation(),
+                new SwerveModulePosition[]{
+                        swerveModules[FRONT_LEFT].getPosition(),
+                        swerveModules[FRONT_RIGHT].getPosition(),
+                        swerveModules[BACK_LEFT].getPosition(),
+                        swerveModules[BACK_RIGHT].getPosition()
+                });
+
+        limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
+
+        field.setRobotPose(odometry.getEstimatedPosition());
+        SmartDashboard.putData(field);
     }
 
     private void setModulesStates(SwerveModuleState[] states) {
