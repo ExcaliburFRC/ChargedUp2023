@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.utiliy.Calculation;
+import frc.robot.utility.Calculation;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;

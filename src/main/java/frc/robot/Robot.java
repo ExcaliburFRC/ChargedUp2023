@@ -4,14 +4,14 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import frc.robot.utility.FaultReporter;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -24,6 +24,10 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
+  public Robot(){
+    addPeriodic(new FaultReporter()::check, 1);
+  }
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -33,6 +37,9 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    DataLogManager.start();
+    DriverStation.startDataLog(DataLogManager.getLog(), true);
   }
 
   /**
@@ -67,8 +74,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-
-//    m_robotContainer.resetModulesCommand().schedule();
   }
 
 
@@ -90,7 +95,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    SmartDashboard.putNumber("offset", -m_robotContainer.offset * 100);
   }
 
   @Override

@@ -154,5 +154,6 @@ public class SwerveModule implements Sendable {
     builder.setSmartDashboardType("Gyro");
     builder.addDoubleProperty("Value", () -> Math.toDegrees(getAbsEncoderRad()), null);
     builder.addDoubleProperty("absEncoderPos", this::getAbsPos, null);
+    builder.addDoubleProperty("drive output current", _driveMotor::getOutputCurrent, null);
   }
 }
