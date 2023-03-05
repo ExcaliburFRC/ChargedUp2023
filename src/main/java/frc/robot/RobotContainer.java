@@ -33,7 +33,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 //  private final Superstructure superstructure = new Superstructure();
   private final Intake intake = new Intake();
-//  private final Swerve swerve = new Swerve();
+  private final Swerve swerve = new Swerve();
   private final Arm arm = new Arm();
   private final RollerGripper rollerGripper = new RollerGripper();
 
@@ -87,12 +87,12 @@ public class RobotContainer {
 
 //    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
-//    swerve.setDefaultCommand(
-//          swerve.driveSwerveCommand(
-//                ()-> -driveJoystick.getLeftY(),
-//                driveJoystick::getLeftX,
-//                driveJoystick::getRightX,
-//                driveJoystick.R2().negate()));
+    swerve.setDefaultCommand(
+          swerve.driveSwerveCommand(
+                ()-> -driveJoystick.getLeftY(),
+                driveJoystick::getLeftX,
+                driveJoystick::getRightX,
+                driveJoystick.R2().negate()));
 
     // intake commands
 //    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1(), driveJoystick.R1()));
@@ -114,7 +114,7 @@ public class RobotContainer {
     // other
 
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
-//    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
+    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
 
     driveJoystick.povUp().onTrue(offsetShooter(0.05));
     driveJoystick.povDown().onTrue(offsetShooter(-0.05));
