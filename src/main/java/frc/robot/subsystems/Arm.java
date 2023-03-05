@@ -53,6 +53,12 @@ public class Arm extends SubsystemBase {
 //    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, 19.5f); // todo: fixxx
   }
 
+  /**
+   * manual control of the system using the controller's joysticks
+   * @param angleJoystick a supplier of the speed to input to the arm's angle motor's
+   * @param lengthJoystick a supplier of the speed to input to the arm's length motor
+   * @return the command
+   */
   public Command joystickManualCommand(DoubleSupplier angleJoystick, DoubleSupplier lengthJoystick) {
     return new RunCommand(
           () -> {
@@ -63,6 +69,12 @@ public class Arm extends SubsystemBase {
           }, this);
   }
 
+  /**
+   * manual control of the system using a joystick and the POV buttons
+   * @param angleJoystick a supplier of the speed to input to the arm's angle motor's
+   * @param lengthPOV a supplier of the POV angle from the joystick
+   * @return the command
+   */
   public Command povManualCommand(DoubleSupplier angleJoystick, DoubleSupplier lengthPOV) { //kimmel
     return new RunCommand(() -> {
       if (lengthPOV.getAsDouble() == -1) lengthMotor.set(0);
@@ -78,23 +90,47 @@ public class Arm extends SubsystemBase {
     }, this);
   }
 
+  /**
+   * moves the arm's length in a given speed
+   * @param lengthSpeed the speed to move the length motor in
+   * @return the command
+   */
   public Command manualLengthCommand(DoubleSupplier lengthSpeed){
     return new RunCommand(()-> lengthMotor.set(lengthSpeed.getAsDouble()));
   }
 
+  /**
+   * holds the arm in a given DutyCycle
+   * @param dc the dc to hold the arm at
+   * @param accel acceleration button
+   * @param reduce deceleration button
+   * @return the command
+   */
   public Command holdArmCommand(double dc, BooleanSupplier accel, BooleanSupplier reduce ) {
     return moveToDutyCycleCommand(dc, accel, reduce);
   }
 
+  /**
+   * retracts the telescope until fully closed
+   * ends when the armFullyClosedTrigger is true
+   * @return the command
+   */
   public Command retractTelescopeCommand(){
     return Commands.runEnd(()-> lengthMotor.set(-0.45), lengthMotor::stopMotor, this)
           .until(armFullyClosedTrigger);
   }
 
+  /**
+   * retracts the arm's angle until it's inside the frame perimeter
+   * @return
+   */
   private Command retractArmCommand(){
     return Commands.runEnd(()-> angleMotor.set(0.06), angleMotor::stopMotor).until(()-> armAngleClosed());
   }
 
+  /**
+   * @return whether the arm is inside the frame perimeter
+   */
   private boolean armAngleClosed(){
     return Math.abs(270 - getArmDegrees()) < 10;
   }
@@ -138,8 +174,6 @@ public class Arm extends SubsystemBase {
     );
   }
 
-//  private final
-
   private ParallelRaceGroup extendLengthCommand(double telescope) {
     return Commands.runEnd(() -> {
       if (telescope < lengthEncoder.getPosition())
@@ -161,6 +195,10 @@ public class Arm extends SubsystemBase {
     return wantedAngle * 360;
   }
 
+  /**
+   * floats the arm using the current DutyCycle
+   * @return the command
+   */
   public Command floatCommand() {
     return new RunCommand(
           () -> {

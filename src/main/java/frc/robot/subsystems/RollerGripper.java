@@ -69,7 +69,7 @@ public class RollerGripper extends SubsystemBase {
    * ejectCommand
    * <p><b> noInit </b>starts spinning the motors outwards<br>
    * <b>noEnd </b>stops the motors</p>
-   * <b>ends when the button senses that a cone is not longer in the roller gripper </b>
+   * ends when the button senses that a cone is not longer in the roller gripper
    * @return the command
    */
   public Command ejectCommand() {
