@@ -78,10 +78,6 @@ public class RobotContainer {
 //    autoChooser.addOption("CubeAndLeave", new CubeAndLeave(swerve, intake,3));
 //    autoChooser.addOption("CubeAndClimb", new CubeAndClimb(swerve, intake, 3));
 
-
-    facingChooser.setDefaultOption("forward", 0);
-    facingChooser.addOption("backwards", 180);
-
     SmartDashboard.putData(autoChooser);
     SmartDashboard.putData(heightChooser);
 
@@ -93,6 +89,14 @@ public class RobotContainer {
                 driveJoystick::getLeftX,
                 driveJoystick::getRightX,
                 driveJoystick.R2().negate()));
+
+    arm.setDefaultCommand(
+          arm.joystickManualCommand(
+                () -> Calculation.deadband(armJoystick.getLeftY(), 0.1),
+                armJoystick::getRightY));
+
+    rollerGripper.setDefaultCommand(
+          rollerGripper.holdConeCommand());
 
     // intake commands
 //    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1(), driveJoystick.R1()));
@@ -107,28 +111,16 @@ public class RobotContainer {
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
     armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
 
+    armJoystick.R1().toggleOnTrue(rollerGripper.intakeCommand());
+    armJoystick.L1().toggleOnTrue(rollerGripper.ejectCommand());
+
     // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
 //    driveJoystick.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
 
     // other
-
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
-
-    driveJoystick.povUp().onTrue(offsetShooter(0.05));
-    driveJoystick.povDown().onTrue(offsetShooter(-0.05));
-
-    arm.setDefaultCommand(
-          arm.joystickManualCommand(() -> Calculation.deadband(armJoystick.getLeftY(), 0.1), armJoystick::getRightY)
-    );
-
-    armJoystick.R1().toggleOnTrue(rollerGripper.intakeCommand());
-    armJoystick.L1().toggleOnTrue(rollerGripper.ejectCommand());
-
-    rollerGripper.setDefaultCommand(
-          rollerGripper.holdConeCommand()
-    );
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -147,10 +139,6 @@ public class RobotContainer {
           compressor::enableDigital,
           compressor::disable
     );
-  }
-
-  public Command offsetShooter(double offset){
-    return new InstantCommand(()-> this.offset -= offset);
   }
 
   /**
