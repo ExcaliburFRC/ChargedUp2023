@@ -17,7 +17,7 @@ public class RollerGripper extends SubsystemBase {
 
   private final DigitalInput beambreak = new DigitalInput(INTAKE_BEAMBREAK);
 
-  public final Trigger buttonTrigger = new Trigger(() -> !beambreak.get());
+  public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 
   public RollerGripper() {
     rightRoller.restoreFactoryDefaults();
@@ -32,6 +32,11 @@ public class RollerGripper extends SubsystemBase {
     rightRoller.setInverted(true);
   }
 
+  /**
+   * sets the roller gripper motors speeds
+   * @param speed the speed the motors spin at
+   * @return the command
+   */
   private Command setRollerGripperMotor(double speed) {
     return new RunCommand(() -> {
             rightRoller.set(speed);
@@ -39,6 +44,13 @@ public class RollerGripper extends SubsystemBase {
           }, this);
   }
 
+  /**
+   * intakeCommand
+   * <p><b> noInit </b>starts the motors <br>
+   * <b>noEnd </b>stops the motors</p>
+   * <b>ends when the button senses that a cone was collected into the roller gripper </b>
+   * @return the command
+   */
   public Command intakeCommand() {
     return Commands.runEnd(
                 () -> {
@@ -50,9 +62,16 @@ public class RollerGripper extends SubsystemBase {
                   leftRoller.stopMotor();
                 },
                 this)
-          .until(buttonTrigger);
+          .until(beambreakTrigger);
   }
 
+  /**
+   * ejectCommand
+   * <p><b> noInit </b>starts spinning the motors outwards<br>
+   * <b>noEnd </b>stops the motors</p>
+   * <b>ends when the button senses that a cone is not longer in the roller gripper </b>
+   * @return the command
+   */
   public Command ejectCommand() {
     return Commands.runEnd(
                 () -> {
@@ -63,23 +82,39 @@ public class RollerGripper extends SubsystemBase {
                   rightRoller.stopMotor();
                   leftRoller.stopMotor();
                 },
-                this);
-//          .until(buttonTrigger.negate().debounce(0.2));
+                this)
+          .until(beambreakTrigger.negate().debounce(0.2));
   }
 
+  /**
+   * waits until the driver wants to release the cone and then returns the eject command
+   * @param release the button that needs to be pressed in order to eject
+   * @return the eject command after the button was pressed
+   */
   public Command releaseCommand(BooleanSupplier release) {
     return new RunCommand(() -> {
     }).until(release).andThen(ejectCommand());
   }
 
+  /**
+   * applies a small force to the roller gripper in order to hold it in place
+   * @return the command
+   */
   public Command holdConeCommand() {
     return new ConditionalCommand(
           setRollerGripperMotor(0.05).until(()-> true),
           setRollerGripperMotor(0).until(()-> true),
-          buttonTrigger)
+          beambreakTrigger)
           .repeatedly();
   }
 
+  /**
+   * manual command the allows full manual control of the system
+   * @param intake whether the system should currently intake
+   * @param outtake whether the system should currently eject
+   * @param stop whether the system should currently be stopped
+   * @return the command
+   */
   public Command manualCommand(BooleanSupplier intake, BooleanSupplier outtake, BooleanSupplier stop) {
     return Commands.runEnd(
           () -> {
@@ -106,6 +141,6 @@ public class RollerGripper extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putBoolean("rollerGripper button", buttonTrigger.getAsBoolean());
+    SmartDashboard.putBoolean("rollerGripper button", beambreakTrigger.getAsBoolean());
   }
 }
