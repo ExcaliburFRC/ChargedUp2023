@@ -35,7 +35,7 @@ public class Superstructure extends SubsystemBase {
         return new ParallelCommandGroup(
                 rollerGripper.intakeCommand(),
                 arm.holdArmCommand(SHELF.dc, accel, reduce))
-              .until(rollerGripper.buttonTrigger);
+              .until(rollerGripper.beambreakTrigger);
     }
 
     public Command placeOnHighCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce, DoubleSupplier lengthSpeed) {
@@ -43,7 +43,7 @@ public class Superstructure extends SubsystemBase {
                 arm.holdArmCommand(HIGH.dc, accel, reduce),
               arm.manualLengthCommand(lengthSpeed),
               rollerGripper.releaseCommand(release))
-              .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
+              .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
     }
 
     public Command placeOnMidCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce, DoubleSupplier lengthSpeed) {
@@ -51,7 +51,7 @@ public class Superstructure extends SubsystemBase {
             arm.holdArmCommand(MID.dc, accel, reduce),
             arm.manualLengthCommand(lengthSpeed),
             rollerGripper.releaseCommand(release))
-            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
+            .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
     }
 
     public Command placeOnLowCommand(Trigger release, BooleanSupplier accel, BooleanSupplier reduce, DoubleSupplier lengthSpeed) {
@@ -59,7 +59,7 @@ public class Superstructure extends SubsystemBase {
             arm.holdArmCommand(LOW.dc, accel, reduce),
             arm.manualLengthCommand(lengthSpeed),
             rollerGripper.releaseCommand(release))
-            .until(rollerGripper.buttonTrigger.negate().debounce(0.3));
+            .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
     }
 
     public Command manualCommand(

@@ -22,11 +22,11 @@ public final class Constants {
     public static class IntakeConstants {
         public static final int INTAKE_MOTOR_ID = 41;
 
-        public static final int INTAKE_FWD_CHANNEL = 2;
-        public static final int INTAKE_REV_CHANNEL = 3;
+        public static final int INTAKE_FWD_CHANNEL = 1;
+        public static final int INTAKE_REV_CHANNEL = 0;
 
-        public static final int EJECT_FWD_CHANNEL = 0;
-        public static final int EJECT_REV_CHANNEL = 1;
+        public static final int EJECT_FWD_CHANNEL = 2;
+        public static final int EJECT_REV_CHANNEL = 3;
 
         public static double kS = 0.070785;
         public static double kV = 0.12968 / 60;
