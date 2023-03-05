@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ public class FaultReporter {
   PowerDistribution pd = new PowerDistribution();
   PneumaticHub ph = new PneumaticHub();
 
-  int[] toIgnore = new int[]{10, 11, 12, 13, 14};
+//  ArrayList<String> toIgnore = ;
 
   public void check() {
     // pdh checks
@@ -52,10 +53,19 @@ public class FaultReporter {
 
   private Set<String> checkFaultsObject(Object faults) throws IllegalAccessException {
     Set<String> result = new HashSet<>();
-    for (Field field : faults.getClass().getFields()) {
+    for (Field field : faults.getClass().getFields() ) {
       if (field.getBoolean(faults)) result.add(field.getName());
     }
 
     return result;
+  }
+
+  private String getDigits(String string){
+    char fistDig = string.charAt(7);
+    char secondDig = string.charAt(8);
+    if(secondDig >= '0' && secondDig <= '9'){
+      return (""+fistDig+secondDig);
+    }
+    else return ""+fistDig;
   }
 }
