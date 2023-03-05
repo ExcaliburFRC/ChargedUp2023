@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.InterpolatingTreeMap;
 
 import static java.lang.Math.PI;
 
@@ -41,7 +42,7 @@ public final class Constants {
         public static final double TOLERANCE = 100;
     }
 
-    public static final class SpindexerConstants{
+    public static final class SpindexerConstants {
         public static final int BEAMBREAK_CHANNEL = 0;
         public static final int BUTTON_CHANNEL = 0;
 
@@ -60,7 +61,7 @@ public final class Constants {
         }
     }
 
-    public static final class RollerGripperConstants{
+    public static final class RollerGripperConstants {
         public static final int INTAKE_BEAMBREAK = 9;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
         public static final int LEFT_ROLLER_MOTOR_ID = 32;
@@ -92,7 +93,7 @@ public final class Constants {
                     int ABS_ENCODER_CHANNEL,
                     double OFFSET_ANGLE,
                     boolean DRIVE_MOTOR_REVERSED,
-                    boolean SPIN_MOTOR_REVERSED){
+                    boolean SPIN_MOTOR_REVERSED) {
                 this.DRIVE_MOTOR_ID = DRIVE_MOTOR_ID;
                 this.SPIN_MOTOR_ID = SPIN_MOTOR_ID;
                 this.ABS_ENCODER_CHANNEL = ABS_ENCODER_CHANNEL;
@@ -108,11 +109,11 @@ public final class Constants {
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics =
-                new SwerveDriveKinematics(
-                        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-                        new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-                        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-                        new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
+              new SwerveDriveKinematics(
+                    new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+                    new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+                    new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+                    new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = 5; //TODO find
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
@@ -147,28 +148,34 @@ public final class Constants {
     }
 
     public static final class ArmConstants {
-        public enum ConeDutyCycle {
+        public enum Setpoints {
             // cone, cube
-            LOW(-0.02953, 0), // 0.552
-            MID(-0.0326, 0),
-            HIGH(-0.05, 0), //1.58
-            SHELF(-0.0425, 0), //0.4
-            SPINDEXER(0, 0.5),
-            INTAKE(0, 1);
+            LOW(new Translation2d(0, 0), new Translation2d(0, 0)),
+            MID(new Translation2d(0, 0), new Translation2d(0, 0)),
+            HIGH(new Translation2d(0, 0), new Translation2d(0, 0)),
+            SHELF(new Translation2d(0, 0)),
+            SPINDEXER(new Translation2d(0, 0)),
+            INTAKE(new Translation2d(0, 0));
 
-            public double dc;
-            public double telescope;
+            public Translation2d cone;
+            public Translation2d cube;
+            public Translation2d gamePiece;
 
-            ConeDutyCycle(double dc, double telescope) {
-                this.dc = dc;
-                this.telescope = telescope;
+            Setpoints(Translation2d cone, Translation2d cube) {
+                this.cone = cone;
+                this.cube = cube;
+                if (!isAchievableTranslation(cone) || !isAchievableTranslation(cube)) {
+                    throw new AssertionError("Unattainable setpoint in enum " + this.name());
+                }
+            }
+
+            Setpoints(Translation2d gamePiece) {
+                this.gamePiece = gamePiece;
             }
         }
 
         private static boolean isAchievableTranslation(Translation2d target) {
-            return target.getNorm() >= MINIMAL_LENGTH_METERS && target.getNorm() <= MINIMAL_LENGTH_METERS * 2 &&
-                    (target.getAngle().getDegrees() <= PHYSICAL_BACK_MAX_ARM_ANGLE_DEG ||
-                            target.getAngle().getDegrees() >= PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG);
+            return target.getNorm() >= MINIMAL_LENGTH_METERS && target.getNorm() <= MINIMAL_LENGTH_METERS * 2;
         }
 
         public static final int ANGLE_MOTOR_ID = 21;
@@ -185,10 +192,26 @@ public final class Constants {
         public static final double MINIMAL_LENGTH_METERS = 0.06175;// m
         public static final double MAXIMAL_LENGTH_METERS = 0.105;// m
 
-
         public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.486;
-        public static final int PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG = 220;
-        public static final int PHYSICAL_BACK_MAX_ARM_ANGLE_DEG = 150;
+
+        // Angle control
+        public static final double kS_ANGLE = 0;
+        public static final double kV_ANGLE = 0;
+        public static final InterpolatingTreeMap<Double, Double> kG_ANGLE = new InterpolatingTreeMap<>();
+
+        public static final double kP_ANGLE = 0;
+        public static final double kMaxAngularVelocity = 0;
+        public static final double kMaxAngularAcceleration = 0;
+
+        // Length control
+        public static final double kP_LENGTH = 0;
+        public static final double kS_LENGTH = 0;
+        public static final double kV_LENGTH = 0;
+        public static final double kG_LENGTH = 0;
+        public static final double kMaxLinearVelocity = 0;
+        public static final double kMaxLinearAcceleration = 0;
+
+        public static final int ARM_RAMP_RATE = 0;
     }
 
     public static class Coordinates {
