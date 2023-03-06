@@ -153,9 +153,7 @@ public final class Constants {
             LOW(new Translation2d(0, 0), new Translation2d(0, 0)),
             MID(new Translation2d(0, 0), new Translation2d(0, 0)),
             HIGH(new Translation2d(0, 0), new Translation2d(0, 0)),
-            SHELF(new Translation2d(0, 0)),
-            SPINDEXER(new Translation2d(0, 0)),
-            INTAKE(new Translation2d(0, 0));
+            SHELF(new Translation2d(0, 0));
 
             public Translation2d cone;
             public Translation2d cube;
@@ -186,7 +184,7 @@ public final class Constants {
 
         public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
 
-        public static final double RADIUS = 1.5 / 100;
+        public static final double RADIUS = 0.015; // m
         public static final double ROT_TO_METER = 2 * PI * RADIUS;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
         public static final double MINIMAL_LENGTH_METERS = 0.06175;// m

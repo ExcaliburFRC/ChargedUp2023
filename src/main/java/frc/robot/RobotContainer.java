@@ -41,15 +41,14 @@ public class RobotContainer {
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
 
-  public double offset = 0;
-
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
     configureBindings();
 
-    SmartDashboard.putData("intake", intake);
+    SmartDashboard.putData("Intake", intake);
+    SmartDashboard.putData("Arm", arm);
   }
 
   /**
@@ -88,7 +87,7 @@ public class RobotContainer {
     arm.setDefaultCommand(
           arm.joystickManualCommand(
                 () -> Calculation.deadband(armJoystick.getLeftY(), 0.1),
-                armJoystick::getRightY));
+                ()-> Calculation.deadband(armJoystick.getRightY(), 0.1)));
 
     rollerGripper.setDefaultCommand(
           rollerGripper.holdConeCommand());
@@ -116,6 +115,7 @@ public class RobotContainer {
     // other
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
+    compressor.disable();
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){

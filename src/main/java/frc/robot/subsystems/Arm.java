@@ -119,7 +119,7 @@ public class Arm extends SubsystemBase {
   public Command calibrateLengthEncoderCommand() {
     return this.runEnd(
           ()-> lengthMotor.set(-0.3),
-          lengthMotor::stopMotor);
+          lengthMotor::stopMotor).until(armFullyClosedTrigger);
   }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
@@ -196,15 +196,12 @@ public class Arm extends SubsystemBase {
     builder.setSmartDashboardType("Subsystem");
     builder.addBooleanProperty("fully closed", armFullyClosedTrigger, null);
     builder.addDoubleProperty("arm angle", this::getArmDegrees, null);
+    builder.addDoubleProperty("arm length", lengthEncoder::getPosition, null);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("arm angle", getArmDegrees());
-    SmartDashboard.putBoolean("fully closed", armFullyClosedTrigger.getAsBoolean());
-    SmartDashboard.putNumber("length", lengthEncoder.getPosition());
-    if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(0);
-
+    if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
 //    if (getArmDegrees() < 180) disableArmCommand().schedule();
   }
 }
