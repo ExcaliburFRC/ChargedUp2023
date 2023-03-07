@@ -6,6 +6,8 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,6 +19,8 @@ import frc.robot.swerve.Swerve;
 import frc.robot.utility.Calculation;
 
 import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.Constants.SwerveConstants.Modules.*;
+import static frc.robot.Constants.SwerveConstants.Modules.BACK_RIGHT;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -41,8 +45,6 @@ public class RobotContainer {
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
 
-  public double offset = 0;
-
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -50,6 +52,9 @@ public class RobotContainer {
     configureBindings();
 
     SmartDashboard.putData("intake", intake);
+
+    var tab = Shuffleboard.getTab("Swerve");
+    tab.add("swerve", swerve).withWidget(BuiltInWidgets.kGyro);
   }
 
   /**
@@ -88,7 +93,7 @@ public class RobotContainer {
     arm.setDefaultCommand(
           arm.joystickManualCommand(
                 () -> Calculation.deadband(armJoystick.getLeftY(), 0.1),
-                armJoystick::getRightY));
+                () -> Calculation.deadband(armJoystick.getRightY(), 0.1)));
 
     rollerGripper.setDefaultCommand(
           rollerGripper.holdConeCommand());

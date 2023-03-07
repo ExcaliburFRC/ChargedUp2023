@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -248,20 +249,18 @@ public class Swerve extends SubsystemBase {
     public Command resetGyroCommand(){
         return new InstantCommand(()->
                 odometry.resetPosition(
-                new Rotation2d(0),
+                getGyroRotation(),
                 new SwerveModulePosition[]{
                         swerveModules[FRONT_LEFT].getPosition(),
                         swerveModules[FRONT_RIGHT].getPosition(),
                         swerveModules[BACK_LEFT].getPosition(),
                         swerveModules[BACK_RIGHT].getPosition()},
-                odometry.getEstimatedPosition()
-                ));
+                new Pose2d(odometry.getEstimatedPosition().getTranslation(), new Rotation2d())));
     }
 
     @Override
     public void periodic() {
         SmartDashboard.putData("gyro angle", _gyro);
-        SmartDashboard.putNumber("ramp angle", getRampAngle());
 
         odometry.update(
                 getGyroRotation(),
@@ -276,6 +275,13 @@ public class Swerve extends SubsystemBase {
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("Gyro");
+        builder.addDoubleProperty("Value", () -> odometry.getEstimatedPosition().getRotation().getDegrees(), null);
+        builder.addDoubleProperty("ramp angle", this::getRampAngle, null);
     }
 
     private void setModulesStates(SwerveModuleState[] states) {
