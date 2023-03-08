@@ -72,11 +72,11 @@ public class RollerGripper extends SubsystemBase {
    * ends when the button senses that a cone is not longer in the roller gripper
    * @return the command
    */
-  public Command ejectCommand() {
+  public Command ejectCommand(double offset) {
     return Commands.runEnd(
                 () -> {
-                  rightRoller.set(-0.025);
-                  leftRoller.set(-0.025);
+                  rightRoller.set(-0.025 - offset);
+                  leftRoller.set(-0.025 - offset);
                 },
                 () -> {
                   rightRoller.stopMotor();
@@ -84,6 +84,10 @@ public class RollerGripper extends SubsystemBase {
                 },
                 this)
           .until(beambreakTrigger.negate().debounce(0.2));
+  }
+
+  public Command ejectCommand(){
+    return ejectCommand(0);
   }
 
   /**

@@ -113,9 +113,9 @@ public class RobotContainer {
 
   public Command toggleCompressorCommand() {
     return new StartEndCommand(
-          compressor::enableDigital,
-          compressor::disable
-    );
+          compressor::disable,
+          compressor::enableDigital
+          );
   }
 
   /**

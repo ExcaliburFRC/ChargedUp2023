@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -52,8 +53,7 @@ public class Arm extends SubsystemBase {
 
     angleMotor.setInverted(false);
     angleFollowerMotor.follow(angleMotor, false);
-    lengthMotor.setInverted(false);
-
+    lengthMotor.setInverted(true);
 
     angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -85,7 +85,7 @@ public class Arm extends SubsystemBase {
             angleMotor.set(-angleJoystick.getAsDouble() / 4);
 
             floatDutyCycle = angleJoystick.getAsDouble() / 4;
-          }, this);
+          });
   }
 
   /**
@@ -128,8 +128,11 @@ public class Arm extends SubsystemBase {
   }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
-    return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint))
-          .withName("hold setpoint command");
+    return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
+  }
+
+  public Command lowerArmCommand(){
+    return new RunCommand(angleMotor::stopMotor);
   }
 
   public Command moveToLengthCommand(Translation2d setPoint) {
@@ -181,8 +184,7 @@ public class Arm extends SubsystemBase {
 
   public Command closeArmCommand(){
     return moveToLengthCommand(CLOSED.setpoint)
-          .alongWith(
-          new WaitCommand(3)
+          .alongWith(new WaitCommand(3)
                 .andThen(moveToAngleCommand(CLOSED.setpoint)));
   }
 
