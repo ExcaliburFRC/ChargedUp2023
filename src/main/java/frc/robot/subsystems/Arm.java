@@ -62,7 +62,7 @@ public class Arm extends SubsystemBase {
   public Command joystickManualCommand(DoubleSupplier angleJoystick, DoubleSupplier lengthJoystick) {
     return new RunCommand(
           () -> {
-            lengthMotor.set(lengthJoystick.getAsDouble() / 4);
+            lengthMotor.set(lengthJoystick.getAsDouble() / 2);
             angleMotor.set(angleJoystick.getAsDouble() / 4);
 
             Calculation.floatDutyCycle = MathUtil.clamp(angleJoystick.getAsDouble(), -1, 0);
@@ -80,9 +80,9 @@ public class Arm extends SubsystemBase {
       if (lengthPOV.getAsDouble() == -1) lengthMotor.set(0);
       else {
         if (lengthPOV.getAsDouble() == 0) // pov up is pressed
-          lengthMotor.set(0.15);
+          lengthMotor.set(0.4);
         if (lengthPOV.getAsDouble() == 180) // pov down is pressed
-          lengthMotor.set(-0.35);
+          lengthMotor.set(-0.6);
       }
 
       angleMotor.set(angleJoystick.getAsDouble() / 4);
