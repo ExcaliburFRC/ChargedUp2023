@@ -1,6 +1,12 @@
 {
   "NetworkTables": {
+    "Retained Values": {
+      "open": false
+    },
     "transitory": {
+      "Shuffleboard": {
+        "open": true
+      },
       "SmartDashboard": {
         "intake": {
           "open": true
@@ -10,11 +16,14 @@
     },
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Arm/Arm": "Subsystem",
+      "/Shuffleboard/Arm/arm": "Subsystem",
       "/Shuffleboard/Swerve/BL": "Gyro",
       "/Shuffleboard/Swerve/BR": "Gyro",
       "/Shuffleboard/Swerve/FL": "Gyro",
       "/Shuffleboard/Swerve/FR": "Gyro",
       "/Shuffleboard/Swerve/swerve": "Gyro",
+      "/Shuffleboard/swerve/swerve": "Gyro",
       "/SmartDashboard/Arm": "Subsystem",
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/SendableChooser[0]": "String Chooser",
@@ -112,7 +121,33 @@
     "Plot <3>": {
       "plots": [
         {
-          "height": 332
+          "axis": [
+            {
+              "autoFit": true,
+              "invert": true
+            }
+          ],
+          "height": 332,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/intake/shooter dc"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/intake/applied output"
+            }
+          ]
         }
       ]
     }

@@ -75,8 +75,8 @@ public class RollerGripper extends SubsystemBase {
   public Command ejectCommand() {
     return Commands.runEnd(
                 () -> {
-                  rightRoller.set(-0.05);
-                  leftRoller.set(-0.05);
+                  rightRoller.set(-0.025);
+                  leftRoller.set(-0.025);
                 },
                 () -> {
                   rightRoller.stopMotor();

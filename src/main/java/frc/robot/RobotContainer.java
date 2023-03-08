@@ -4,7 +4,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -14,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.ArmConstants.Setpoints;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.Calculation;
@@ -55,6 +59,7 @@ public class RobotContainer {
 
     var tab = Shuffleboard.getTab("Swerve");
     tab.add("swerve", swerve).withWidget(BuiltInWidgets.kGyro);
+    Shuffleboard.getTab("Arm").add("arm", arm);
   }
 
   /**
@@ -107,6 +112,12 @@ public class RobotContainer {
 //    armJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
 //    armJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
 
+    armJoystick.triangle().whileTrue(
+          arm.moveToAngleCommand(new Translation2d(0, Rotation2d.fromDegrees(0)))
+    );
+
+    armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
+
     armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
     armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
@@ -120,7 +131,14 @@ public class RobotContainer {
 
     // other
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
-    driveJoystick.PS().onTrue(swerve.resetGyroCommand(90));
+    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
+
+    armJoystick.triangle().toggleOnTrue(arm.holdSetpointCommand(Setpoints.HIGH.setpoint));
+    armJoystick.circle().toggleOnTrue(arm.holdSetpointCommand(Setpoints.MID.setpoint));
+    armJoystick.cross().toggleOnTrue(arm.holdSetpointCommand(Setpoints.LOW.setpoint));
+
+//    new Trigger(DriverStation::isDisabled).negate().and(new Trigger(DriverStation::isFMSAttached).negate())
+//          .onFalse(arm.resetLengthCommand());
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -139,11 +157,6 @@ public class RobotContainer {
           compressor::enableDigital,
           compressor::disable
     );
-  }
-
-
-  void manual(){
-
   }
 
   /**

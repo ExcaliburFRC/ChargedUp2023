@@ -24,8 +24,8 @@ public class Intake extends SubsystemBase {
   private final PIDController pidController = new PIDController(kP, 0, 0);
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV);
 
-  public final Trigger isAtTargetVelocity = new Trigger(
-        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.15);
+  public final Trigger isAtTargetVelocity = new Trigger(()-> false);
+//        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.15);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
   public Intake() {
@@ -149,6 +149,13 @@ public class Intake extends SubsystemBase {
    */
   public Command pulseMotorCommand() { // -10, 0.07
     return Commands.runEnd(() -> intakeMotor.setVoltage(-10), intakeMotor::stopMotor).withTimeout(0.07);
+  }
+
+  public Command orientCubeCommand(){
+    return this.runEnd(
+          ()-> intakeMotor.set(0.1),
+          intakeMotor::stopMotor
+          );
   }
 
   @Override

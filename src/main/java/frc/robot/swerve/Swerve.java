@@ -66,7 +66,7 @@ public class Swerve extends SubsystemBase {
     private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
     private final Trigger robotBalancedTrigger = new Trigger(()-> Math.abs(getRampAngle()) < 3);
 
-    private final Limelight limelight = new Limelight();
+//    private final Limelight limelight = new Limelight();
 
     private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
             kSwerveKinematics,
@@ -285,7 +285,7 @@ public class Swerve extends SubsystemBase {
                         swerveModules[BACK_RIGHT].getPosition()
                 });
 
-        limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
+//        limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);

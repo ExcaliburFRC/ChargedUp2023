@@ -4,9 +4,11 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.InterpolatingTreeMap;
 
 import static java.lang.Math.PI;
 
@@ -38,7 +40,7 @@ public final class Constants {
         public static final double MID_RPM = -1800;
         public static final double HIGH_RPM = -3350;
 
-        public static final double TOLERANCE = 100;
+        public static final double TOLERANCE = 200;
     }
 
     public static final class SpindexerConstants{
@@ -61,7 +63,7 @@ public final class Constants {
     }
 
     public static final class RollerGripperConstants{
-        public static final int INTAKE_BEAMBREAK = 9;
+        public static final int INTAKE_BEAMBREAK = 7;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
         public static final int LEFT_ROLLER_MOTOR_ID = 32;
 
@@ -147,28 +149,25 @@ public final class Constants {
     }
 
     public static final class ArmConstants {
-        public enum ConeDutyCycle {
+        public enum Setpoints {
             // cone, cube
-            LOW(-0.02953, 0), // 0.552
-            MID(-0.0326, 0),
-            HIGH(-0.05, 0), //1.58
-            SHELF(-0.0425, 0), //0.4
-            SPINDEXER(0, 0.5),
-            INTAKE(0, 1);
+            LOW(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-65))),
+            MID(new Translation2d(0.66, Rotation2d.fromDegrees(-30))),
+            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(5))),
+            SHELF(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-14))),
+            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(0)));
 
-            public double dc;
-            public double telescope;
+            public final Translation2d setpoint;
 
-            ConeDutyCycle(double dc, double telescope) {
-                this.dc = dc;
-                this.telescope = telescope;
+            Setpoints(Translation2d setpoint) {
+                this.setpoint = setpoint;
+                if (!isAchievableTranslation(setpoint))
+                    throw new AssertionError("Unattainable setpoint in enum " + this.name());
             }
         }
 
         private static boolean isAchievableTranslation(Translation2d target) {
-            return target.getNorm() >= MINIMAL_LENGTH_METERS && target.getNorm() <= MINIMAL_LENGTH_METERS * 2 &&
-                    (target.getAngle().getDegrees() <= PHYSICAL_BACK_MAX_ARM_ANGLE_DEG ||
-                            target.getAngle().getDegrees() >= PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG);
+            return target.getNorm() >= MINIMAL_LENGTH_METERS && target.getNorm() <= MAXIMAL_LENGTH_METERS;
         }
 
         public static final int ANGLE_MOTOR_ID = 21;
@@ -179,16 +178,41 @@ public final class Constants {
 
         public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
 
-        public static final double RADIUS = 1.5 / 100;
-        public static final double ROT_TO_METER = 2 * PI * RADIUS;
+        public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
+        public static final double MAXIMAL_LENGTH_METERS = 1.0; // m
+        public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
-        public static final double MINIMAL_LENGTH_METERS = 0.06175;// m
-        public static final double MAXIMAL_LENGTH_METERS = 0.105;// m
 
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.673; // NOT IN DEGREES -- IN DUTY CYCLE
+        public static final double CLOSED_DEGREES = -90;
 
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.486;
-        public static final int PHYSICAL_FRONT_MAX_ARM_ANGLE_DEG = 220;
-        public static final int PHYSICAL_BACK_MAX_ARM_ANGLE_DEG = 150;
+        // Angle control
+        public static final double kS_ANGLE = 0.10622;
+        public static final double kV_ANGLE = 0.016479;
+        public static final double kA_ANGLE = 0.0023683;
+//        public static final InterpolatingTreeMap<Double, Double> kG_ANGLE = new InterpolatingTreeMap<>();
+        public static final double kG_ANGLE = 0.52;
+
+//        static {
+//            kG_ANGLE.put(MINIMAL_LENGTH_METERS, 0.50333);
+//            kG_ANGLE.put(MAXIMAL_LENGTH_METERS, 0.69438);
+//        }
+
+//        public static final double kP_ANGLE = 0.069727;
+        public static final double kP_ANGLE = 0.06;
+//        public static final double kD_ANGLE = 0.02764;
+        public static final double kD_ANGLE = 0;
+        public static final double kMaxAngularVelocity = kV_ANGLE * 12 * 10;
+        public static final double kMaxAngularAcceleration = kA_ANGLE * 12 * 10;
+
+        // Length control
+        public static final double kS_LENGTH = 0.070742;
+        public static final double kV_LENGTH = 29.296;
+        public static final double kG_LENGTH = -0.064553;
+        public static final double kP_LENGTH = 4.5124;
+        public static final double kD_LENGTH = 3.6247;
+        public static final double kMaxLinearVelocity = 0.5;
+        public static final double kMaxLinearAcceleration = 0.5;
     }
 
     public static class Coordinates {
