@@ -121,7 +121,6 @@ public class Swerve extends SubsystemBase {
 
 
     // return the pitch of the robot
-    //TODO: check if works
     private double getRampAngle() {
         double pitch = _gyro.getPitch();
 //        pitch *= -1;
@@ -221,7 +220,6 @@ public class Swerve extends SubsystemBase {
     }
 
     // returns the joystick angle in 0 to 360 (right is 0, up is 90)
-    //TODO: fix and make simple
     private double calculateJoystickAngle(double x, double y) {
         double a = -Math.toDegrees(Math.atan(y / x));
         if (x < 0) a += 180;
@@ -316,6 +314,10 @@ public class Swerve extends SubsystemBase {
     public Command driveToRampCommand(){
         return driveSwerveCommand(()-> -0.2, ()-> 0, ()-> 0, ()-> false)
               .until(()-> Math.abs(getRampAngle() - 424) > 50);
+    }
+
+    public Command balanceRampCommand(){
+        return null;
     }
 
     private void stopModules() {

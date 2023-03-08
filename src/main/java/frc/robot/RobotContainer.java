@@ -11,13 +11,17 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.autonomous.noRamsete.cube.LeaveCommunityCommand;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 
 import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.Constants.Coordinates.GamePiece;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -26,79 +30,86 @@ import static frc.robot.Constants.IntakeConstants.*;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  private final Intake intake = new Intake();
-  private final Swerve swerve = new Swerve();
-  private final Superstructure superstructure = new Superstructure();
+    private final Intake intake = new Intake();
+    private final Swerve swerve = new Swerve();
+    private final Superstructure superstructure = new Superstructure();
 
-  private final Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
+    private final Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
-  public final SendableChooser<Command> autoChooser = new SendableChooser<>();
-  public final SendableChooser<Integer> heightChooser = new SendableChooser<>();
+    public final SendableChooser<Command> autoChooser = new SendableChooser<>();
+    public final SendableChooser<Double> heightChooser = new SendableChooser<>();
+    public final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
 
-  public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
-  public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
+    public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
+    public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
 
-  /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
-   */
-  public RobotContainer() {
-    configureBindings();
+    /**
+     * The container for the robot. Contains subsystems, OI devices, and commands.
+     */
+    public RobotContainer() {
+        configureBindings();
 
-    SmartDashboard.putData("intake", intake);
+        SmartDashboard.putData("intake", intake);
 
-    var tab = Shuffleboard.getTab("Swerve");
-    tab.add("swerve", swerve).withWidget(BuiltInWidgets.kGyro);
-  }
+        var tab = Shuffleboard.getTab("Swerve");
+        tab.add("swerve", swerve).withWidget(BuiltInWidgets.kGyro);
+    }
 
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} driveJoysticks or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
-  private void configureBindings() {
-    // auto configuration
-    heightChooser.setDefaultOption("1", 1);
-    heightChooser.addOption("2", 2);
-    heightChooser.addOption("3", 3);
+    /**
+     * Use this method to define your trigger->command mappings. Triggers can be created via the
+     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
+     * predicate, or via the named factories in {@link
+     * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
+     * edu.wpi.first.wpilibj2.command.button.CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+     * PS4} driveJoysticks or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+     * joysticks}.
+     */
+    private void configureBindings() {
+        // auto configuration
+        initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
+        initialGamePiece.addOption("cube", GamePiece.CUBE);
 
-    SmartDashboard.putData(autoChooser);
-    SmartDashboard.putData(heightChooser);
+        heightChooser.setDefaultOption("low", LOW_RPM);
+        heightChooser.addOption("mid", MID_RPM);
+        heightChooser.addOption("high", HIGH_RPM);
 
-    swerve.setDefaultCommand(
-          swerve.driveSwerveCommand(
-                ()-> -driveJoystick.getLeftY(),
-                driveJoystick::getLeftX,
-                driveJoystick::getRightX,
-                driveJoystick.R2().negate()));
+        autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
+        autoChooser.addOption("balance ramp", swerve.driveToRampCommand().andThen(swerve.balanceRampCommand()));
 
-    // intake commands
-    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4));
-    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
+        SmartDashboard.putData(autoChooser);
+        SmartDashboard.putData(heightChooser);
 
-    // place commands
-    armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
-    armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
-    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand(armJoystick.R1()));
+        swerve.setDefaultCommand(
+                swerve.driveSwerveCommand(
+                        () -> -driveJoystick.getLeftY(),
+                        driveJoystick::getLeftX,
+                        driveJoystick::getRightX,
+                        driveJoystick.R2().negate()));
 
-    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
-    armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
-    armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
+        // intake commands
+        armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4));
+        armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
-    // LED control
+        // place commands
+        armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
+        armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
+        armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand(armJoystick.R1()));
+
+        armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
+        armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
+        armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
+
+        // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
 //    driveJoystick.share().onTrue(askForGamePieceCommand(GamePiece.CUBE));
 
-    // other
-    driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
-    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
-    armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
-    new Trigger(()->
-          armJoystick.getHID().getRawButtonPressed(15)).onTrue(superstructure.resetArmCommand());
-  }
+        // other
+        driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
+        driveJoystick.PS().onTrue(swerve.resetGyroCommand());
+        armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
+        new Trigger(() ->
+                armJoystick.getHID().getRawButtonPressed(15)).onTrue(superstructure.resetArmCommand());
+    }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
 //    return Commands.repeatingSequence(
@@ -111,21 +122,29 @@ public class RobotContainer {
 //            .alongWith(superstructure.setLastRequestedGamePiece(gamePiece));
 //  }
 
-  public Command toggleCompressorCommand() {
-    return new StartEndCommand(
-          compressor::enableDigital,
-          compressor::disable
-    );
-  }
+    public Command toggleCompressorCommand() {
+        return new StartEndCommand(
+                compressor::enableDigital,
+                compressor::disable
+        );
+    }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the comman
-   * d to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return autoChooser.getSelected();
-  }
+    /**
+     * Use this to pass the autonomous command to the main {@link Robot} class.
+     *
+     * @return the comman
+     * d to run in autonomous
+     */
+    public Command getAutonomousCommand() {
+        // An example command will be run in autonomous
+        return new ProxyCommand(
+                // cone or cube
+                new ConditionalCommand(
+                        superstructure.switchCommand(heightChooser.getSelected()),
+                        intake.shootCubeCommand(heightChooser.getSelected()),
+                        () -> initialGamePiece.getSelected().equals(GamePiece.CONE))
+                        // leave or climb
+                        .andThen(autoChooser.getSelected())
+        );
+    }
 }

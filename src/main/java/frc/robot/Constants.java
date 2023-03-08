@@ -36,7 +36,7 @@ public final class Constants {
         //        public static double kP = 7.1212E-07;
         public static double kP = 0.001;
 
-        public static final double LOW_RPM = -800;
+        public static final double LOW_RPM = 0;
         public static final double MID_RPM = -1800;
         public static final double HIGH_RPM = -3350;
 
@@ -48,7 +48,7 @@ public final class Constants {
         public static final int BUTTON_CHANNEL = 0;
 
         public static final int SPINDEXER_MOTOR_ID = 0;
-        public static final int SPINDEXER_CURRENT_LIMIT = 0; // TODO: calculate
+        public static final int SPINDEXER_CURRENT_LIMIT = 0;
     }
 
     public static final class RollerGripperConstants {
@@ -105,9 +105,9 @@ public final class Constants {
                     new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
                     new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
-        public static final double kPhysicalMaxSpeedMetersPerSecond = 5; //TODO find
-        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
-        public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
+        public static final double kPhysicalMaxSpeedMetersPerSecond = 5;
+        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 3;
 
         public static final double RAMP_BALANCE_KP = 0.05;
 
@@ -123,7 +123,7 @@ public final class Constants {
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
 
         // autonomous constants
-        public static final double kp_Theta_TELEOP = 0.0145; //TODO: find
+        public static final double kp_Theta_TELEOP = 0.0145;
     }
 
     public static final class ModuleConstants {

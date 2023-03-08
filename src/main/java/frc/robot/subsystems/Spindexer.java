@@ -33,7 +33,7 @@ public class Spindexer extends SubsystemBase {
 //    spindexer.clearFaults();
 //    spindexer.setSmartCurrentLimit(SPINDEXER_CURRENT_LIMIT);
 //    spindexer.setIdleMode(CANSparkMax.IdleMode.kBrake);
-//    spindexer.setInverted(false); //TODO: check
+//    spindexer.setInverted(false);
 //
 //    currentPiece.set(GamePiece.EMPTY);
 //  }
@@ -67,7 +67,7 @@ public class Spindexer extends SubsystemBase {
 //  private Command streightenConeCommand() {
 //    return Commands.repeatingSequence(
 //                setSpindexerMotor(-0.3),
-//                new WaitCommand(2), // TODO: find the shortest duration for a successful straighten
+//                new WaitCommand(2),
 //                setSpindexerMotor(0.3))
 //          .until(ConeStraightTrigger);
 //  }
