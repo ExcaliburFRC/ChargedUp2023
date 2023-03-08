@@ -120,7 +120,7 @@ public class RobotContainer {
 
     // other
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
-    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
+    driveJoystick.PS().onTrue(swerve.resetGyroCommand(90));
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -139,6 +139,11 @@ public class RobotContainer {
           compressor::enableDigital,
           compressor::disable
     );
+  }
+
+
+  void manual(){
+
   }
 
   /**
