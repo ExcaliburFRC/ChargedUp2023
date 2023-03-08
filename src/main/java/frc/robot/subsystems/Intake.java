@@ -24,8 +24,8 @@ public class Intake extends SubsystemBase {
   private final PIDController pidController = new PIDController(kP, 0, 0);
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV);
 
-  public final Trigger isAtTargetVelocity = new Trigger(()-> false);
-//        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.15);
+  public final Trigger isAtTargetVelocity = new Trigger(
+        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.15);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
   public Intake() {

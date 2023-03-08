@@ -33,7 +33,7 @@ public final class Constants {
         public static double kS = 0.07079;
         public static double kV = 0.137 / 60;
 
-//        public static double kP = 7.1212E-07;
+        //        public static double kP = 7.1212E-07;
         public static double kP = 0.001;
 
         public static final double LOW_RPM = -800;
@@ -43,7 +43,7 @@ public final class Constants {
         public static final double TOLERANCE = 200;
     }
 
-    public static final class SpindexerConstants{
+    public static final class SpindexerConstants {
         public static final int BEAMBREAK_CHANNEL = 0;
         public static final int BUTTON_CHANNEL = 0;
 
@@ -51,18 +51,7 @@ public final class Constants {
         public static final int SPINDEXER_CURRENT_LIMIT = 0; // TODO: calculate
     }
 
-    public static final class ClawConstants {
-        public static final int FORWARD_CHANNEL = 0;
-        public static final int REVERSE_CHANNEL = 1;
-
-        public enum GamePiece {
-            EMPTY,
-            CUBE,
-            CONE;
-        }
-    }
-
-    public static final class RollerGripperConstants{
+    public static final class RollerGripperConstants {
         public static final int INTAKE_BEAMBREAK = 7;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
         public static final int LEFT_ROLLER_MOTOR_ID = 32;
@@ -94,7 +83,7 @@ public final class Constants {
                     int ABS_ENCODER_CHANNEL,
                     double OFFSET_ANGLE,
                     boolean DRIVE_MOTOR_REVERSED,
-                    boolean SPIN_MOTOR_REVERSED){
+                    boolean SPIN_MOTOR_REVERSED) {
                 this.DRIVE_MOTOR_ID = DRIVE_MOTOR_ID;
                 this.SPIN_MOTOR_ID = SPIN_MOTOR_ID;
                 this.ABS_ENCODER_CHANNEL = ABS_ENCODER_CHANNEL;
@@ -110,11 +99,11 @@ public final class Constants {
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics =
-                new SwerveDriveKinematics(
-                        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-                        new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-                        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-                        new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
+              new SwerveDriveKinematics(
+                    new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+                    new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+                    new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+                    new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = 5; //TODO find
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
@@ -152,22 +141,17 @@ public final class Constants {
         public enum Setpoints {
             // cone, cube
             LOW(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-65))),
-            MID(new Translation2d(0.66, Rotation2d.fromDegrees(-30))),
-            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(5))),
-            SHELF(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-14))),
-            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(0)));
+            MID(new Translation2d(0.63, Rotation2d.fromDegrees(-15))),
+            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(10))),
+            SHELF_EXTENDED(new Translation2d(0.7, Rotation2d.fromDegrees(-10))), //0.7
+            SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-10))),
+            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-85)));
 
             public final Translation2d setpoint;
 
             Setpoints(Translation2d setpoint) {
                 this.setpoint = setpoint;
-                if (!isAchievableTranslation(setpoint))
-                    throw new AssertionError("Unattainable setpoint in enum " + this.name());
             }
-        }
-
-        private static boolean isAchievableTranslation(Translation2d target) {
-            return target.getNorm() >= MINIMAL_LENGTH_METERS && target.getNorm() <= MAXIMAL_LENGTH_METERS;
         }
 
         public static final int ANGLE_MOTOR_ID = 21;
@@ -190,7 +174,7 @@ public final class Constants {
         public static final double kS_ANGLE = 0.10622;
         public static final double kV_ANGLE = 0.016479;
         public static final double kA_ANGLE = 0.0023683;
-//        public static final InterpolatingTreeMap<Double, Double> kG_ANGLE = new InterpolatingTreeMap<>();
+        //        public static final InterpolatingTreeMap<Double, Double> kG_ANGLE = new InterpolatingTreeMap<>();
         public static final double kG_ANGLE = 0.52;
 
 //        static {
@@ -198,10 +182,9 @@ public final class Constants {
 //            kG_ANGLE.put(MAXIMAL_LENGTH_METERS, 0.69438);
 //        }
 
-//        public static final double kP_ANGLE = 0.069727;
+        //        public static final double kP_ANGLE = 0.069727;
         public static final double kP_ANGLE = 0.06;
-//        public static final double kD_ANGLE = 0.02764;
-        public static final double kD_ANGLE = 0;
+        //        public static final double kD_ANGLE = 0.02764;
         public static final double kMaxAngularVelocity = kV_ANGLE * 12 * 10;
         public static final double kMaxAngularAcceleration = kA_ANGLE * 12 * 10;
 
@@ -211,8 +194,8 @@ public final class Constants {
         public static final double kG_LENGTH = -0.064553;
         public static final double kP_LENGTH = 4.5124;
         public static final double kD_LENGTH = 3.6247;
-        public static final double kMaxLinearVelocity = 0.5;
-        public static final double kMaxLinearAcceleration = 0.5;
+        public static final double kMaxLinearVelocity = 0.75;
+        public static final double kMaxLinearAcceleration = 0.75;
     }
 
     public static class Coordinates {
@@ -224,10 +207,15 @@ public final class Constants {
             public Translation2d blue;
             public Translation2d red;
 
-            RampLocations(Translation2d blue, Translation2d red){
+            RampLocations(Translation2d blue, Translation2d red) {
                 this.blue = blue;
                 this.red = red;
             }
+        }
+        public enum GamePiece {
+            EMPTY,
+            CUBE,
+            CONE;
         }
 
         public static double middleAxisXValue = 8.3;
@@ -236,7 +224,7 @@ public final class Constants {
     public static class LedsConstants {
         public static final int LEDS_PORT = 0;
     }
-
+}
     // DIO:
     // swerve: 0 - 3
     // claw bb: unknown
@@ -244,4 +232,3 @@ public final class Constants {
     // arm:
     //      closed: 6
     //      encoder: 8
-}

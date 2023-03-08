@@ -4,10 +4,7 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -17,14 +14,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ArmConstants.Setpoints;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
-import frc.robot.utility.Calculation;
 
 import static frc.robot.Constants.IntakeConstants.*;
-import static frc.robot.Constants.SwerveConstants.Modules.*;
-import static frc.robot.Constants.SwerveConstants.Modules.BACK_RIGHT;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -33,18 +26,14 @@ import static frc.robot.Constants.SwerveConstants.Modules.BACK_RIGHT;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  // The robot's subsystems and commands are defined here...
-//  private final Superstructure superstructure = new Superstructure();
   private final Intake intake = new Intake();
   private final Swerve swerve = new Swerve();
-  private final Arm arm = new Arm();
-  private final RollerGripper rollerGripper = new RollerGripper();
+  private final Superstructure superstructure = new Superstructure();
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
   public final SendableChooser<Command> autoChooser = new SendableChooser<>();
   public final SendableChooser<Integer> heightChooser = new SendableChooser<>();
-  public final SendableChooser<Integer> facingChooser = new SendableChooser<>();
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
@@ -59,7 +48,6 @@ public class RobotContainer {
 
     var tab = Shuffleboard.getTab("Swerve");
     tab.add("swerve", swerve).withWidget(BuiltInWidgets.kGyro);
-    Shuffleboard.getTab("Arm").add("arm", arm);
   }
 
   /**
@@ -77,16 +65,8 @@ public class RobotContainer {
     heightChooser.addOption("2", 2);
     heightChooser.addOption("3", 3);
 
-//    autoChooser.setDefaultOption("LeaveCommunity", new LeaveCommunity(swerve));
-//    autoChooser.addOption("ClimbRamp", new ClimbRamp(swerve));
-//
-//    autoChooser.addOption("CubeAndLeave", new CubeAndLeave(swerve, intake,3));
-//    autoChooser.addOption("CubeAndClimb", new CubeAndClimb(swerve, intake, 3));
-
     SmartDashboard.putData(autoChooser);
     SmartDashboard.putData(heightChooser);
-
-//    leds.setDefaultCommand(leds.setColorCommand(leds.getAlliance()));
 
     swerve.setDefaultCommand(
           swerve.driveSwerveCommand(
@@ -95,35 +75,18 @@ public class RobotContainer {
                 driveJoystick::getRightX,
                 driveJoystick.R2().negate()));
 
-    arm.setDefaultCommand(
-          arm.joystickManualCommand(
-                () -> Calculation.deadband(armJoystick.getLeftY(), 0.1),
-                () -> Calculation.deadband(armJoystick.getRightY(), 0.1)));
-
-    rollerGripper.setDefaultCommand(
-          rollerGripper.holdConeCommand());
-
     // intake commands
-//    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand(driveJoystick.L1(), driveJoystick.R1()));
-    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4)); //, leds
+    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4));
+    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
     // place commands
-//    armJoystick.triangle().onTrue(superstructure.placeOnHighCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(),  armJoystick::getRightY));
-//    armJoystick.circle().onTrue(superstructure.placeOnMidCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
-//    armJoystick.cross().onTrue(superstructure.placeOnLowCommand(driveJoystick.R2(), driveJoystick.L1(), driveJoystick.R1(), armJoystick::getRightY));
-
-    armJoystick.triangle().whileTrue(
-          arm.moveToAngleCommand(new Translation2d(0, Rotation2d.fromDegrees(0)))
-    );
-
-    armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
+    armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
+    armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
+    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand(armJoystick.R1()));
 
     armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
     armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
-
-    armJoystick.R1().toggleOnTrue(rollerGripper.intakeCommand());
-    armJoystick.L1().toggleOnTrue(rollerGripper.ejectCommand());
 
     // LED control
 //    driveJoystick.options().onTrue(askForGamePieceCommand(GamePiece.CONE));
@@ -132,13 +95,9 @@ public class RobotContainer {
     // other
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
-
-    armJoystick.triangle().toggleOnTrue(arm.holdSetpointCommand(Setpoints.HIGH.setpoint));
-    armJoystick.circle().toggleOnTrue(arm.holdSetpointCommand(Setpoints.MID.setpoint));
-    armJoystick.cross().toggleOnTrue(arm.holdSetpointCommand(Setpoints.LOW.setpoint));
-
-//    new Trigger(DriverStation::isDisabled).negate().and(new Trigger(DriverStation::isFMSAttached).negate())
-//          .onFalse(arm.resetLengthCommand());
+    armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
+    new Trigger(()->
+          armJoystick.getHID().getRawButtonPressed(15)).onTrue(superstructure.resetArmCommand());
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){

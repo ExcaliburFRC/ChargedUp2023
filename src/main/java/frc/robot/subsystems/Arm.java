@@ -13,10 +13,12 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
+import static frc.robot.Constants.ArmConstants.Setpoints.CLOSED;
 
 public class Arm extends SubsystemBase {
   private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -50,7 +52,7 @@ public class Arm extends SubsystemBase {
 
     angleMotor.setInverted(false);
     angleFollowerMotor.follow(angleMotor, false);
-    lengthMotor.setInverted(true);
+    lengthMotor.setInverted(false);
 
 
     angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -120,14 +122,13 @@ public class Arm extends SubsystemBase {
 
   public Command resetLengthCommand() {
     return this.runEnd(
-          () -> lengthMotor.set(-0.75),
+          () -> lengthMotor.set(0.85),
           lengthMotor::stopMotor
     ).until(armFullyClosedTrigger);
   }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
-    return resetLengthCommand().andThen(
-          moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint)))
+    return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint))
           .withName("hold setpoint command");
   }
 
@@ -156,10 +157,6 @@ public class Arm extends SubsystemBase {
       double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
       angleMotor.setVoltage(pid + feedforward);
-
-      SmartDashboard.putNumber("pid", pid);
-      SmartDashboard.putNumber("feedforward", feedforward);
-      SmartDashboard.putNumber("sum", pid + feedforward);
     })
           .finallyDo((__)-> angleMotor.stopMotor());
   }
@@ -180,6 +177,13 @@ public class Arm extends SubsystemBase {
   private boolean angleInRange(double angleA, double angleB){
     double tolorance = 5;
     return Math.abs(angleA - angleB) < tolorance;
+  }
+
+  public Command closeArmCommand(){
+    return moveToLengthCommand(CLOSED.setpoint)
+          .alongWith(
+          new WaitCommand(3)
+                .andThen(moveToAngleCommand(CLOSED.setpoint)));
   }
 
   @Override

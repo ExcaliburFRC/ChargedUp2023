@@ -20,8 +20,11 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
+  public static int enableCounter;
+
   public Robot(){
     addPeriodic(new FaultReporter()::check, 1);
+    enableCounter = 0;
   }
 
   /**
@@ -87,6 +90,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    enableCounter ++;
   }
 
   /** This function is called periodically during operator control. */

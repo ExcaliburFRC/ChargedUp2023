@@ -92,8 +92,7 @@ public class RollerGripper extends SubsystemBase {
    * @return the eject command after the button was pressed
    */
   public Command releaseCommand(BooleanSupplier release) {
-    return new RunCommand(() -> {
-    }).until(release).andThen(ejectCommand());
+    return new RunCommand(() -> {}).until(release).andThen(ejectCommand());
   }
 
   /**
