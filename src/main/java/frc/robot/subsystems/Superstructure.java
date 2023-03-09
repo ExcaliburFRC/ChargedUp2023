@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Robot;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
@@ -14,7 +13,11 @@ public class Superstructure extends SubsystemBase {
   public Superstructure() {
     rollerGripper.setDefaultCommand(rollerGripper.holdConeCommand());
 
-    arm.setDefaultCommand(arm.closeArmCommand());
+    arm.setDefaultCommand(
+          new ConditionalCommand(
+      arm.resetLengthCommand(),
+      arm.closeArmCommand(),
+      ()-> arm.getArmLength() < 0.1));
 
     Shuffleboard.getTab("Arm").add("arm", arm);
   }
@@ -54,6 +57,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public Command resetArmCommand() {
-    return arm.resetLengthCommand();
+    return arm.resetLengthCommand().andThen(
+    );
   }
 }

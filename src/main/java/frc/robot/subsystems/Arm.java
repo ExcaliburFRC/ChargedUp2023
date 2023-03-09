@@ -122,7 +122,7 @@ public class Arm extends SubsystemBase {
 
   public Command resetLengthCommand() {
     return this.runEnd(
-          () -> lengthMotor.set(0.85),
+          () -> lengthMotor.set(-0.85),
           lengthMotor::stopMotor
     ).until(armFullyClosedTrigger);
   }
@@ -194,6 +194,10 @@ public class Arm extends SubsystemBase {
     builder.addBooleanProperty("fully closed", armFullyClosedTrigger, null);
     builder.addDoubleProperty("arm angle", absAngleEncoder::getDistance, null);
     builder.addDoubleProperty("arm length", lengthEncoder::getPosition, null);
+  }
+
+  public double getArmLength(){
+    return lengthEncoder.getPosition();
   }
 
   @Override
