@@ -11,11 +11,11 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.Coordinates.GamePiece;
+import frc.robot.commands.autonomous.LeaveCommunityCommand;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 
@@ -35,7 +35,9 @@ public class RobotContainer {
   private final Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
   public final SendableChooser<Command> autoChooser = new SendableChooser<>();
-  public final SendableChooser<Integer> heightChooser = new SendableChooser<>();
+  public final SendableChooser<Double> heightChooser = new SendableChooser<>();
+  public final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
+  public final SendableChooser<Boolean> facingChooser = new SendableChooser<>();
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
@@ -62,13 +64,24 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    // auto configuration
-    heightChooser.setDefaultOption("1", 1);
-    heightChooser.addOption("2", 2);
-    heightChooser.addOption("3", 3);
+    initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
+    initialGamePiece.addOption("cube", GamePiece.CUBE);
 
-    SmartDashboard.putData(autoChooser);
-    SmartDashboard.putData(heightChooser);
+    heightChooser.setDefaultOption("low", LOW_RPM);
+    heightChooser.addOption("mid", MID_RPM);
+    heightChooser.addOption("high", HIGH_RPM);
+
+    facingChooser.setDefaultOption("forward (place cone)", true);
+    facingChooser.addOption("backwards (place cube)", false);
+
+    autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
+    autoChooser.addOption("balance ramp", swerve.climbCommand(facingChooser.getSelected()));
+
+    var tab = Shuffleboard.getTab("Auto builder");
+    tab.add(autoChooser);
+    tab.add(heightChooser);
+    tab.add(initialGamePiece);
+    tab.add(facingChooser);
 
     swerve.setDefaultCommand(
           swerve.driveSwerveCommand(
@@ -138,6 +151,15 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return autoChooser.getSelected();
+    return new ProxyCommand(
+          // cone or cube
+          new ConditionalCommand(
+                superstructure.switchCommand(heightChooser.getSelected()),
+                intake.shootCubeCommand(heightChooser.getSelected()),
+                () -> initialGamePiece.getSelected().equals(GamePiece.CONE))
+                // leave or climb
+                .andThen(autoChooser.getSelected())
+    );
   }
+
 }

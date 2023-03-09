@@ -36,7 +36,7 @@ public final class Constants {
         //        public static double kP = 7.1212E-07;
         public static double kP = 0.001;
 
-        public static final double LOW_RPM = -800;
+        public static final double LOW_RPM = 0;
         public static final double MID_RPM = -1800;
         public static final double HIGH_RPM = -3350;
 
