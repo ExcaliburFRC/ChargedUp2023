@@ -18,6 +18,7 @@ import frc.robot.Constants.Coordinates.GamePiece;
 import frc.robot.commands.autonomous.LeaveCommunityCommand;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
+import frc.robot.utility.AutoBuilder;
 
 import static frc.robot.Constants.IntakeConstants.*;
 
@@ -34,11 +35,6 @@ public class RobotContainer {
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
 
-  public final SendableChooser<Command> autoChooser = new SendableChooser<>();
-  public final SendableChooser<Double> heightChooser = new SendableChooser<>();
-  public final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
-  public final SendableChooser<Boolean> facingChooser = new SendableChooser<>();
-
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
 
@@ -52,6 +48,8 @@ public class RobotContainer {
 
     var tab = Shuffleboard.getTab("Swerve");
     tab.add("swerve", swerve).withWidget(BuiltInWidgets.kGyro);
+
+    AutoBuilder.loadAutoChoosers(swerve);
   }
 
   /**
@@ -64,25 +62,6 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
-    initialGamePiece.addOption("cube", GamePiece.CUBE);
-
-    heightChooser.setDefaultOption("low", LOW_RPM);
-    heightChooser.addOption("mid", MID_RPM);
-    heightChooser.addOption("high", HIGH_RPM);
-
-    facingChooser.setDefaultOption("forward (place cone)", true);
-    facingChooser.addOption("backwards (place cube)", false);
-
-    autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
-    autoChooser.addOption("balance ramp", swerve.climbCommand(facingChooser.getSelected()));
-
-    var tab = Shuffleboard.getTab("Auto builder");
-    tab.add(autoChooser);
-    tab.add(heightChooser);
-    tab.add(initialGamePiece);
-    tab.add(facingChooser);
-
     swerve.setDefaultCommand(
           swerve.driveSwerveCommand(
                 ()-> -driveJoystick.getLeftY(),
@@ -150,16 +129,6 @@ public class RobotContainer {
    * d to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return new ProxyCommand(
-          // cone or cube
-          new ConditionalCommand(
-                superstructure.switchCommand(heightChooser.getSelected()),
-                intake.shootCubeCommand(heightChooser.getSelected()),
-                () -> initialGamePiece.getSelected().equals(GamePiece.CONE))
-                // leave or climb
-                .andThen(autoChooser.getSelected())
-    );
+    return AutoBuilder.getAutonomousCommand(superstructure, intake);
   }
-
 }
