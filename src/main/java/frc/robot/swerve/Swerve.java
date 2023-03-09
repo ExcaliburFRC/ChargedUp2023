@@ -206,6 +206,10 @@ public class Swerve extends SubsystemBase {
               this));
     }
 
+    public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fielOriented){
+        return driveSwerveCommand(()-> 0, speed, turn, ()-> fielOriented);
+    }
+
     // angle based swerve drive
     public Command driveSwerveWithAngleCommand(
             DoubleSupplier xSpeed,
