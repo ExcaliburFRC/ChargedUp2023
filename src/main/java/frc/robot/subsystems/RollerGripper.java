@@ -115,21 +115,21 @@ public class RollerGripper extends SubsystemBase {
    * manual command the allows full manual control of the system
    * @param intake whether the system should currently intake
    * @param outtake whether the system should currently eject
-   * @param stop whether the system should currently be stopped
    * @return the command
    */
-  public Command manualCommand(BooleanSupplier intake, BooleanSupplier outtake, BooleanSupplier stop) {
+  public Command manualCommand(Trigger intake, Trigger outtake) {
     return Commands.runEnd(
           () -> {
-            if (intake.getAsBoolean()) {
-              rightRoller.set(0.6);
-              leftRoller.set(0.6);
-            }
-            if (outtake.getAsBoolean()) {
-              rightRoller.set(-0.1);
-              leftRoller.set(-0.1);
-            }
-            if (stop.getAsBoolean()) {
+            if (intake.getAsBoolean() || outtake.getAsBoolean()) {
+              if (intake.getAsBoolean()) {
+                rightRoller.set(0.6);
+                leftRoller.set(0.6);
+              }
+              if (outtake.getAsBoolean()) {
+                rightRoller.set(-0.1);
+                leftRoller.set(-0.1);
+              }
+            } else {
               rightRoller.set(0);
               leftRoller.set(0);
             }

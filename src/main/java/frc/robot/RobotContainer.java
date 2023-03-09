@@ -6,11 +6,13 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -97,7 +99,7 @@ public class RobotContainer {
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
     armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
     new Trigger(()->
-          armJoystick.getHID().getRawButtonPressed(15)).onTrue(superstructure.resetArmCommand());
+          armJoystick.getHID().getRawButtonPressed(15)).toggleOnTrue(superstructure.arm.lockArmCommand());
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
@@ -116,6 +118,16 @@ public class RobotContainer {
           compressor::disable,
           compressor::enableDigital
           );
+  }
+
+  void manual(){
+    superstructure.arm.setDefaultCommand(
+    superstructure.arm.joystickManualCommand(armJoystick::getLeftY, armJoystick::getRightY)
+    );
+
+    superstructure.rollerGripper.setDefaultCommand(
+          superstructure.rollerGripper.manualCommand(armJoystick.square(), armJoystick.circle())
+    );
   }
 
   /**

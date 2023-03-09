@@ -144,10 +144,11 @@ public final class Constants {
             MID(new Translation2d(0.7, Rotation2d.fromDegrees(-15))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-60))),
             HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(10))),
-            SHELF_EXTENDED(new Translation2d(0.7, Rotation2d.fromDegrees(-10))), //0.7
+            SHELF_EXTENDED(new Translation2d(0.73, Rotation2d.fromDegrees(-10))), //0.7
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-10))),
 
-            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.02, Rotation2d.fromDegrees(-85)));
+            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.02, Rotation2d.fromDegrees(-85))),
+            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-93)));
 
             public final Translation2d setpoint;
 

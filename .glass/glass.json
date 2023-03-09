@@ -8,6 +8,9 @@
         "open": true
       },
       "SmartDashboard": {
+        "gyro angle": {
+          "open": true
+        },
         "intake": {
           "open": true
         },
@@ -29,127 +32,16 @@
       "/SmartDashboard/SendableChooser[0]": "String Chooser",
       "/SmartDashboard/SendableChooser[1]": "String Chooser",
       "/SmartDashboard/gyro angle": "Gyro"
+    },
+    "windows": {
+      "/SmartDashboard/Field": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables Settings": {
     "mode": "Client (NT4)"
-  },
-  "Plots": {
-    "Plot <0>": {
-      "plots": [
-        {
-          "axis": [
-            {
-              "invert": true
-            }
-          ],
-          "crosshairs": true,
-          "height": 307,
-          "series": [
-            {
-              "color": [
-                0.2980392277240753,
-                0.44705885648727417,
-                0.6901960968971252,
-                1.0
-              ],
-              "id": "NT:/SmartDashboard/intake/shooter current"
-            },
-            {
-              "color": [
-                0.8666667342185974,
-                0.5176470875740051,
-                0.32156863808631897,
-                1.0
-              ],
-              "id": "NT:/SmartDashboard/intake/shooter velocity"
-            }
-          ]
-        },
-        {
-          "height": 307,
-          "series": [
-            {
-              "color": [
-                0.3333333432674408,
-                0.658823549747467,
-                0.4078431725502014,
-                1.0
-              ],
-              "id": "NT:/SmartDashboard/intake/is at target Velocity"
-            }
-          ]
-        }
-      ],
-      "window": {
-        "visible": false
-      }
-    },
-    "Plot <1>": {
-      "plots": [
-        {
-          "height": 332
-        }
-      ],
-      "window": {
-        "visible": false
-      }
-    },
-    "Plot <2>": {
-      "plots": [
-        {
-          "axis": [
-            {
-              "invert": true
-            }
-          ],
-          "height": 332,
-          "series": [
-            {
-              "color": [
-                0.2980392277240753,
-                0.44705885648727417,
-                0.6901960968971252,
-                1.0
-              ],
-              "id": "NT:/SmartDashboard/intake/shooter velocity"
-            }
-          ]
-        }
-      ]
-    },
-    "Plot <3>": {
-      "plots": [
-        {
-          "axis": [
-            {
-              "autoFit": true,
-              "invert": true
-            }
-          ],
-          "height": 332,
-          "series": [
-            {
-              "color": [
-                0.2980392277240753,
-                0.44705885648727417,
-                0.6901960968971252,
-                1.0
-              ],
-              "id": "NT:/SmartDashboard/intake/shooter dc"
-            },
-            {
-              "color": [
-                0.8666667342185974,
-                0.5176470875740051,
-                0.32156863808631897,
-                1.0
-              ],
-              "id": "NT:/SmartDashboard/intake/applied output"
-            }
-          ]
-        }
-      ]
-    }
   }
 }

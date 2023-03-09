@@ -15,11 +15,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.utility.ToggleCommand;
 
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
 import static frc.robot.Constants.ArmConstants.Setpoints.CLOSED;
+import static frc.robot.Constants.ArmConstants.Setpoints.LOCKED;
 
 public class Arm extends SubsystemBase {
   private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -85,7 +87,7 @@ public class Arm extends SubsystemBase {
             angleMotor.set(-angleJoystick.getAsDouble() / 4);
 
             floatDutyCycle = angleJoystick.getAsDouble() / 4;
-          });
+          }, this);
   }
 
   /**
@@ -186,6 +188,17 @@ public class Arm extends SubsystemBase {
     return moveToLengthCommand(CLOSED.setpoint)
           .alongWith(new WaitCommand(3)
                 .andThen(moveToAngleCommand(CLOSED.setpoint)));
+  }
+
+  public Command lockArmCommand(){
+    return new ToggleCommand(
+          // lock arm
+          moveToAngleCommand(LOCKED.setpoint).alongWith(
+          new WaitUntilCommand(()-> angleInRange(-92, absAngleEncoder.getDistance()))
+                .andThen(moveToLengthCommand(LOCKED.setpoint))),
+          // release
+          moveToLengthCommand(CLOSED.setpoint))
+          .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
   }
 
   @Override

@@ -15,9 +15,10 @@ public class Superstructure extends SubsystemBase {
 
     arm.setDefaultCommand(
           new ConditionalCommand(
-      arm.resetLengthCommand(),
-      arm.closeArmCommand(),
-      ()-> arm.getArmLength() < 0.1));
+                // reset encoder if not reset
+                arm.resetLengthCommand(),
+                arm.closeArmCommand(),
+                ()-> arm.getArmLength() < 0.1));
 
     Shuffleboard.getTab("Arm").add("arm", arm);
   }
@@ -54,10 +55,5 @@ public class Superstructure extends SubsystemBase {
           .andThen(arm.lowerArmCommand().alongWith(
                             rollerGripper.ejectCommand()))
           .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
-  }
-
-  public Command resetArmCommand() {
-    return arm.resetLengthCommand().andThen(
-    );
   }
 }
