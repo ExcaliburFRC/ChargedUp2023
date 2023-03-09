@@ -317,9 +317,24 @@ public class Swerve extends SubsystemBase {
         swerveModules[BACK_RIGHT].resetEncoders();
     }
 
-    public Command driveToRampCommand(){
-        return driveSwerveCommand(()-> -0.2, ()-> 0, ()-> 0, ()-> false)
-              .until(()-> Math.abs(getRampAngle() - 424) > 50);
+    public Command driveToRampCommand(boolean forward){
+        final double speed = forward? 0.2 : -0.2;
+        return tankDriveCommand(()-> speed, ()-> 0, false)
+              .until(robotBalancedTrigger.negate())
+              .andThen(new InstantCommand(this::stopModules));
+    }
+
+    public Command balanceRampCommand() {
+        return driveSwerveCommand(
+              () -> 0,
+              () -> rampController.calculate(getRampAngle(), 0),
+              () -> 0,
+              () -> true)
+              .until(robotBalancedTrigger.debounce(0.2));
+    }
+
+    public Command climbCommand(boolean forward){
+        return driveToRampCommand(forward).andThen(balanceRampCommand());
     }
 
     private void stopModules() {

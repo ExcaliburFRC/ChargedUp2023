@@ -37,6 +37,7 @@ public class RobotContainer {
   public final SendableChooser<Command> autoChooser = new SendableChooser<>();
   public final SendableChooser<Double> heightChooser = new SendableChooser<>();
   public final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
+  public final SendableChooser<Boolean> facingChooser = new SendableChooser<>();
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
@@ -70,11 +71,17 @@ public class RobotContainer {
     heightChooser.addOption("mid", MID_RPM);
     heightChooser.addOption("high", HIGH_RPM);
 
-    autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
-    autoChooser.addOption("balance ramp", null);
+    facingChooser.setDefaultOption("forward (place cone)", true);
+    facingChooser.addOption("backwards (place cube)", false);
 
-    SmartDashboard.putData(autoChooser);
-    SmartDashboard.putData(heightChooser);
+    autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
+    autoChooser.addOption("balance ramp", swerve.climbCommand(facingChooser.getSelected()));
+
+    var tab = Shuffleboard.getTab("Auto builder");
+    tab.add(autoChooser);
+    tab.add(heightChooser);
+    tab.add(initialGamePiece);
+    tab.add(facingChooser);
 
     swerve.setDefaultCommand(
           swerve.driveSwerveCommand(
