@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.Constants.ArmConstants.Setpoints;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
@@ -14,12 +15,7 @@ public class Superstructure extends SubsystemBase {
   public Superstructure() {
     rollerGripper.setDefaultCommand(rollerGripper.holdConeCommand());
 
-    arm.setDefaultCommand(
-          new ConditionalCommand(
-                // reset encoder if not reset
-                arm.resetLengthCommand(),
-                arm.closeArmCommand(),
-                ()-> arm.getArmLength() < 0.1));
+//    arm.setDefaultCommand(arm.closeArmCommand());
 
     Shuffleboard.getTab("Arm").add("arm", arm);
   }
@@ -58,6 +54,12 @@ public class Superstructure extends SubsystemBase {
           .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
   }
 
+  public Command initArmCommand(Setpoints setpoint) {
+          return Commands.parallel(
+          arm.resetLengthCommand(),
+          Commands.waitSeconds(1).andThen(arm.moveToAngleCommand(setpoint.setpoint)))
+                .unless(rollerGripper.beambreakTrigger.negate());
+  }
 
   public Command switchCommand(double height){
     if (height == Constants.IntakeConstants.LOW_RPM) return placeOnLowCommand(new Trigger(()-> true).debounce(5)); //TODO: find minimal time for cone placement

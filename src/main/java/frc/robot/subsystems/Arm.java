@@ -36,10 +36,10 @@ public class Arm extends SubsystemBase {
 //  private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
 
   private final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
-//  private final Trigger armHalfOpenedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
+  //  private final Trigger armHalfOpenedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
   private final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() > 1);
 
-  private final Trigger armClosedTrigger= new Trigger(()-> angleInRange(CLOSED_DEGREES, absAngleEncoder.getDistance()));
+  private final Trigger armClosedTrigger = new Trigger(() -> angleInRange(CLOSED_DEGREES, absAngleEncoder.getDistance()));
 
   private final PIDController angleController = new PIDController(
         kP_ANGLE, 0, 0);
@@ -47,6 +47,7 @@ public class Arm extends SubsystemBase {
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
   public static double floatDutyCycle = 0;
+  public boolean isLocked = false;
 
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
@@ -123,7 +124,7 @@ public class Arm extends SubsystemBase {
   }
 
   public Command resetLengthCommand() {
-    return this.runEnd(
+    return Commands.runEnd(
           () -> lengthMotor.set(-0.85),
           lengthMotor::stopMotor
     ).until(armFullyClosedTrigger);
@@ -133,7 +134,7 @@ public class Arm extends SubsystemBase {
     return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
   }
 
-  public Command lowerArmCommand(){
+  public Command lowerArmCommand() {
     return new RunCommand(angleMotor::stopMotor);
   }
 
@@ -153,17 +154,17 @@ public class Arm extends SubsystemBase {
                         0,
                         feedforward, SparkMaxPIDController.ArbFFUnits.kVoltage);
                 }))
-          .finallyDo((__)-> lengthMotor.stopMotor());
+          .finallyDo((__) -> lengthMotor.stopMotor());
   }
 
   public Command moveToAngleCommand(Translation2d setpoint) {
-    return this.run(()-> {
-      double pid = angleController.calculate(absAngleEncoder.getDistance(), setpoint.getAngle().getDegrees());
-      double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
+    return this.run(() -> {
+            double pid = angleController.calculate(absAngleEncoder.getDistance(), setpoint.getAngle().getDegrees());
+            double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
-      angleMotor.setVoltage(pid + feedforward);
-    })
-          .finallyDo((__)-> angleMotor.stopMotor());
+            angleMotor.setVoltage(pid + feedforward);
+          })
+          .finallyDo((__) -> angleMotor.stopMotor());
   }
 
   /**
@@ -179,26 +180,30 @@ public class Arm extends SubsystemBase {
     );
   }
 
-  private boolean angleInRange(double angleA, double angleB){
+  private boolean angleInRange(double angleA, double angleB) {
     double tolorance = 5;
     return Math.abs(angleA - angleB) < tolorance;
   }
 
-  public Command closeArmCommand(){
+  public Command closeArmCommand() {
     return moveToLengthCommand(CLOSED.setpoint)
           .alongWith(new WaitCommand(3)
                 .andThen(moveToAngleCommand(CLOSED.setpoint)));
   }
 
-  public Command lockArmCommand(){
-    return new ToggleCommand(
-          // lock arm
-          moveToAngleCommand(LOCKED.setpoint).alongWith(
-          new WaitUntilCommand(()-> angleInRange(-92, absAngleEncoder.getDistance()))
-                .andThen(moveToLengthCommand(LOCKED.setpoint))),
-          // release
-          moveToLengthCommand(CLOSED.setpoint))
+  public Command lockArmCommand() {
+    // lock arm
+    return moveToAngleCommand(LOCKED.setpoint).alongWith(
+                new WaitUntilCommand(() -> angleInRange(-92, absAngleEncoder.getDistance()))
+                      .andThen(moveToLengthCommand(LOCKED.setpoint)))
           .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
+  }
+
+  public Command toggleArmLockCommand() {
+    return new ConditionalCommand(
+          lockArmCommand(),
+          closeArmCommand(),
+          () -> isLocked);
   }
 
   @Override
@@ -209,7 +214,7 @@ public class Arm extends SubsystemBase {
     builder.addDoubleProperty("arm length", lengthEncoder::getPosition, null);
   }
 
-  public double getArmLength(){
+  public double getArmLength() {
     return lengthEncoder.getPosition();
   }
 

@@ -108,7 +108,7 @@ public class RollerGripper extends SubsystemBase {
           setRollerGripperMotor(0.05).until(()-> true),
           setRollerGripperMotor(0).until(()-> true),
           beambreakTrigger)
-          .repeatedly();
+          .repeatedly().withName("HoldCone");
   }
 
   /**
