@@ -4,13 +4,10 @@
 
 package frc.robot;
 
-import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.utility.FaultReporter;
 
 /**
@@ -24,8 +21,12 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
+  public static int enableCounter;
+  EventLoop eventLoop = new EventLoop();
+
   public Robot(){
     addPeriodic(new FaultReporter()::check, 1);
+    enableCounter = 0;
   }
 
   /**
@@ -40,6 +41,7 @@ public class Robot extends TimedRobot {
 
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog(), true);
+    enableLiveWindowInTest(false);
   }
 
   /**
@@ -90,6 +92,10 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    enableCounter ++;
+    eventLoop.clear();
+
   }
 
   /** This function is called periodically during operator control. */
@@ -102,6 +108,9 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
     CommandScheduler.getInstance().enable();
+    CommandScheduler.getInstance().getDefaultButtonLoop().clear();
+
+    m_robotContainer.manual();
   }
 
   /** This function is called periodically during test mode. */

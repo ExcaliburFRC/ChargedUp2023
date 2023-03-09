@@ -72,11 +72,11 @@ public class RollerGripper extends SubsystemBase {
    * ends when the button senses that a cone is not longer in the roller gripper
    * @return the command
    */
-  public Command ejectCommand() {
+  public Command ejectCommand(double offset) {
     return Commands.runEnd(
                 () -> {
-                  rightRoller.set(-0.05);
-                  leftRoller.set(-0.05);
+                  rightRoller.set(-0.025 - offset);
+                  leftRoller.set(-0.025 - offset);
                 },
                 () -> {
                   rightRoller.stopMotor();
@@ -86,14 +86,17 @@ public class RollerGripper extends SubsystemBase {
           .until(beambreakTrigger.negate().debounce(0.2));
   }
 
+  public Command ejectCommand(){
+    return ejectCommand(0);
+  }
+
   /**
    * waits until the driver wants to release the cone and then returns the eject command
    * @param release the button that needs to be pressed in order to eject
    * @return the eject command after the button was pressed
    */
   public Command releaseCommand(BooleanSupplier release) {
-    return new RunCommand(() -> {
-    }).until(release).andThen(ejectCommand());
+    return new RunCommand(() -> {}).until(release).andThen(ejectCommand());
   }
 
   /**
@@ -112,21 +115,21 @@ public class RollerGripper extends SubsystemBase {
    * manual command the allows full manual control of the system
    * @param intake whether the system should currently intake
    * @param outtake whether the system should currently eject
-   * @param stop whether the system should currently be stopped
    * @return the command
    */
-  public Command manualCommand(BooleanSupplier intake, BooleanSupplier outtake, BooleanSupplier stop) {
+  public Command manualCommand(Trigger intake, Trigger outtake) {
     return Commands.runEnd(
           () -> {
-            if (intake.getAsBoolean()) {
-              rightRoller.set(0.6);
-              leftRoller.set(0.6);
-            }
-            if (outtake.getAsBoolean()) {
-              rightRoller.set(-0.1);
-              leftRoller.set(-0.1);
-            }
-            if (stop.getAsBoolean()) {
+            if (intake.getAsBoolean() || outtake.getAsBoolean()) {
+              if (intake.getAsBoolean()) {
+                rightRoller.set(0.6);
+                leftRoller.set(0.6);
+              }
+              if (outtake.getAsBoolean()) {
+                rightRoller.set(-0.1);
+                leftRoller.set(-0.1);
+              }
+            } else {
               rightRoller.set(0);
               leftRoller.set(0);
             }

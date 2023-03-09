@@ -7,8 +7,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import static frc.robot.Constants.ClawConstants.GamePiece;
-
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.SpindexerConstants.*;
 

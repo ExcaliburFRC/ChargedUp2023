@@ -66,7 +66,7 @@ public class Swerve extends SubsystemBase {
     private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
     private final Trigger robotBalancedTrigger = new Trigger(()-> Math.abs(getRampAngle()) < 3);
 
-    private final Limelight limelight = new Limelight();
+//    private final Limelight limelight = new Limelight();
 
     private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
             kSwerveKinematics,
@@ -91,6 +91,16 @@ public class Swerve extends SubsystemBase {
         tab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro);
         tab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro);
         tab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro);
+
+        odometry.resetPosition(
+              getGyroRotation(),
+              new SwerveModulePosition[]{
+                    swerveModules[FRONT_LEFT].getPosition(),
+                    swerveModules[FRONT_RIGHT].getPosition(),
+                    swerveModules[BACK_LEFT].getPosition(),
+                    swerveModules[BACK_RIGHT].getPosition()},
+              new Pose2d(8.28, 4, new Rotation2d())
+              );
     }
 
     public void resetGyro() {
@@ -246,7 +256,7 @@ public class Swerve extends SubsystemBase {
         );
     }
 
-    public Command resetGyroCommand(){
+    public Command resetGyroCommand(double angle){
         return new InstantCommand(()->
                 odometry.resetPosition(
                 getGyroRotation(),
@@ -255,7 +265,11 @@ public class Swerve extends SubsystemBase {
                         swerveModules[FRONT_RIGHT].getPosition(),
                         swerveModules[BACK_LEFT].getPosition(),
                         swerveModules[BACK_RIGHT].getPosition()},
-                new Pose2d(odometry.getEstimatedPosition().getTranslation(), new Rotation2d())));
+                new Pose2d(odometry.getEstimatedPosition().getTranslation(), Rotation2d.fromDegrees(angle))));
+    }
+
+    public Command resetGyroCommand(){
+        return resetGyroCommand(0);
     }
 
     @Override
@@ -271,7 +285,7 @@ public class Swerve extends SubsystemBase {
                         swerveModules[BACK_RIGHT].getPosition()
                 });
 
-        limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
+//        limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);

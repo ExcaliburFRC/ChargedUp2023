@@ -8,8 +8,6 @@ import frc.robot.Constants;
 import static frc.robot.Constants.Coordinates.middleAxisXValue;
 
 public class Calculation {
-    public static double floatDutyCycle = 0;
-
     public static boolean isBlueAlliance(){
         return DriverStation.getAlliance().equals(DriverStation.Alliance.Blue);
     }

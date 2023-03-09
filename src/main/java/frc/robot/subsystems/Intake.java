@@ -151,6 +151,13 @@ public class Intake extends SubsystemBase {
     return Commands.runEnd(() -> intakeMotor.setVoltage(-10), intakeMotor::stopMotor).withTimeout(0.07);
   }
 
+  public Command orientCubeCommand(){
+    return this.runEnd(
+          ()-> intakeMotor.set(0.1),
+          intakeMotor::stopMotor
+          );
+  }
+
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.addDoubleProperty("shooter current", intakeMotor::getOutputCurrent, null);
