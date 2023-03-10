@@ -39,6 +39,7 @@ public class RobotContainer {
     public final SendableChooser<Command> autoChooser = new SendableChooser<>();
     public final SendableChooser<Double> heightChooser = new SendableChooser<>();
     public final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
+    public final SendableChooser<Boolean> initialGamePiece2 = new SendableChooser<>();
 
     public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
     public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
@@ -66,6 +67,9 @@ public class RobotContainer {
      */
     private void configureBindings() {
         // auto configuration
+        initialGamePiece2.setDefaultOption("cone",true);
+        initialGamePiece2.addOption("cube",false);
+
         initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
         initialGamePiece.addOption("cube", GamePiece.CUBE);
 
