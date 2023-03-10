@@ -293,6 +293,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public Command autoMotionCommand(boolean fieldOriented, Pose2d... poses) {
+        double xyTolerance = 0, angleTolerance = 0;
         AtomicInteger currentPoseIndex = new AtomicInteger();
         return Commands.repeatingSequence(
                 driveSwerveCommand(
@@ -308,11 +309,25 @@ public class Swerve extends SubsystemBase {
                                 odometry.getEstimatedPosition().getRotation().getDegrees(),
                                 poses[currentPoseIndex.get()].getRotation().getDegrees()),
 
-                        () -> fieldOriented),
+                        () -> fieldOriented)
+                        .until(()->poseInTolerance(odometry.getEstimatedPosition(),poses[currentPoseIndex.get()])),
                 new InstantCommand(currentPoseIndex::getAndIncrement)
         );
     }
-
+private boolean poseInTolerance(Pose2d measurement, Pose2d setPoint){
+        double xTolerance=0,
+                yTolerance=0,
+                thetaTolerance =0,
+                xAbsError = Math.abs(setPoint.getX()-measurement.getX()),
+                yAbsError = Math.abs(setPoint.getY()-measurement.getY()),
+                setPointDegrees = setPoint.getRotation().getDegrees(),
+                measuredDegrees = measurement.getRotation().getDegrees(),
+                thetaAbsError = setPointDegrees - measuredDegrees;
+        if (thetaAbsError<0) thetaAbsError = thetaAbsError+=360;
+        if (thetaAbsError>180)thetaAbsError-=180;
+        thetaAbsError =Math.abs(thetaAbsError);
+        return xAbsError<xTolerance&&yAbsError<yTolerance&&thetaAbsError<thetaTolerance;
+}
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.setSmartDashboardType("Gyro");
