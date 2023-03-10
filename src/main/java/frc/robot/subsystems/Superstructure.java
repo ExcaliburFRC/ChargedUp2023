@@ -15,15 +15,29 @@ public class Superstructure extends SubsystemBase {
   public Superstructure() {
     rollerGripper.setDefaultCommand(rollerGripper.holdConeCommand());
 
-//    arm.setDefaultCommand(arm.closeArmCommand());
+    arm.setDefaultCommand(
+          new ConditionalCommand(
+                // calibrate arm
+                arm.resetLengthCommand(),
+                // lock / close arm
+                new ConditionalCommand(
+                      // close arm
+                      arm.closeArmCommand(),
+                      // lock arm
+                      arm.lockArmCommand(),
+                      // whether were holding a cone
+                      rollerGripper.beambreakTrigger),
+                // whether arm is calibrated
+                ()-> arm.getArmLength() < 0.1));
 
     Shuffleboard.getTab("Arm").add("arm", arm);
   }
 
   public Command intakeFromShelfCommand() {
-    return new ParallelCommandGroup(
+    return arm.resetLengthCommand().andThen(
+          new ParallelCommandGroup(
           rollerGripper.intakeCommand(),
-          arm.holdSetpointCommand(SHELF_EXTENDED.setpoint))
+          arm.holdSetpointCommand(SHELF_EXTENDED.setpoint)))
           .until(rollerGripper.beambreakTrigger)
           .andThen(arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5));
   }
@@ -35,7 +49,7 @@ public class Superstructure extends SubsystemBase {
           .raceWith(new WaitUntilCommand(release))
           .andThen(arm.lowerArmCommand().alongWith(
                             rollerGripper.ejectCommand(0.035)))
-          .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
+          .until(rollerGripper.beambreakTrigger.negate().debounce(1.5));
   }
 
   public Command placeOnMidCommand(Trigger release) {
@@ -43,15 +57,14 @@ public class Superstructure extends SubsystemBase {
           .raceWith(new WaitUntilCommand(release))
           .andThen(arm.lowerArmCommand().alongWith(
                 rollerGripper.ejectCommand()))
-          .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
+          .until(rollerGripper.beambreakTrigger.negate().debounce(0.2));
   }
 
-  public Command placeOnLowCommand(Trigger release) {
-    return  arm.holdSetpointCommand(LOW.setpoint)
-          .raceWith(new WaitUntilCommand(release))
-          .andThen(arm.lowerArmCommand().alongWith(
-                            rollerGripper.ejectCommand()))
-          .until(rollerGripper.beambreakTrigger.negate().debounce(0.3));
+  public Command placeOnLowCommand() {
+    return arm.holdSetpointCommand(LOW.setpoint)
+          .raceWith(new WaitCommand(0.4))
+          .andThen(rollerGripper.ejectCommand(0.2))
+          .until(rollerGripper.beambreakTrigger.negate().debounce(0.05));
   }
 
   public Command initArmCommand(Setpoints setpoint) {
@@ -62,7 +75,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public Command switchCommand(double height){
-    if (height == Constants.IntakeConstants.LOW_RPM) return placeOnLowCommand(new Trigger(()-> true).debounce(5)); //TODO: find minimal time for cone placement
+    if (height == Constants.IntakeConstants.LOW_RPM) return placeOnLowCommand(); //TODO: find minimal time for cone placement
     if (height == Constants.IntakeConstants.MID_RPM) return placeOnMidCommand(new Trigger(()-> true).debounce(5));
     if (height == Constants.IntakeConstants.HIGH_RPM) return placeOnHighCommand(new Trigger(()-> true).debounce(5));
     return new InstantCommand(()->{});

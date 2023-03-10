@@ -113,7 +113,7 @@ public final class Constants {
 
         // intentional limitations
 
-        public static final double kSpeedPercantageLimit = 20; // %
+        public static final double kSpeedPercantageLimit = 90; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -140,15 +140,15 @@ public final class Constants {
     public static final class ArmConstants {
         public enum Setpoints {
             // cone, cube
-            LOW(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-65))),
-            MID(new Translation2d(0.7, Rotation2d.fromDegrees(-15))),
+            LOW(new Translation2d(0.7, Rotation2d.fromDegrees(-60))),
+            MID(new Translation2d(0.7, Rotation2d.fromDegrees(-12))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-60))),
             HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(10))),
-            SHELF_EXTENDED(new Translation2d(0.73, Rotation2d.fromDegrees(-10))), //0.7
+            SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(-9))), //0.7
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-10))),
 
-            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.02, Rotation2d.fromDegrees(-85))),
-            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-93)));
+            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(-88))),
+            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.01, Rotation2d.fromDegrees(-93)));
 
             public final Translation2d setpoint;
 
@@ -166,7 +166,7 @@ public final class Constants {
         public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
-        public static final double MAXIMAL_LENGTH_METERS = 1.0; // m
+        public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
 

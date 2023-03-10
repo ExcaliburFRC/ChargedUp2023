@@ -76,7 +76,7 @@ public class RobotContainer {
     // place commands
     armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
     armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
-    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand(armJoystick.R1()));
+    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
     armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
@@ -90,8 +90,7 @@ public class RobotContainer {
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
     armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
-    new Trigger(()->
-          armJoystick.getHID().getRawButtonPressed(15)).toggleOnTrue(superstructure.arm.lockArmCommand());
+//    armJoystick.button(15).toggleOnTrue(superstructure.arm.lockArmCommand());
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){
