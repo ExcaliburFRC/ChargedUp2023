@@ -14,8 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.Coordinates.GamePiece;
-import frc.robot.commands.autonomous.LeaveCommunityCommand;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
@@ -45,7 +43,6 @@ public class RobotContainer {
     configureBindings();
 
     SmartDashboard.putData("intake", intake);
-
     var tab = Shuffleboard.getTab("Swerve");
     tab.add("swerve", swerve).withWidget(BuiltInWidgets.kGyro);
 
@@ -90,7 +87,7 @@ public class RobotContainer {
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
     armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
-//    armJoystick.button(15).toggleOnTrue(superstructure.arm.lockArmCommand());
+    armJoystick.L1().onTrue(superstructure.arm.resetLengthCommand());
   }
 
 //  private Command askForGamePieceCommand(GamePiece gamePiece){

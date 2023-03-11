@@ -4,6 +4,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import org.photonvision.PhotonCamera;
 
 import java.io.IOException;
@@ -12,6 +14,12 @@ import java.util.function.BiConsumer;
 public class Limelight {
   PhotonCamera ll = new PhotonCamera("Limelight");
   AprilTagFieldLayout fieldLayout;
+
+  public static final ShuffleboardTab cameraTab = Shuffleboard.getTab("Camera");
+
+  public Limelight(){
+    ll.setDriverMode(true);
+  }
 
   {
     try {

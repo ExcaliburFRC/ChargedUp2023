@@ -10,10 +10,13 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
@@ -33,8 +36,7 @@ public class Arm extends SubsystemBase {
 //  private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
 
   private final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
-  //  private final Trigger armHalfOpenedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
-  private final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() > 1);
+  private final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 1);
 
   private final Trigger armAngleClosedTrigger = new Trigger(() -> angleInRange(CLOSED_DEGREES, absAngleEncoder.getDistance()));
 
@@ -44,7 +46,8 @@ public class Arm extends SubsystemBase {
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
   public static double floatDutyCycle = 0;
-  public boolean isLocked = false;
+
+  public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
 
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
@@ -68,6 +71,15 @@ public class Arm extends SubsystemBase {
 
     absAngleEncoder.setPositionOffset(ABS_ENCODER_OFFSET_ANGLE_DEG);
     absAngleEncoder.setDistancePerRotation(360.0);
+
+    armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(6, 0)
+          .withSize(2, 2).withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
+    armTab.addDouble("Arm degrees", absAngleEncoder::getDistance).withPosition(4, 0)
+          .withWidget("Simple Dial").withProperties(Map.of("min", -90, "max", 10));
+    armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(4, 2)
+          .withSize(2, 1);
+    armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(4, 3)
+          .withSize(2, 1);
   }
 
   /**
@@ -198,13 +210,13 @@ public class Arm extends SubsystemBase {
                 new RunCommand(()-> {}));
   }
 
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    builder.setSmartDashboardType("Subsystem");
-    builder.addDoubleProperty("length", this::getArmLength, null);
-    builder.addDoubleProperty("angle", ()-> absAngleEncoder.getDistance(), null);
-    builder.addBooleanProperty("fully closed", armFullyClosedTrigger::getAsBoolean, null);
-  }
+//  @Override
+//  public void initSendable(SendableBuilder builder) {
+//    builder.setSmartDashboardType("Subsystem");
+//    builder.addDoubleProperty("length", this::getArmLength, null);
+//    builder.addDoubleProperty("angle", ()-> absAngleEncoder.getDistance(), null);
+//    builder.addBooleanProperty("fully closed", armFullyClosedTrigger::getAsBoolean, null);
+//  }
 
   public double getArmLength() {
     return lengthEncoder.getPosition();
@@ -213,13 +225,5 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
-
-//    var tab = Shuffleboard.getTab("Arm");
-//    tab.addDouble("Arm length ttt", lengthEncoder::getPosition).withPosition(10, 1)
-//          .withSize(2, 2).withWidget("Number Slider");
-//    tab.addDouble("Arm degrees", absAngleEncoder::getDistance).withPosition(8, 1)
-//          .withWidget("Simple Dial");
-//    tab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(9, 5)
-//          .withSize(2, 1);
   }
 }

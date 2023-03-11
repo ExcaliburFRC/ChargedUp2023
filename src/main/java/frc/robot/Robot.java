@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utility.FaultReporter;
@@ -21,12 +22,11 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
-  public static int enableCounter;
-  EventLoop eventLoop = new EventLoop();
+  EventLoop TestEventLoop = new EventLoop();
+  EventLoop defaultEventLoop;
 
   public Robot(){
     addPeriodic(new FaultReporter()::check, 1);
-    enableCounter = 0;
   }
 
   /**
@@ -41,7 +41,9 @@ public class Robot extends TimedRobot {
 
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog(), true);
+
     enableLiveWindowInTest(false);
+    defaultEventLoop = CommandScheduler.getInstance().getDefaultButtonLoop();
   }
 
   /**
@@ -76,6 +78,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+
+    Shuffleboard.selectTab("Swerve");
   }
 
 
@@ -93,9 +97,8 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
-    enableCounter ++;
-    eventLoop.clear();
-
+    CommandScheduler.getInstance().setActiveButtonLoop(defaultEventLoop);
+    Shuffleboard.selectTab("Swerve");
   }
 
   /** This function is called periodically during operator control. */
@@ -108,8 +111,8 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
     CommandScheduler.getInstance().enable();
-    CommandScheduler.getInstance().getDefaultButtonLoop().clear();
 
+    CommandScheduler.getInstance().setActiveButtonLoop(TestEventLoop);
     m_robotContainer.manual();
   }
 

@@ -29,17 +29,19 @@ public class Superstructure extends SubsystemBase {
                       rollerGripper.beambreakTrigger),
                 // whether arm is calibrated
                 ()-> arm.getArmLength() < 0.1));
-
-    Shuffleboard.getTab("Arm").add("arm", arm);
   }
 
   public Command intakeFromShelfCommand() {
     return arm.resetLengthCommand().andThen(
+          new InstantCommand(()-> Shuffleboard.selectTab("cameraTab")),
           new ParallelCommandGroup(
           rollerGripper.intakeCommand(),
           arm.holdSetpointCommand(SHELF_EXTENDED.setpoint)))
           .until(rollerGripper.beambreakTrigger)
-          .andThen(arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5));
+          .andThen(
+                new InstantCommand(()-> Shuffleboard.selectTab("Swerve")),
+                arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5)
+          );
   }
 
   public Command placeOnHighCommand(Trigger release) {
@@ -62,7 +64,7 @@ public class Superstructure extends SubsystemBase {
 
   public Command placeOnLowCommand() {
     return arm.holdSetpointCommand(LOW.setpoint)
-          .raceWith(new WaitCommand(0.4))
+          .raceWith(new WaitCommand(0.3))
           .andThen(rollerGripper.ejectCommand(0.2))
           .until(rollerGripper.beambreakTrigger.negate().debounce(0.05));
   }

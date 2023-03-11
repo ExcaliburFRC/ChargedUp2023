@@ -33,7 +33,7 @@ public class AutoBuilder {
     autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
     autoChooser.addOption("balance ramp", swerve.climbCommand(facingChooser.getSelected()));
 
-    var tab = Shuffleboard.getTab("Auto builder");
+    var tab = Shuffleboard.getTab("Autonomous builder");
     tab.add("initial game piece", initialGamePiece).withSize(3, 1)
           .withPosition(5, 1);
     tab.add("height", heightChooser).withSize(3, 1)
