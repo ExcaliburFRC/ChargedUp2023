@@ -147,7 +147,7 @@ public final class Constants {
             SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(-9))), //0.7
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-10))),
 
-            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(-88))),
+            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(-90))),
             LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.01, Rotation2d.fromDegrees(-93)));
 
             public final Translation2d setpoint;

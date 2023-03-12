@@ -16,27 +16,22 @@ public class Superstructure extends SubsystemBase {
     rollerGripper.setDefaultCommand(rollerGripper.holdConeCommand());
 
     arm.setDefaultCommand(
-          new ConditionalCommand(
-                // calibrate arm
-                arm.resetLengthCommand(),
                 // lock / close arm
                 new ConditionalCommand(
                       // close arm
                       arm.closeArmCommand(),
                       // lock arm
                       new ConditionalCommand(
-                            new InstantCommand(()->{}),
+                            arm.stopAngleMotors(),
                             arm.lockArmCommand(),
                             arm.armLockedTrigger),
                       // whether were holding a cone
-                      rollerGripper.beambreakTrigger),
-                // whether arm is calibrated
-                ()-> arm.getArmLength() < 0.1));
+                      rollerGripper.beambreakTrigger));
   }
 
   public Command intakeFromShelfCommand() {
     return arm.resetLengthCommand().andThen(
-          new InstantCommand(()-> Shuffleboard.selectTab("cameraTab")),
+          new InstantCommand(()-> Shuffleboard.selectTab("armCamera")),
           new ParallelCommandGroup(
           rollerGripper.intakeCommand(),
           arm.holdSetpointCommand(SHELF_EXTENDED.setpoint)))
@@ -67,7 +62,7 @@ public class Superstructure extends SubsystemBase {
 
   public Command placeOnLowCommand() {
     return arm.holdSetpointCommand(LOW.setpoint)
-          .raceWith(new WaitCommand(0.3))
+          .raceWith(new WaitCommand(0.25))
           .andThen(rollerGripper.ejectCommand(0.2))
           .until(rollerGripper.beambreakTrigger.negate().debounce(0.05));
   }

@@ -37,7 +37,7 @@ public class Arm extends SubsystemBase {
   public final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
   public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 1);
 
-  public final Trigger armAngleClosedTrigger = new Trigger(() -> absAngleEncoder.getDistance() <= -90);
+  public final Trigger armAngleClosedTrigger = new Trigger(() -> absAngleEncoder.getDistance() <= -88);
 
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
@@ -48,6 +48,8 @@ public class Arm extends SubsystemBase {
   public static double floatDutyCycle = 0;
 
   public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
+
+  boolean disableAngleMotors = false;
 
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
@@ -80,6 +82,11 @@ public class Arm extends SubsystemBase {
           .withSize(2, 1);
     armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(4, 3)
           .withSize(2, 1);
+
+    armTab.addDouble("inner angle", ()-> angleMotor.getEncoder().getPosition());
+
+    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 22f);
+    angleFollowerMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, 22f);
   }
 
   /**
@@ -165,14 +172,24 @@ public class Arm extends SubsystemBase {
           .finallyDo((__) -> lengthMotor.stopMotor());
   }
 
-  public Command moveToAngleCommand(Translation2d setpoint) {
+  public Command moveToAngleCommand(Translation2d setpoint, boolean slow) {
     return this.runEnd(() -> {
             double pid = angleController.calculate(absAngleEncoder.getDistance(), setpoint.getAngle().getDegrees());
             double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
-            angleMotor.setVoltage(pid + feedforward);
-          }, angleMotor::stopMotor)
-          .finallyDo((__) -> angleMotor.stopMotor());
+            if (this.disableAngleMotors) {
+              angleMotor.stopMotor();
+              angleMotor.disable();
+              angleFollowerMotor.stopMotor();
+              angleFollowerMotor.disable();
+            }
+            else if (slow) angleMotor.setVoltage((pid + feedforward) / 5);
+            else angleMotor.setVoltage(pid + feedforward);
+          }, angleMotor::stopMotor);
+  }
+
+  public Command moveToAngleCommand(Translation2d setpoint){
+    return moveToAngleCommand(setpoint, false);
   }
 
   /**
@@ -189,40 +206,48 @@ public class Arm extends SubsystemBase {
   }
 
   private boolean angleInRange(double angleA, double angleB) {
-    double tolorance = 3;
-    return Math.abs(angleA - angleB) < tolorance;
+    double tolerance = 3;
+    return Math.abs(angleA - angleB) < tolerance;
   }
 
   public Command closeArmCommand() {
-    return moveToLengthCommand(CLOSED.setpoint)
+    return resetLengthCommand()
           .alongWith(new WaitCommand(1)
-                .andThen(moveToAngleCommand(CLOSED.setpoint)));
+                .andThen(moveToAngleCommand(CLOSED.setpoint, true)));
   }
 
   public Command lockArmCommand() {
-    return closeArmCommand().alongWith(new PrintCommand("locking").repeatedly()).until(armAngleClosedTrigger)
+    return closeArmCommand().alongWith(new PrintCommand("closing").repeatedly()).until(armAngleClosedTrigger.and(armFullyClosedTrigger))
           .andThen(
-          moveToAngleCommand(LOCKED.setpoint).withTimeout(3)
-                .alongWith(
-                new WaitUntilCommand(() -> angleInRange(-92, absAngleEncoder.getDistance()))
-                      .andThen(
-                            moveToLengthCommand(LOCKED.setpoint))));
+                new ParallelCommandGroup(
+                      moveToAngleCommand(LOCKED.setpoint, true).withTimeout(5),
+                      moveToLengthCommand(LOCKED.setpoint),
+                      new PrintCommand("locking").repeatedly())
+          );
   }
-
-//  @Override
-//  public void initSendable(SendableBuilder builder) {
-//    builder.setSmartDashboardType("Subsystem");
-//    builder.addDoubleProperty("length", this::getArmLength, null);
-//    builder.addDoubleProperty("angle", ()-> absAngleEncoder.getDistance(), null);
-//    builder.addBooleanProperty("fully closed", armFullyClosedTrigger::getAsBoolean, null);
-//  }
 
   public double getArmLength() {
     return lengthEncoder.getPosition();
   }
 
+  public Command stopAngleMotors(){
+    return new InstantCommand(
+          ()->{
+            angleMotor.disable();
+            angleMotor.stopMotor();
+            angleFollowerMotor.disable();
+            angleFollowerMotor.stopMotor();
+          }, this);
+  }
+
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
+
+    if (absAngleEncoder.getDistance() > 20) {
+      angleMotor.set(0);
+      angleMotor.disable();
+      disableAngleMotors = true;
+    }
   }
 }
