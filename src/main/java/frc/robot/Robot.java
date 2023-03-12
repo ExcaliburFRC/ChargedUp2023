@@ -25,6 +25,8 @@ public class Robot extends TimedRobot {
   EventLoop TestEventLoop = new EventLoop();
   EventLoop defaultEventLoop;
 
+  public static Timer startUpTimer = new Timer();
+
   public Robot(){
     addPeriodic(new FaultReporter()::check, 1);
   }
@@ -44,7 +46,12 @@ public class Robot extends TimedRobot {
 
     enableLiveWindowInTest(false);
     defaultEventLoop = CommandScheduler.getInstance().getDefaultButtonLoop();
+
+    startUpTimer.start();
+
+    DriverStation.reportError("robot init has run", false);
   }
+
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics

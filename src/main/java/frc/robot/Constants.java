@@ -39,7 +39,7 @@ public final class Constants {
         public static final double MID_RPM = -1800;
         public static final double HIGH_RPM = -3350;
 
-        public static final double TOLERANCE = 200;
+        public static final double TOLERANCE = 350;
     }
 
     public static final class SpindexerConstants {
@@ -108,7 +108,8 @@ public final class Constants {
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
-        public static final double RAMP_BALANCE_KP = 0.05;
+        public static final double RAMP_BALANCE_KP = 0.008;
+        public static final double RAMP_BALANCE_KD = 0.002;
 
         // intentional limitations
 

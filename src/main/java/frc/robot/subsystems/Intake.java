@@ -65,12 +65,12 @@ public class Intake extends SubsystemBase {
           () -> {
             intakePiston.set(DoubleSolenoid.Value.kForward);
             intakeMotor.set(intakeSpeed);
-            Shuffleboard.selectTab("intakeCamera");
+//            Shuffleboard.selectTab("intakeCamera");
           },
           () -> {
             intakePiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
-            Shuffleboard.selectTab("Swerve");
+//            Shuffleboard.selectTab("Swerve");
           }, this).andThen();
   }
 

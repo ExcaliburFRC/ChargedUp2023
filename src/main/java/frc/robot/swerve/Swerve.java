@@ -1,6 +1,7 @@
 package frc.robot.swerve;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -58,13 +59,13 @@ public class Swerve extends SubsystemBase {
 
   private final AHRS _gyro = new AHRS(SPI.Port.kMXP);
 
-  private final PIDController rampController = new PIDController(Constants.SwerveConstants.RAMP_BALANCE_KP, 0, 0);
+  private final PIDController rampController = new PIDController(Constants.SwerveConstants.RAMP_BALANCE_KP, 0, RAMP_BALANCE_KD);
   private final PIDController thetaTeleopController = new PIDController(kp_Theta, 0, kd_Theta);
   private final PIDController xController = new PIDController(kp_X, 0, 0);
   private final PIDController yController = new PIDController(kp_Y, 0, 0);
 
   private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
-  private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 3);
+  private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
 
   //    private final Limelight limelight = new Limelight();
   private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
@@ -97,6 +98,10 @@ public class Swerve extends SubsystemBase {
     swerveTab.addDouble("SwerveAngle", () -> getRotation().getDegrees()).withWidget(BuiltInWidgets.kGyro)
           .withPosition(0, 0).withSize(4, 2);
     swerveTab.add("Field2d", field).withSize(9, 5).withPosition(4, 0);
+
+    swerveTab.addDouble("rampAngle", ()-> getRampAngle());
+    swerveTab.addDouble("pid ramp", ()-> rampController.calculate(getRampAngle(), 0));
+    swerveTab.addBoolean("robot balanced", robotBalancedTrigger::getAsBoolean);
 
     odometry.resetPosition(
           getGyroRotation(),
@@ -132,10 +137,9 @@ public class Swerve extends SubsystemBase {
   // return the pitch of the robot
   //TODO: check if works
   private double getRampAngle() {
-    double pitch = _gyro.getPitch();
-//        pitch *= -1;
-//        if (pitch < 0) pitch += 360;
-    return pitch * 100;
+    double roll = _gyro.getRoll();
+    roll -= 0.46;
+    return roll;
   }
 
   public Command resetModulesCommand() {
@@ -366,19 +370,19 @@ public class Swerve extends SubsystemBase {
   }
 
   public Command driveToRampCommand(boolean forward) {
-    final double speed = forward ? 0.2 : -0.2;
-    return tankDriveCommand(() -> speed, () -> 0, false)
+    final double speed = forward ? 0.45 : -0.45;
+    return driveSwerveCommand(()-> speed, ()-> 0, ()-> 0, ()-> false)
           .until(robotBalancedTrigger.negate())
           .andThen(new InstantCommand(this::stopModules));
   }
 
   public Command balanceRampCommand() {
     return driveSwerveCommand(
+          ()-> rampController.calculate(getRampAngle(), 0),
           () -> 0,
-          () -> rampController.calculate(getRampAngle(), 0),
           () -> 0,
-          () -> true)
-          .until(robotBalancedTrigger.debounce(0.2));
+          () -> false);
+//          .until(robotBalancedTrigger.debounce(0.2));
   }
 
   public Command climbCommand(boolean isForward) {

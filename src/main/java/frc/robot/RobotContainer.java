@@ -123,8 +123,7 @@ public class RobotContainer {
    * d to run in autonomous
    */
   public Command getAutonomousCommand() {
-//    return AutoBuilder.getAutonomousCommand(superstructure, intake);
-//    return swerve.autoMotionCommand(false, new Pose2d(0, 2, Rotation2d.fromDegrees(0)));
-    return swerve.turnToAngleCommand(0);
+    return AutoBuilder.getAutonomousCommand(intake);
+//    return swerve.climbCommand(false);
   }
 }

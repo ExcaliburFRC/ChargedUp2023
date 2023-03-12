@@ -79,7 +79,7 @@ public class Arm extends SubsystemBase {
     armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(4, 3)
           .withSize(2, 1);
 
-    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 22f);
+    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 18f);
     angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 
 //    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, -2.5f);
@@ -147,7 +147,7 @@ public class Arm extends SubsystemBase {
   }
 
   public Command lowerArmCommand() {
-    return new RunCommand(angleMotor::stopMotor);
+    return new RunCommand(angleMotor::stopMotor ,this);
   }
 
   public Command moveToLengthCommand(Translation2d setPoint) {
@@ -170,15 +170,16 @@ public class Arm extends SubsystemBase {
   }
 
   public Command moveToAngleCommand(Translation2d setpoint) {
-    return this.runEnd(() -> {
+    return Commands.runEnd(() -> {
       double pid = kP_ANGLE * (setpoint.getAngle().getDegrees() - absAngleEncoder.getDistance());
       double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
          angleMotor.setVoltage(pid + feedforward);
-      SmartDashboard.putNumber("pid", pid);
-      SmartDashboard.putNumber("ff", feedforward);
+//      SmartDashboard.putNumber("pid", pid);
+//      SmartDashboard.putNumber("ff", feedforward);
+      SmartDashboard.putNumber("output sum", feedforward + pid);
       SmartDashboard.putNumber("setpoint", setpoint.getAngle().getDegrees());
-          }, angleMotor::stopMotor);
+          }, angleMotor::stopMotor, this);
   }
 
   /**

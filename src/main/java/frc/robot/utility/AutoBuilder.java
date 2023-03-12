@@ -31,27 +31,33 @@ public class AutoBuilder {
     facingChooser.addOption("backwards (place cube)", new Boolean(false));
 
     autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
-    autoChooser.addOption("balance ramp", swerve.climbCommand(facingChooser.getSelected()));
+    autoChooser.addOption("balance ramp", swerve.climbCommand(false));
 
     var tab = Shuffleboard.getTab("Autonomous builder");
-    tab.add("initial game piece", initialGamePiece).withSize(3, 1)
-          .withPosition(5, 1);
+//    tab.add("initial game piece", initialGamePiece).withSize(3, 1)
+//          .withPosition(5, 1);
     tab.add("height", heightChooser).withSize(3, 1)
           .withPosition(5, 2);
-    tab.add("facing forwards", facingChooser).withSize(3, 1)
-          .withPosition(5, 3);
+//    tab.add("facing forwards", facingChooser).withSize(3, 1)
+//          .withPosition(5, 3);
     tab.add("auto", autoChooser).withSize(3, 1)
           .withPosition(5, 4);
   }
 
-  public static Command getAutonomousCommand(Superstructure superstructure, Intake intake){
+//  public static Command getAutonomousCommand(Superstructure superstructure, Intake intake){
+//    return new ProxyCommand(
+//           cone or cube
+//          new ConditionalCommand(
+//                superstructure.switchCommand(heightChooser.getSelected()),
+//                intake.shootCubeCommand(heightChooser.getSelected()),
+//                () -> initialGamePiece.getSelected().equals(Constants.Coordinates.GamePiece.CONE))
+//                 leave or climb
+//                .andThen(autoChooser.getSelected()));
+//  }
+
+  public static Command getAutonomousCommand(Intake intake){
     return new ProxyCommand(
-          // cone or cube
-          new ConditionalCommand(
-                superstructure.switchCommand(heightChooser.getSelected()),
-                intake.shootCubeCommand(heightChooser.getSelected()),
-                () -> initialGamePiece.getSelected().equals(Constants.Coordinates.GamePiece.CONE))
-                // leave or climb
+                intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2)
                 .andThen(autoChooser.getSelected()));
   }
 
