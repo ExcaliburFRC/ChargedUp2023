@@ -78,8 +78,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-
-    Shuffleboard.selectTab("Swerve");
   }
 
 
@@ -98,7 +96,6 @@ public class Robot extends TimedRobot {
     }
 
     CommandScheduler.getInstance().setActiveButtonLoop(defaultEventLoop);
-    Shuffleboard.selectTab("Swerve");
   }
 
   /** This function is called periodically during operator control. */

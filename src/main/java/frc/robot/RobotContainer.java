@@ -41,11 +41,6 @@ public class RobotContainer {
    */
   public RobotContainer() {
     configureBindings();
-
-    SmartDashboard.putData("intake", intake);
-    var tab = Shuffleboard.getTab("Swerve");
-    tab.add("swerve", swerve).withWidget(BuiltInWidgets.kGyro);
-
     AutoBuilder.loadAutoChoosers(swerve);
   }
 

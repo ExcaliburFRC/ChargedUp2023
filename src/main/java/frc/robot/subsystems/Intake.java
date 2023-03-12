@@ -6,8 +6,10 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.utility.Limelight;
 
 import java.util.function.DoubleSupplier;
 
@@ -57,17 +59,17 @@ public class Intake extends SubsystemBase {
    * @param intakeSpeed the motor percentage to intake in
    * @return the intakeCommand
    */
-  public Command intakeCommand(double intakeSpeed) { //, LEDs leds
+  public Command intakeCommand(double intakeSpeed) {
     return new StartEndCommand(
           () -> {
-//                  leds.setColorCommand(LEDs.LEDcolor.GREEN).schedule();
             intakePiston.set(DoubleSolenoid.Value.kForward);
             intakeMotor.set(intakeSpeed);
+            Shuffleboard.selectTab("intakeCamera");
           },
           () -> {
-//                  leds.restoreDefualtColorCommand().schedule();
             intakePiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
+            Shuffleboard.selectTab("Swerve");
           }, this).andThen();
   }
 

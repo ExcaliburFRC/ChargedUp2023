@@ -34,7 +34,7 @@ public class RollerGripper extends SubsystemBase {
 
     Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
           .withPosition(6, 2).withSize(2, 2);
-    Limelight.cameraTab.addBoolean("isConeDetected", beambreakTrigger)
+    Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
           .withPosition(0, 0).withSize(2, 6);
   }
 

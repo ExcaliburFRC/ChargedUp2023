@@ -89,15 +89,15 @@ public class Swerve extends SubsystemBase {
 
     var swerveTab = Shuffleboard.getTab("Swerve");
     swerveTab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(0, 0).withSize(2, 2);
-    swerveTab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(2, 0).withSize(2, 2);
-    swerveTab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro)
           .withPosition(0, 2).withSize(2, 2);
-    swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
+    swerveTab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro)
           .withPosition(2, 2).withSize(2, 2);
+    swerveTab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro)
+          .withPosition(0, 4).withSize(2, 2);
+    swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
+          .withPosition(2, 4).withSize(2, 2);
     swerveTab.addDouble("SwerveAngle", () -> getRotation().getDegrees()).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(1, 4).withSize(2, 2);
+          .withPosition(0, 0).withSize(4, 2);
     swerveTab.add("Field2d", field).withSize(9, 5).withPosition(4, 0);
 
     odometry.resetPosition(
@@ -327,8 +327,6 @@ public class Swerve extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putData("gyro angle", _gyro);
-
     odometry.update(
           getGyroRotation(),
           new SwerveModulePosition[]{

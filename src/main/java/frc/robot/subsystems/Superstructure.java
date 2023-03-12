@@ -24,7 +24,10 @@ public class Superstructure extends SubsystemBase {
                       // close arm
                       arm.closeArmCommand(),
                       // lock arm
-                      arm.lockArmCommand(),
+                      new ConditionalCommand(
+                            new InstantCommand(()->{}),
+                            arm.lockArmCommand(),
+                            arm.armLockedTrigger),
                       // whether were holding a cone
                       rollerGripper.beambreakTrigger),
                 // whether arm is calibrated

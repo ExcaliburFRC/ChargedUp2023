@@ -33,15 +33,15 @@ public class Arm extends SubsystemBase {
   private final DutyCycleEncoder absAngleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_CHANNEL);
 
   private final DigitalInput lowerLimitSwitch = new DigitalInput(CLOSED_LIMIT_SWITCH_ID);
-//  private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
 
-  private final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
-  private final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 1);
+  public final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
+  public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 1);
 
-  private final Trigger armAngleClosedTrigger = new Trigger(() -> angleInRange(CLOSED_DEGREES, absAngleEncoder.getDistance()));
+  public final Trigger armAngleClosedTrigger = new Trigger(() -> absAngleEncoder.getDistance() <= -90);
 
-  private final PIDController angleController = new PIDController(
-        kP_ANGLE, 0, 0);
+  public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
+
+  private final PIDController angleController = new PIDController(kP_ANGLE, 0, 0);
 
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
@@ -200,14 +200,13 @@ public class Arm extends SubsystemBase {
   }
 
   public Command lockArmCommand() {
-    return closeArmCommand().until(armAngleClosedTrigger)
+    return closeArmCommand().alongWith(new PrintCommand("locking").repeatedly()).until(armAngleClosedTrigger)
           .andThen(
           moveToAngleCommand(LOCKED.setpoint).withTimeout(3)
                 .alongWith(
                 new WaitUntilCommand(() -> angleInRange(-92, absAngleEncoder.getDistance()))
                       .andThen(
-                            moveToLengthCommand(LOCKED.setpoint))),
-                new RunCommand(()-> {}));
+                            moveToLengthCommand(LOCKED.setpoint))));
   }
 
 //  @Override
