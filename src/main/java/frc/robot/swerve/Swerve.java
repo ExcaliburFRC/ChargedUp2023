@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -17,7 +16,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.utility.Limelight;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -61,9 +59,9 @@ public class Swerve extends SubsystemBase {
   private final AHRS _gyro = new AHRS(SPI.Port.kMXP);
 
   private final PIDController rampController = new PIDController(Constants.SwerveConstants.RAMP_BALANCE_KP, 0, 0);
-  private final PIDController thetaTeleopController = new PIDController(kp_Theta_TELEOP, 0, 0);
-  private final PIDController xController = new PIDController(0, 0, 0);
-  private final PIDController yController = new PIDController(0, 0, 0);
+  private final PIDController thetaTeleopController = new PIDController(kp_Theta, 0, kd_Theta);
+  private final PIDController xController = new PIDController(kp_X, 0, 0);
+  private final PIDController yController = new PIDController(kp_Y, 0, 0);
 
   private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
   private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 3);
@@ -107,8 +105,11 @@ public class Swerve extends SubsystemBase {
                 swerveModules[FRONT_RIGHT].getPosition(),
                 swerveModules[BACK_LEFT].getPosition(),
                 swerveModules[BACK_RIGHT].getPosition()},
-          new Pose2d(8.28, 4, new Rotation2d())
+//          new Pose2d(8.28, 4, new Rotation2d())
+          new Pose2d(0, 0, new Rotation2d())
     );
+
+    thetaTeleopController.setTolerance(1);
   }
 
   public void resetGyro() {
@@ -193,9 +194,9 @@ public class Swerve extends SubsystemBase {
                 }, //resetModulesCommand().schedule(),
                 () -> {
                   //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
-                  double xSpeed = xLimiter.calculate(applyDeadband(xSpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveSpeed,
-                        ySpeed = yLimiter.calculate(applyDeadband(ySpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveSpeed,
-                        spinningSpeed = spinningLimiter.calculate(applyDeadband(spinningSpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveTurningSpeed;
+                  double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
+                        ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
+                        spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed;
 
                   // create a CassisSpeeds object and apply it the speeds
                   ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
@@ -217,7 +218,7 @@ public class Swerve extends SubsystemBase {
   }
 
   public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fielOriented) {
-    return driveSwerveCommand(() -> 0, speed, turn, () -> fielOriented);
+    return driveSwerveCommand(speed, ()-> 0, turn, () -> fielOriented);
   }
 
   // angle based swerve drive
@@ -288,7 +289,6 @@ public class Swerve extends SubsystemBase {
 
 
   public Command autoMotionCommand(boolean fieldOriented, Pose2d... poses) {
-    double xyTolerance = 0, angleTolerance = 0;
     AtomicInteger currentPoseIndex = new AtomicInteger();
     return Commands.repeatingSequence(
           driveSwerveCommand(
@@ -311,18 +311,19 @@ public class Swerve extends SubsystemBase {
   }
 
   private boolean poseInTolerance(Pose2d measurement, Pose2d setPoint) {
-    double xTolerance = 0,
-          yTolerance = 0,
-          thetaTolerance = 0,
+    double xTolerance = 0.05, yTolerance = 0.05, thetaTolerance = 1,
           xAbsError = Math.abs(setPoint.getX() - measurement.getX()),
           yAbsError = Math.abs(setPoint.getY() - measurement.getY()),
           setPointDegrees = setPoint.getRotation().getDegrees(),
           measuredDegrees = measurement.getRotation().getDegrees(),
-          thetaAbsError = setPointDegrees - measuredDegrees;
-    if (thetaAbsError < 0) thetaAbsError = thetaAbsError += 360;
-    if (thetaAbsError > 180) thetaAbsError -= 180;
-    thetaAbsError = Math.abs(thetaAbsError);
+          thetaAbsError = Math.abs(setPointDegrees - measuredDegrees);
+    thetaAbsError =thetaAbsError<=180?thetaAbsError:360-thetaAbsError;
     return xAbsError < xTolerance && yAbsError < yTolerance && thetaAbsError < thetaTolerance;
+  }
+
+  public Command turnToAngleCommand(double angle){
+    return driveSwerveCommand(()-> 0, ()-> 0, ()-> thetaTeleopController.calculate(getRotation().getDegrees(), angle), ()-> true)
+          .until(new Trigger(thetaTeleopController::atSetpoint).debounce(0.15));
   }
 
   @Override

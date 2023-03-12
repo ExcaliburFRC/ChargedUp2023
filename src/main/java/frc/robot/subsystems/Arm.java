@@ -6,9 +6,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -37,11 +35,9 @@ public class Arm extends SubsystemBase {
   public final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
   public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 1);
 
-  public final Trigger armAngleClosedTrigger = new Trigger(() -> absAngleEncoder.getDistance() <= -88);
+  public final Trigger armAngleClosedTrigger = new Trigger(() -> absAngleEncoder.getDistance() <= 92);
 
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
-
-  private final PIDController angleController = new PIDController(kP_ANGLE, 0, 0);
 
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
@@ -58,7 +54,7 @@ public class Arm extends SubsystemBase {
 
     angleMotor.setInverted(false);
     angleFollowerMotor.follow(angleMotor, false);
-    lengthMotor.setInverted(true);
+    lengthMotor.setInverted(false);
 
     angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -77,16 +73,17 @@ public class Arm extends SubsystemBase {
     armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(6, 0)
           .withSize(2, 2).withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
     armTab.addDouble("Arm degrees", absAngleEncoder::getDistance).withPosition(4, 0)
-          .withWidget("Simple Dial").withProperties(Map.of("min", -90, "max", 10));
+          .withWidget("Simple Dial").withProperties(Map.of("min", 90, "max", 190));
     armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(4, 2)
           .withSize(2, 1);
     armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(4, 3)
           .withSize(2, 1);
 
-    armTab.addDouble("inner angle", ()-> angleMotor.getEncoder().getPosition());
-
     angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 22f);
-    angleFollowerMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, 22f);
+    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+
+//    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, -2.5f);
+//    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, true);
   }
 
   /**
@@ -172,24 +169,16 @@ public class Arm extends SubsystemBase {
           .finallyDo((__) -> lengthMotor.stopMotor());
   }
 
-  public Command moveToAngleCommand(Translation2d setpoint, boolean slow) {
+  public Command moveToAngleCommand(Translation2d setpoint) {
     return this.runEnd(() -> {
-            double pid = angleController.calculate(absAngleEncoder.getDistance(), setpoint.getAngle().getDegrees());
-            double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
+      double pid = kP_ANGLE * (setpoint.getAngle().getDegrees() - absAngleEncoder.getDistance());
+      double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
-            if (this.disableAngleMotors) {
-              angleMotor.stopMotor();
-              angleMotor.disable();
-              angleFollowerMotor.stopMotor();
-              angleFollowerMotor.disable();
-            }
-            else if (slow) angleMotor.setVoltage((pid + feedforward) / 5);
-            else angleMotor.setVoltage(pid + feedforward);
+         angleMotor.setVoltage(pid + feedforward);
+      SmartDashboard.putNumber("pid", pid);
+      SmartDashboard.putNumber("ff", feedforward);
+      SmartDashboard.putNumber("setpoint", setpoint.getAngle().getDegrees());
           }, angleMotor::stopMotor);
-  }
-
-  public Command moveToAngleCommand(Translation2d setpoint){
-    return moveToAngleCommand(setpoint, false);
   }
 
   /**
@@ -213,14 +202,14 @@ public class Arm extends SubsystemBase {
   public Command closeArmCommand() {
     return resetLengthCommand()
           .alongWith(new WaitCommand(1)
-                .andThen(moveToAngleCommand(CLOSED.setpoint, true)));
+                .andThen(moveToAngleCommand(CLOSED.setpoint)));
   }
 
   public Command lockArmCommand() {
     return closeArmCommand().alongWith(new PrintCommand("closing").repeatedly()).until(armAngleClosedTrigger.and(armFullyClosedTrigger))
           .andThen(
                 new ParallelCommandGroup(
-                      moveToAngleCommand(LOCKED.setpoint, true).withTimeout(5),
+                      moveToAngleCommand(LOCKED.setpoint).withTimeout(5),
                       moveToLengthCommand(LOCKED.setpoint),
                       new PrintCommand("locking").repeatedly())
           );
@@ -234,6 +223,7 @@ public class Arm extends SubsystemBase {
     return new InstantCommand(
           ()->{
             angleMotor.disable();
+            // disable and stop motor are the same thing
             angleMotor.stopMotor();
             angleFollowerMotor.disable();
             angleFollowerMotor.stopMotor();
@@ -243,11 +233,5 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
-
-    if (absAngleEncoder.getDistance() > 20) {
-      angleMotor.set(0);
-      angleMotor.disable();
-      disableAngleMotors = true;
-    }
   }
 }

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.event.EventLoop;
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
+import frc.robot.utility.Calculation;
 
 import static frc.robot.Constants.IntakeConstants.*;
 
@@ -31,7 +34,7 @@ public class RobotContainer {
   private final Swerve swerve = new Swerve();
   private final Superstructure superstructure = new Superstructure();
 
-  private final Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
+  private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
@@ -56,9 +59,9 @@ public class RobotContainer {
   private void configureBindings() {
     swerve.setDefaultCommand(
           swerve.driveSwerveCommand(
-                ()-> -driveJoystick.getLeftY(),
-                driveJoystick::getLeftX,
-                driveJoystick::getRightX,
+                ()-> Calculation.deadband(-driveJoystick.getLeftY()),
+                () -> Calculation.deadband(driveJoystick.getLeftX()),
+                () -> Calculation.deadband(driveJoystick.getRightX()),
                 driveJoystick.R2().negate()));
 
     // intake commands
@@ -120,6 +123,8 @@ public class RobotContainer {
    * d to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return AutoBuilder.getAutonomousCommand(superstructure, intake);
+//    return AutoBuilder.getAutonomousCommand(superstructure, intake);
+//    return swerve.autoMotionCommand(false, new Pose2d(0, 2, Rotation2d.fromDegrees(0)));
+    return swerve.turnToAngleCommand(0);
   }
 }
