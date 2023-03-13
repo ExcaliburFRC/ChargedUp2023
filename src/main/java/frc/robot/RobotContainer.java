@@ -25,7 +25,7 @@ import static frc.robot.Constants.IntakeConstants.*;
 public class RobotContainer {
   private final Intake intake = new Intake();
   private final Swerve swerve = new Swerve();
-//  private final Superstructure superstructure = new Superstructure();
+  private final Superstructure superstructure = new Superstructure();
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
@@ -74,6 +74,8 @@ public class RobotContainer {
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
     armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
+
+    armJoystick.L1().onTrue(superstructure.arm.lockArmCommand(superstructure.rollerGripper.beambreakTrigger));
   }
 
   public Command toggleCompressorCommand() {

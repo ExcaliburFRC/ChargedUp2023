@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.revrobotics.*;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -18,7 +17,6 @@ import java.util.Map;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
-import static frc.robot.Constants.ArmConstants.Setpoints.CLOSED;
 import static frc.robot.Constants.ArmConstants.Setpoints.LOCKED;
 
 public class Arm extends SubsystemBase {
@@ -61,6 +59,8 @@ public class Arm extends SubsystemBase {
     lengthEncoder.setPositionConversionFactor(ROT_TO_METER);
     lengthEncoder.setVelocityConversionFactor(RPM_TO_METER_PER_SEC);
 
+    lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
+
     lengthController.setP(kP_LENGTH);
     lengthController.setI(0);
     lengthController.setD(kD_LENGTH);
@@ -82,6 +82,8 @@ public class Arm extends SubsystemBase {
 
 //    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, -2.5f);
 //    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, true);
+
+    angleMotor.setOpenLoopRampRate(2);
   }
 
   /**
@@ -144,8 +146,8 @@ public class Arm extends SubsystemBase {
     return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
   }
 
-  public Command lowerArmCommand() {
-    //when the motor stops, gravity pulls the arm slowly down
+  public Command fadeArmCommand() {
+    //when the motor stops, gravity slowly pulls the arm down, making the arm "fade" down
     return new RunCommand(angleMotor::stopMotor ,this);
   }
 
@@ -199,18 +201,10 @@ public class Arm extends SubsystemBase {
     return Math.abs(angleA - angleB) < tolerance;
   }
 
-  public Command closeArmCommand() {
-    return resetLengthCommand()
-          .andThen(moveToAngleCommand(CLOSED.setpoint));
-  }
-
-  public Command lockArmCommand() {
-    return closeArmCommand().until(armAngleClosedTrigger)
-          .andThen(
-                new ParallelCommandGroup(
-                      moveToAngleCommand(LOCKED.setpoint).withTimeout(5),
-                      moveToLengthCommand(LOCKED.setpoint))
-          );
+  public Command lockArmCommand(Trigger bbTrigger){
+    return moveToAngleCommand(LOCKED.setpoint).until(armAngleClosedTrigger).alongWith(
+            resetLengthCommand().andThen(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger))
+    );
   }
 
   public double getArmLength() {

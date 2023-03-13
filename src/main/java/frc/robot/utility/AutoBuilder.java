@@ -28,8 +28,8 @@ public class AutoBuilder {
     heightChooser.addOption("mid", MID_RPM);
     heightChooser.addOption("high", HIGH_RPM);
 
-    facingChooser.setDefaultOption("forward (place cone)", new Boolean(true));
-    facingChooser.addOption("backwards (place cube)", new Boolean(false));
+    facingChooser.setDefaultOption("forward (place cone)", true);
+    facingChooser.addOption("backwards (place cube)", false);
 
     autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
     autoChooser.addOption("balance ramp", swerve.climbCommand(false));
@@ -38,12 +38,10 @@ public class AutoBuilder {
     var tab = Shuffleboard.getTab("Autonomous builder");
 //    tab.add("initial game piece", initialGamePiece).withSize(3, 1)
 //          .withPosition(5, 1);
-    tab.add("height", heightChooser).withSize(3, 1)
-          .withPosition(5, 2);
+    tab.add("height", heightChooser).withSize(3, 1).withPosition(5, 2);
 //    tab.add("facing forwards", facingChooser).withSize(3, 1)
 //          .withPosition(5, 3);
-    tab.add("auto", autoChooser).withSize(3, 1)
-          .withPosition(5, 4);
+    tab.add("auto", autoChooser).withSize(3, 1).withPosition(5, 3); // 5, 4
   }
 
 //  public static Command getAutonomousCommand(Superstructure superstructure, Intake intake){
