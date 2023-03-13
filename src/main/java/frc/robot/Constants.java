@@ -36,7 +36,7 @@ public final class Constants {
         public static double kP = 0.001;
 
         public static final double LOW_RPM = 0;
-        public static final double MID_RPM = -1800;
+        public static final double MID_RPM = -1700;
         public static final double HIGH_RPM = -3350;
 
         public static final double TOLERANCE = 350;
@@ -108,7 +108,7 @@ public final class Constants {
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
-        public static final double RAMP_BALANCE_KP = 0.008;
+        public static final double RAMP_BALANCE_KP = 0.0075;
         public static final double RAMP_BALANCE_KD = 0.002;
 
         // intentional limitations
@@ -143,8 +143,8 @@ public final class Constants {
     public static final class ArmConstants {
         public enum Setpoints {
             // cone, cube
-            LOW(new Translation2d(0.7, Rotation2d.fromDegrees(100))),//
-            MID(new Translation2d(0.7, Rotation2d.fromDegrees(165))),
+            LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),//
+            MID(new Translation2d(0.7, Rotation2d.fromDegrees(168))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(120))),
             HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(190))),
             SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(171))),

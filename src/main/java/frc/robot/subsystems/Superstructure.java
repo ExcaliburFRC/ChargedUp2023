@@ -1,12 +1,10 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants.Setpoints;
-import frc.robot.Robot;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
@@ -18,22 +16,17 @@ public class Superstructure extends SubsystemBase {
   public Superstructure() {
     rollerGripper.setDefaultCommand(rollerGripper.holdConeCommand());
 
-//    arm.setDefaultCommand(
-//          new ConditionalCommand(
-//                 lock / close arm
-//                new ConditionalCommand(
-//                       close arm
-//                      arm.closeArmCommand(),
-//                       lock arm
-//                      new ConditionalCommand(
-//                            arm.stopAngleMotors(),
-//                            arm.lockArmCommand(),
-//                            arm.armLockedTrigger),
-//                       whether were holding a cone
-//                      rollerGripper.beambreakTrigger),
-//                new RunCommand(() -> {}, arm)
-//                      .withTimeout(3.5),
-//    () -> Robot.startUpTimer.get() > 3));
+    arm.setDefaultCommand(
+          new ConditionalCommand(
+                new InstantCommand(()-> {}),
+                new ConditionalCommand(
+                      arm.closeArmCommand(),
+                      new ConditionalCommand(
+                            arm.stopAngleMotors(),
+                            arm.lockArmCommand(),
+                            arm.armLockedTrigger),
+                      rollerGripper.beambreakTrigger),
+                DriverStation::isAutonomous));
   }
 
   public Command intakeFromShelfCommand() {
@@ -69,7 +62,7 @@ public class Superstructure extends SubsystemBase {
 
   public Command placeOnLowCommand() {
     return arm.holdSetpointCommand(LOW.setpoint)
-          .raceWith(new WaitCommand(0.25))
+          .raceWith(new WaitCommand(0.35))
           .andThen(rollerGripper.ejectCommand(0.2))
           .until(rollerGripper.beambreakTrigger.negate().debounce(0.05));
   }

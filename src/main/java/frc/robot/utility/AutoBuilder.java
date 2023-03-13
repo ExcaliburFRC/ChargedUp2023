@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import frc.robot.Constants;
 import frc.robot.commands.autonomous.LeaveCommunityCommand;
@@ -32,6 +33,7 @@ public class AutoBuilder {
 
     autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
     autoChooser.addOption("balance ramp", swerve.climbCommand(false));
+    autoChooser.addOption("don't drive", new InstantCommand(()-> {}));
 
     var tab = Shuffleboard.getTab("Autonomous builder");
 //    tab.add("initial game piece", initialGamePiece).withSize(3, 1)
@@ -55,10 +57,11 @@ public class AutoBuilder {
 //                .andThen(autoChooser.getSelected()));
 //  }
 
-  public static Command getAutonomousCommand(Intake intake){
+  public static Command getAutonomousCommand(Intake intake, Swerve swerve){
     return new ProxyCommand(
-                intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2)
-                .andThen(autoChooser.getSelected()));
+          new InstantCommand(()-> swerve.resetGyroCommand(180)).andThen(
+                intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2),
+                autoChooser.getSelected()));
   }
 
 }

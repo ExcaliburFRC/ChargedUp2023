@@ -45,8 +45,6 @@ public class Arm extends SubsystemBase {
 
   public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
 
-  boolean disableAngleMotors = false;
-
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
     angleMotor.restoreFactoryDefaults();
@@ -54,7 +52,7 @@ public class Arm extends SubsystemBase {
 
     angleMotor.setInverted(false);
     angleFollowerMotor.follow(angleMotor, false);
-    lengthMotor.setInverted(false);
+    lengthMotor.setInverted(true);
 
     angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -79,8 +77,8 @@ public class Arm extends SubsystemBase {
     armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(4, 3)
           .withSize(2, 1);
 
-    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 18f);
-    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+//    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 18f);
+//    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 
 //    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, -2.5f);
 //    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, true);
@@ -147,6 +145,7 @@ public class Arm extends SubsystemBase {
   }
 
   public Command lowerArmCommand() {
+    //when the motor stops, gravity pulls the arm slowly down
     return new RunCommand(angleMotor::stopMotor ,this);
   }
 
@@ -202,17 +201,15 @@ public class Arm extends SubsystemBase {
 
   public Command closeArmCommand() {
     return resetLengthCommand()
-          .alongWith(new WaitCommand(1)
-                .andThen(moveToAngleCommand(CLOSED.setpoint)));
+          .andThen(moveToAngleCommand(CLOSED.setpoint));
   }
 
   public Command lockArmCommand() {
-    return closeArmCommand().alongWith(new PrintCommand("closing").repeatedly()).until(armAngleClosedTrigger.and(armFullyClosedTrigger))
+    return closeArmCommand().until(armAngleClosedTrigger)
           .andThen(
                 new ParallelCommandGroup(
                       moveToAngleCommand(LOCKED.setpoint).withTimeout(5),
-                      moveToLengthCommand(LOCKED.setpoint),
-                      new PrintCommand("locking").repeatedly())
+                      moveToLengthCommand(LOCKED.setpoint))
           );
   }
 
