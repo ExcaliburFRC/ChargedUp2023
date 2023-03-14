@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj2.command.*;
 
+@Deprecated
 public class LEDs extends SubsystemBase {
     private final PWM leds = new PWM(LEDS_PORT);
 

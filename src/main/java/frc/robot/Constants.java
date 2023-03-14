@@ -150,6 +150,8 @@ public final class Constants {
             SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(171))),
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(171))),
 
+            MIDDLE(new Translation2d((MINIMAL_LENGTH_METERS + MAXIMAL_LENGTH_METERS) / 2, Rotation2d.fromDegrees(135))),
+
             CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(87)));
 
