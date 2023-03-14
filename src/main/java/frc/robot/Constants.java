@@ -29,8 +29,8 @@ public final class Constants {
         public static final int EJECT_FWD_CHANNEL = 2;
         public static final int EJECT_REV_CHANNEL = 3;
 
-        public static double kS = 0.07079;
-        public static double kV = 0.137 / 60;
+        public static double kS = 0.14344;
+        public static double kV = 0.13011 / 60;
 
         //        public static double kP = 7.1212E-07;
         public static double kP = 0.001;
