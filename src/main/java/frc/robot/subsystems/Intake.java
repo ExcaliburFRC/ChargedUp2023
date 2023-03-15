@@ -6,8 +6,12 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.utility.Limelight;
 
 import java.util.function.DoubleSupplier;
 
@@ -18,14 +22,14 @@ import static frc.robot.Constants.IntakeConstants.*;
 public class Intake extends SubsystemBase {
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, kBrushless);
 
-  private final DoubleSolenoid intakePiston = new DoubleSolenoid(REVPH, INTAKE_FWD_CHANNEL, INTAKE_REV_CHANNEL);
-  private final DoubleSolenoid ejectPiston = new DoubleSolenoid(REVPH, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
+  private final DoubleSolenoid intakePiston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, INTAKE_FWD_CHANNEL, INTAKE_REV_CHANNEL);
+  private final DoubleSolenoid ejectPiston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
 
   private final PIDController pidController = new PIDController(kP, 0, 0);
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV);
 
   public final Trigger isAtTargetVelocity = new Trigger(
-        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.15);
+        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.1);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
   public Intake() {
@@ -57,17 +61,17 @@ public class Intake extends SubsystemBase {
    * @param intakeSpeed the motor percentage to intake in
    * @return the intakeCommand
    */
-  public Command intakeCommand(double intakeSpeed) { //, LEDs leds
+  public Command intakeCommand(double intakeSpeed) {
     return new StartEndCommand(
           () -> {
-//                  leds.setColorCommand(LEDs.LEDcolor.GREEN).schedule();
             intakePiston.set(DoubleSolenoid.Value.kForward);
             intakeMotor.set(intakeSpeed);
+//            Shuffleboard.selectTab("intakeCamera");
           },
           () -> {
-//                  leds.restoreDefualtColorCommand().schedule();
             intakePiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
+//            Shuffleboard.selectTab("Swerve");
           }, this).andThen();
   }
 
@@ -115,8 +119,8 @@ public class Intake extends SubsystemBase {
                   double ff = feedforward.calculate(rpm);
 
                   intakeMotor.setVoltage(pid + ff);
-                }).alongWith(new WaitUntilCommand(isAtTargetVelocity)
-                      .andThen(pushCubeCommand()))
+                  SmartDashboard.putNumber("rpm", intakeEncoder.getVelocity());
+                }).alongWith(new WaitUntilCommand(isAtTargetVelocity).andThen(pushCubeCommand()))
                 .finallyDo((__) -> {
                   intakeMotor.stopMotor();
                   ejectPiston.set(DoubleSolenoid.Value.kReverse);
@@ -153,7 +157,7 @@ public class Intake extends SubsystemBase {
 
   public Command orientCubeCommand(){
     return this.runEnd(
-          ()-> intakeMotor.set(0.1),
+          ()-> intakeMotor.set(0.4),
           intakeMotor::stopMotor
           );
   }

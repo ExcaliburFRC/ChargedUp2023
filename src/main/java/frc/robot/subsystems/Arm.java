@@ -2,25 +2,21 @@ package frc.robot.subsystems;
 
 import com.revrobotics.*;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
-import frc.robot.utility.ToggleCommand;
 
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
-import static frc.robot.Constants.ArmConstants.Setpoints.CLOSED;
 import static frc.robot.Constants.ArmConstants.Setpoints.LOCKED;
 
 public class Arm extends SubsystemBase {
@@ -33,20 +29,19 @@ public class Arm extends SubsystemBase {
   private final DutyCycleEncoder absAngleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_CHANNEL);
 
   private final DigitalInput lowerLimitSwitch = new DigitalInput(CLOSED_LIMIT_SWITCH_ID);
-//  private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
 
-  private final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
-//  private final Trigger armHalfOpenedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
-  private final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() > 1);
+  public final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
+  public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 1);
 
-  private final Trigger armClosedTrigger= new Trigger(()-> angleInRange(CLOSED_DEGREES, absAngleEncoder.getDistance()));
+  public final Trigger armAngleClosedTrigger = new Trigger(() -> absAngleEncoder.getDistance() <= 90);
 
-  private final PIDController angleController = new PIDController(
-        kP_ANGLE, 0, 0);
+  public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
   public static double floatDutyCycle = 0;
+
+  public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
 
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
@@ -64,13 +59,31 @@ public class Arm extends SubsystemBase {
     lengthEncoder.setPositionConversionFactor(ROT_TO_METER);
     lengthEncoder.setVelocityConversionFactor(RPM_TO_METER_PER_SEC);
 
+    lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
+
     lengthController.setP(kP_LENGTH);
     lengthController.setI(0);
     lengthController.setD(kD_LENGTH);
 
-
     absAngleEncoder.setPositionOffset(ABS_ENCODER_OFFSET_ANGLE_DEG);
     absAngleEncoder.setDistancePerRotation(360.0);
+
+    armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(6, 0)
+          .withSize(2, 2).withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
+    armTab.addDouble("Arm degrees", absAngleEncoder::getDistance).withPosition(4, 0)
+          .withWidget("Simple Dial").withProperties(Map.of("min", 90, "max", 190));
+    armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(4, 2)
+          .withSize(2, 1);
+    armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(4, 3)
+          .withSize(2, 1);
+
+    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 22f);
+    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+
+//    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, -2.5f);
+//    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, true);
+
+    angleMotor.setOpenLoopRampRate(2);
   }
 
   /**
@@ -123,7 +136,7 @@ public class Arm extends SubsystemBase {
   }
 
   public Command resetLengthCommand() {
-    return this.runEnd(
+    return Commands.runEnd(
           () -> lengthMotor.set(-0.85),
           lengthMotor::stopMotor
     ).until(armFullyClosedTrigger);
@@ -133,8 +146,9 @@ public class Arm extends SubsystemBase {
     return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
   }
 
-  public Command lowerArmCommand(){
-    return new RunCommand(angleMotor::stopMotor);
+  public Command fadeArmCommand() {
+    //when the motor stops, gravity slowly pulls the arm down, making the arm "fade" down
+    return new RunCommand(angleMotor::stopMotor ,this);
   }
 
   public Command moveToLengthCommand(Translation2d setPoint) {
@@ -153,17 +167,18 @@ public class Arm extends SubsystemBase {
                         0,
                         feedforward, SparkMaxPIDController.ArbFFUnits.kVoltage);
                 }))
-          .finallyDo((__)-> lengthMotor.stopMotor());
+          .finallyDo((__) -> lengthMotor.stopMotor());
   }
 
   public Command moveToAngleCommand(Translation2d setpoint) {
-    return this.run(()-> {
-      double pid = angleController.calculate(absAngleEncoder.getDistance(), setpoint.getAngle().getDegrees());
+    return Commands.runEnd(() -> {
+      double pid = kP_ANGLE * (setpoint.getAngle().getDegrees() - absAngleEncoder.getDistance());
       double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
-      angleMotor.setVoltage(pid + feedforward);
-    })
-          .finallyDo((__)-> angleMotor.stopMotor());
+//         angleMotor.setVoltage(pid + feedforward);
+      SmartDashboard.putNumber("output sum", feedforward + pid);
+      SmartDashboard.putNumber("setpoint", setpoint.getAngle().getDegrees());
+          }, angleMotor::stopMotor, this);
   }
 
   /**
@@ -179,46 +194,35 @@ public class Arm extends SubsystemBase {
     );
   }
 
-  private boolean angleInRange(double angleA, double angleB){
-    double tolorance = 5;
-    return Math.abs(angleA - angleB) < tolorance;
+  private boolean angleInRange(double angleA, double angleB) {
+    double tolerance = 3;
+    return Math.abs(angleA - angleB) < tolerance;
   }
 
-  public Command closeArmCommand(){
-    return moveToLengthCommand(CLOSED.setpoint)
-          .alongWith(new WaitCommand(3)
-                .andThen(moveToAngleCommand(CLOSED.setpoint)));
+  public Command lockArmCommand(Trigger bbTrigger){
+    return moveToAngleCommand(LOCKED.setpoint).until(armAngleClosedTrigger).alongWith(
+            resetLengthCommand().andThen(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
+          .until(armLockedTrigger);
   }
 
-  public Command lockArmCommand(){
-    return new ToggleCommand(
-          // lock arm
-          moveToAngleCommand(LOCKED.setpoint).alongWith(
-          new WaitUntilCommand(()-> angleInRange(-92, absAngleEncoder.getDistance()))
-                .andThen(moveToLengthCommand(LOCKED.setpoint))),
-          // release
-          moveToLengthCommand(CLOSED.setpoint))
-          .withInterruptBehavior(Command.InterruptionBehavior.kCancelIncoming);
-  }
-
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    builder.setSmartDashboardType("Subsystem");
-    builder.addBooleanProperty("fully closed", armFullyClosedTrigger, null);
-    builder.addDoubleProperty("arm angle", absAngleEncoder::getDistance, null);
-    builder.addDoubleProperty("arm length", lengthEncoder::getPosition, null);
-  }
-
-  public double getArmLength(){
+  public double getArmLength() {
     return lengthEncoder.getPosition();
+  }
+
+  public Command stopAngleMotors(){
+    return new InstantCommand(
+          ()->{
+            angleMotor.disable();
+            angleFollowerMotor.disable();
+          }, this);
   }
 
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
 
-    if (DriverStation.isTest()) {
-      angleMotor.setVoltage(SmartDashboard.getNumber("volts", 0));
-    }
+    SmartDashboard.putNumber("abs pose", absAngleEncoder.getAbsolutePosition());
+    SmartDashboard.putNumber("neo encoder position", angleMotor.getEncoder().getPosition());
+
   }
 }

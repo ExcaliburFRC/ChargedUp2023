@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.utility.Limelight;
 
 import java.util.function.BooleanSupplier;
 
@@ -30,6 +31,11 @@ public class RollerGripper extends SubsystemBase {
 
     leftRoller.setInverted(false);
     rightRoller.setInverted(true);
+
+    Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
+          .withPosition(6, 2).withSize(2, 2);
+    Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
+          .withPosition(0, 0).withSize(2, 6);
   }
 
   /**
@@ -108,7 +114,7 @@ public class RollerGripper extends SubsystemBase {
           setRollerGripperMotor(0.05).until(()-> true),
           setRollerGripperMotor(0).until(()-> true),
           beambreakTrigger)
-          .repeatedly();
+          .repeatedly().withName("HoldCone");
   }
 
   /**

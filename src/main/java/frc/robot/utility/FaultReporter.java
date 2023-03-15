@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class FaultReporter {
   PowerDistribution pd = new PowerDistribution();
-  PneumaticHub ph = new PneumaticHub();
+//  PneumaticHub ph = new PneumaticHub();
 
   String[] toIgnore = new String[]{"10", "11", "12", "13", "14"};
 
@@ -28,14 +28,14 @@ public class FaultReporter {
     }
 
     // ph checks
-    try {
-      var phFaults = checkFaultsObject(ph.getFaults());
-      if (!phFaults.isEmpty()) {
-        DriverStation.reportError("PneumaticsHubFaults: " + phFaults, false);
-      }
-    } catch (IllegalAccessException e) {
-      DriverStation.reportError(e.getMessage(), e.getStackTrace());
-    }
+//    try {
+//      var phFaults = checkFaultsObject(ph.getFaults());
+//      if (!phFaults.isEmpty()) {
+//        DriverStation.reportError("PneumaticsHubFaults: " + phFaults, false);
+//      }
+//    } catch (IllegalAccessException e) {
+//      DriverStation.reportError(e.getMessage(), e.getStackTrace());
+//    }
   }
 
   public static void checkSparkMax(CANSparkMax sparkMax){

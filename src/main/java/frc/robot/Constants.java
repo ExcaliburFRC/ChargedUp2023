@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.InterpolatingTreeMap;
 
 import static java.lang.Math.PI;
 
@@ -30,17 +29,18 @@ public final class Constants {
         public static final int EJECT_FWD_CHANNEL = 2;
         public static final int EJECT_REV_CHANNEL = 3;
 
-        public static double kS = 0.07079;
-        public static double kV = 0.137 / 60;
+        public static double kS = 0.14344;
+        public static double kV = 0.13011 / 60;
 
-        //        public static double kP = 7.1212E-07;
-        public static double kP = 0.001;
+        public static double kP = 0.00025;
+//        public static double kP = 0.034764;
+//        public static double kP = 0;
 
         public static final double LOW_RPM = 0;
-        public static final double MID_RPM = -1800;
-        public static final double HIGH_RPM = -3350;
+        public static final double MID_RPM = -1900;
+        public static final double HIGH_RPM = -3600;
 
-        public static final double TOLERANCE = 200;
+        public static final double TOLERANCE = 100;
     }
 
     public static final class SpindexerConstants {
@@ -109,11 +109,12 @@ public final class Constants {
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
-        public static final double RAMP_BALANCE_KP = 0.05;
+        public static final double RAMP_BALANCE_KP = 0.0075;
+        public static final double RAMP_BALANCE_KD = 0.002;
 
         // intentional limitations
 
-        public static final double kSpeedPercantageLimit = 20; // %
+        public static final double kSpeedPercantageLimit = 90; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -123,7 +124,10 @@ public final class Constants {
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
 
         // autonomous constants
-        public static final double kp_Theta_TELEOP = 0.0145; //TODO: find
+        public static final double kp_Theta = 0.0155;
+        public static final double kd_Theta = 0.002;
+        public static final double kp_X = 0.2;
+        public static final double kp_Y = 0.2;
     }
 
     public static final class ModuleConstants {
@@ -140,15 +144,17 @@ public final class Constants {
     public static final class ArmConstants {
         public enum Setpoints {
             // cone, cube
-            LOW(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-65))),
-            MID(new Translation2d(0.7, Rotation2d.fromDegrees(-15))),
-            HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-60))),
-            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(10))),
-            SHELF_EXTENDED(new Translation2d(0.73, Rotation2d.fromDegrees(-10))), //0.7
-            SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-10))),
+            LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),//
+            MID(new Translation2d(0.7, Rotation2d.fromDegrees(168))),
+            HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(120))),
+            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(190))),
+            SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(171))),
+            SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(171))),
 
-            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.02, Rotation2d.fromDegrees(-85))),
-            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(-93)));
+            MIDDLE(new Translation2d((MINIMAL_LENGTH_METERS + MAXIMAL_LENGTH_METERS) / 2, Rotation2d.fromDegrees(135))),
+
+            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(90))),
+            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(87)));
 
             public final Translation2d setpoint;
 
@@ -166,30 +172,25 @@ public final class Constants {
         public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
-        public static final double MAXIMAL_LENGTH_METERS = 1.0; // m
+        public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
 
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.673; // NOT IN DEGREES -- IN DUTY CYCLE
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.951 - 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
         public static final double CLOSED_DEGREES = -90;
 
         // Angle control
         public static final double kS_ANGLE = 0.10622;
         public static final double kV_ANGLE = 0.016479;
         public static final double kA_ANGLE = 0.0023683;
-        //        public static final InterpolatingTreeMap<Double, Double> kG_ANGLE = new InterpolatingTreeMap<>();
-        public static final double kG_ANGLE = 0.52;
+        public static final double kG_ANGLE = -0.52;
 
 //        static {
 //            kG_ANGLE.put(MINIMAL_LENGTH_METERS, 0.50333);
 //            kG_ANGLE.put(MAXIMAL_LENGTH_METERS, 0.69438);
 //        }
 
-        //        public static final double kP_ANGLE = 0.069727;
         public static final double kP_ANGLE = 0.06;
-        //        public static final double kD_ANGLE = 0.02764;
-        public static final double kMaxAngularVelocity = kV_ANGLE * 12 * 10;
-        public static final double kMaxAngularAcceleration = kA_ANGLE * 12 * 10;
 
         // Length control
         public static final double kS_LENGTH = 0.070742;
