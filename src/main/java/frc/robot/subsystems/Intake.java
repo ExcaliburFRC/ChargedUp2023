@@ -7,6 +7,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
@@ -25,19 +26,20 @@ public class Intake extends SubsystemBase {
   private final DoubleSolenoid intakePiston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, INTAKE_FWD_CHANNEL, INTAKE_REV_CHANNEL);
   private final DoubleSolenoid ejectPiston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
 
-  private final PIDController pidController = new PIDController(kP, 0, 0);
+  private final PIDController pidController = new PIDController(kP, 0, kD);
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV);
 
   public final Trigger isAtTargetVelocity = new Trigger(
         () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.1);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
+  public boolean ballShotTrigger;
+  double prevVel = 0;
+
   public Intake() {
     intakeMotor.restoreFactoryDefaults();
     intakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     intakeMotor.clearFaults();
-    intakeEncoder.setAverageDepth(8);
-    intakeEncoder.setMeasurementPeriod(32);
 //        intakeMotor.getFault()
   }
 
@@ -65,11 +67,13 @@ public class Intake extends SubsystemBase {
     return new StartEndCommand(
           () -> {
             intakePiston.set(DoubleSolenoid.Value.kForward);
+//            ejectPiston.set(DoubleSolenoid.Value.kForward);
             intakeMotor.set(intakeSpeed);
 //            Shuffleboard.selectTab("intakeCamera");
           },
           () -> {
             intakePiston.set(DoubleSolenoid.Value.kReverse);
+//            ejectPiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
 //            Shuffleboard.selectTab("Swerve");
           }, this).andThen();
@@ -160,6 +164,31 @@ public class Intake extends SubsystemBase {
           ()-> intakeMotor.set(0.4),
           intakeMotor::stopMotor
           );
+  }
+
+  double x = 0;
+  double t = Timer.getFPGATimestamp();
+  double velocity;
+
+  private void updateVel(){
+    double prev_x = x;
+    double prev_t = t;
+
+    x = intakeEncoder.getPosition();
+    t = Timer.getFPGATimestamp();
+
+    double dx = x - prev_x;
+    double dt = t - prev_t;
+
+    velocity = dx / dt;
+  }
+
+  @Override
+  public void periodic() {
+    updateVel();
+    ballShotTrigger = prevVel > velocity + 500;
+    prevVel = velocity;
+    System.out.println("velocity: " + velocity);
   }
 
   @Override

@@ -59,7 +59,7 @@ public class RobotContainer {
                 driveJoystick.R2().negate()));
 
     // intake commands
-    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4));
+    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.3));
     //armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
     // place commands
@@ -69,6 +69,7 @@ public class RobotContainer {
 
     armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
+//    armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
     armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
 
     // other
@@ -87,7 +88,8 @@ public class RobotContainer {
   }
 
   Command SystemTester(){
-    return new SystemTester(swerve, intake, superstructure.rollergripper);
+//    return new SystemTester(swerve, intake, superstructure.rollergripper);
+    return null;
   }
 
   /**
