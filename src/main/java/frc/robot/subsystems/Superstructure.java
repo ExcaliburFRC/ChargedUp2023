@@ -48,6 +48,10 @@ public class Superstructure extends SubsystemBase {
 				.until(rollerGripper.beambreakTrigger.negate().debounce(0.05));
 	}
 
+	public Command lockArmCommand(){
+		return arm.lockArmCommand(rollerGripper.beambreakTrigger);
+	}
+
 	@Deprecated
 	public Command switchCommand(double height) {
 		if (height == Constants.IntakeConstants.LOW_RPM)

@@ -24,8 +24,8 @@ import static frc.robot.Constants.IntakeConstants.*;
  */
 public class RobotContainer {
   private final Intake intake = new Intake();
-  private final Swerve swerve = new Swerve();
-  private final Superstructure superstructure = new Superstructure();
+  public final Swerve swerve = new Swerve();
+ // private final Superstructure superstructure = new Superstructure();
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
@@ -59,12 +59,12 @@ public class RobotContainer {
 
     // intake commands
     armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.4));
-//    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
+    //armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
     // place commands
-//    armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
-//    armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
-//    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand());
+    //armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
+    //armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
+    //armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
     armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
@@ -75,7 +75,7 @@ public class RobotContainer {
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
     armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
 
-    armJoystick.L1().onTrue(superstructure.arm.lockArmCommand(superstructure.rollerGripper.beambreakTrigger));
+    //armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
   }
 
   public Command toggleCompressorCommand() {

@@ -33,7 +33,7 @@ public class Arm extends SubsystemBase {
   public final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
   public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 1);
 
-  public final Trigger armAngleClosedTrigger = new Trigger(() -> absAngleEncoder.getDistance() <= 92);
+  public final Trigger armAngleClosedTrigger = new Trigger(() -> absAngleEncoder.getDistance() <= 90);
 
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
@@ -77,8 +77,8 @@ public class Arm extends SubsystemBase {
     armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(4, 3)
           .withSize(2, 1);
 
-//    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 18f);
-//    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 22f);
+    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 
 //    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, -2.5f);
 //    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, true);
@@ -175,9 +175,7 @@ public class Arm extends SubsystemBase {
       double pid = kP_ANGLE * (setpoint.getAngle().getDegrees() - absAngleEncoder.getDistance());
       double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
-         angleMotor.setVoltage(pid + feedforward);
-//      SmartDashboard.putNumber("pid", pid);
-//      SmartDashboard.putNumber("ff", feedforward);
+//         angleMotor.setVoltage(pid + feedforward);
       SmartDashboard.putNumber("output sum", feedforward + pid);
       SmartDashboard.putNumber("setpoint", setpoint.getAngle().getDegrees());
           }, angleMotor::stopMotor, this);
@@ -203,8 +201,8 @@ public class Arm extends SubsystemBase {
 
   public Command lockArmCommand(Trigger bbTrigger){
     return moveToAngleCommand(LOCKED.setpoint).until(armAngleClosedTrigger).alongWith(
-            resetLengthCommand().andThen(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger))
-    );
+            resetLengthCommand().andThen(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
+          .until(armLockedTrigger);
   }
 
   public double getArmLength() {
@@ -215,15 +213,16 @@ public class Arm extends SubsystemBase {
     return new InstantCommand(
           ()->{
             angleMotor.disable();
-            // disable and stop motor are the same thing
-            angleMotor.stopMotor();
             angleFollowerMotor.disable();
-            angleFollowerMotor.stopMotor();
           }, this);
   }
 
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
+
+    SmartDashboard.putNumber("abs pose", absAngleEncoder.getAbsolutePosition());
+    SmartDashboard.putNumber("neo encoder position", angleMotor.getEncoder().getPosition());
+
   }
 }

@@ -85,8 +85,9 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-  }
 
+    m_robotContainer.swerve.resetGyroCommand(180).schedule();
+  }
 
   /** This function is called periodically during autonomous. */
   @Override
@@ -101,7 +102,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
     CommandScheduler.getInstance().setActiveButtonLoop(defaultEventLoop);
   }
 

@@ -8,6 +8,7 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.utility.Limelight;
@@ -118,8 +119,8 @@ public class Intake extends SubsystemBase {
                   double ff = feedforward.calculate(rpm);
 
                   intakeMotor.setVoltage(pid + ff);
-                }).alongWith(new WaitUntilCommand(isAtTargetVelocity)
-                      .andThen(pushCubeCommand()))
+                  SmartDashboard.putNumber("rpm", intakeEncoder.getVelocity());
+                }).alongWith(new WaitUntilCommand(isAtTargetVelocity).andThen(pushCubeCommand()))
                 .finallyDo((__) -> {
                   intakeMotor.stopMotor();
                   ejectPiston.set(DoubleSolenoid.Value.kReverse);
@@ -156,7 +157,7 @@ public class Intake extends SubsystemBase {
 
   public Command orientCubeCommand(){
     return this.runEnd(
-          ()-> intakeMotor.set(0.1),
+          ()-> intakeMotor.set(0.4),
           intakeMotor::stopMotor
           );
   }
