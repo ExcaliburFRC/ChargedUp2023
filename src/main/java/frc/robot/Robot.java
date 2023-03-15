@@ -6,9 +6,9 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.SystemTester;
 import frc.robot.utility.FaultReporter;
 
 /**
@@ -21,9 +21,6 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
-
-  EventLoop TestEventLoop = new EventLoop();
-  EventLoop defaultEventLoop;
 
   public static Timer startUpTimer = new Timer();
 
@@ -45,7 +42,6 @@ public class Robot extends TimedRobot {
     DriverStation.startDataLog(DataLogManager.getLog(), true);
 
     enableLiveWindowInTest(false);
-    defaultEventLoop = CommandScheduler.getInstance().getDefaultButtonLoop();
 
     startUpTimer.start();
 
@@ -102,7 +98,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    CommandScheduler.getInstance().setActiveButtonLoop(defaultEventLoop);
   }
 
   /** This function is called periodically during operator control. */
@@ -116,8 +111,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
     CommandScheduler.getInstance().enable();
 
-    CommandScheduler.getInstance().setActiveButtonLoop(TestEventLoop);
-    m_robotContainer.manual();
+    m_robotContainer.SystemTester().schedule();
   }
 
   /** This function is called periodically during test mode. */

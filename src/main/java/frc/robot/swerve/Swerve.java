@@ -136,7 +136,7 @@ public class Swerve extends SubsystemBase {
 
   // return the pitch of the robot
   //TODO: check if works
-  private double getRampAngle() {
+  public double getRampAngle() {
     double roll = _gyro.getRoll();
     roll -= 0.46;
     return roll;
@@ -221,8 +221,8 @@ public class Swerve extends SubsystemBase {
                 this));
   }
 
-  public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fielOriented) {
-    return driveSwerveCommand(speed, ()-> 0, turn, () -> fielOriented);
+  public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fieldOriented) {
+    return driveSwerveCommand(speed, ()-> 0, turn, () -> fieldOriented);
   }
 
   // angle based swerve drive

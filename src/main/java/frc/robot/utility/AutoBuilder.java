@@ -61,5 +61,4 @@ public class AutoBuilder {
                 intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2),
                 autoChooser.getSelected()));
   }
-
 }

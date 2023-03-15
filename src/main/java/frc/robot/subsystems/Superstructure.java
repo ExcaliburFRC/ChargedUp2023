@@ -8,10 +8,10 @@ import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
 public class Superstructure extends SubsystemBase {
 	public final Arm arm = new Arm();
-	public final RollerGripper rollerGripper = new RollerGripper();
+	public final Rollergripper rollergripper = new Rollergripper();
 
 	public Superstructure() {
-		rollerGripper.setDefaultCommand(rollerGripper.holdConeCommand());
+		rollergripper.setDefaultCommand(rollergripper.holdConeCommand());
 
 		arm.setDefaultCommand(arm.fadeArmCommand());
 	}
@@ -19,8 +19,8 @@ public class Superstructure extends SubsystemBase {
 	public Command intakeFromShelfCommand() {
 		return arm.resetLengthCommand().andThen(
 //          new InstantCommand(()-> Shuffleboard.selectTab("armCamera")),
-				rollerGripper.intakeCommand().alongWith(arm.holdSetpointCommand(SHELF_EXTENDED.setpoint))
-						.until(rollerGripper.beambreakTrigger),
+				rollergripper.intakeCommand().alongWith(arm.holdSetpointCommand(SHELF_EXTENDED.setpoint))
+						.until(rollergripper.beambreakTrigger),
 //                new InstantCommand(() -> Shuffleboard.selectTab("Swerve")),
 				arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5));
 	}
@@ -30,26 +30,26 @@ public class Superstructure extends SubsystemBase {
 				arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1),
 				arm.holdSetpointCommand(HIGH.setpoint))
 				.raceWith(new WaitUntilCommand(release))
-				.andThen(arm.fadeArmCommand().alongWith(rollerGripper.ejectCommand(0.035)))
-				.until(rollerGripper.beambreakTrigger.negate().debounce(1.5));
+				.andThen(arm.fadeArmCommand().alongWith(rollergripper.ejectCommand(0.035)))
+				.until(rollergripper.beambreakTrigger.negate().debounce(1.5));
 	}
 
 	public Command placeOnMidCommand(Trigger release) {
 		return arm.holdSetpointCommand(MID.setpoint)
 				.raceWith(new WaitUntilCommand(release))
-				.andThen(arm.fadeArmCommand().alongWith(rollerGripper.ejectCommand()))
-				.until(rollerGripper.beambreakTrigger.negate().debounce(0.2));
+				.andThen(arm.fadeArmCommand().alongWith(rollergripper.ejectCommand()))
+				.until(rollergripper.beambreakTrigger.negate().debounce(0.2));
 	}
 
 	public Command placeOnLowCommand() {
 		return arm.holdSetpointCommand(LOW.setpoint)
 				.raceWith(new WaitCommand(0.35))
-				.andThen(rollerGripper.ejectCommand(0.2))
-				.until(rollerGripper.beambreakTrigger.negate().debounce(0.05));
+				.andThen(rollergripper.ejectCommand(0.2))
+				.until(rollergripper.beambreakTrigger.negate().debounce(0.05));
 	}
 
 	public Command lockArmCommand(){
-		return arm.lockArmCommand(rollerGripper.beambreakTrigger);
+		return arm.lockArmCommand(rollergripper.beambreakTrigger);
 	}
 
 	@Deprecated

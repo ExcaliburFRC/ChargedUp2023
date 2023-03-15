@@ -12,7 +12,7 @@ import java.util.function.BooleanSupplier;
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.RollerGripperConstants.*;
 
-public class RollerGripper extends SubsystemBase {
+public class Rollergripper extends SubsystemBase {
   private final CANSparkMax rightRoller = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
   private final CANSparkMax leftRoller = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
 
@@ -20,7 +20,7 @@ public class RollerGripper extends SubsystemBase {
 
   public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 
-  public RollerGripper() {
+  public Rollergripper() {
     rightRoller.restoreFactoryDefaults();
     rightRoller.clearFaults();
     rightRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);

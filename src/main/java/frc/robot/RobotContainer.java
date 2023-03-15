@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.SystemTester;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
@@ -25,7 +26,7 @@ import static frc.robot.Constants.IntakeConstants.*;
 public class RobotContainer {
   private final Intake intake = new Intake();
   public final Swerve swerve = new Swerve();
- // private final Superstructure superstructure = new Superstructure();
+  private final Superstructure superstructure = new Superstructure();
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
@@ -85,12 +86,8 @@ public class RobotContainer {
           );
   }
 
-  void manual(){
-//    superstructure.arm.setDefaultCommand(
-//    superstructure.arm.joystickManualCommand(armJoystick::getLeftY, armJoystick::getRightY));
-//    superstructure.rollerGripper.setDefaultCommand(
-//          superstructure.rollerGripper.manualCommand(armJoystick.square(), armJoystick.circle())
-//    );
+  Command SystemTester(){
+    return new SystemTester(swerve, intake, superstructure.rollergripper);
   }
 
   /**
