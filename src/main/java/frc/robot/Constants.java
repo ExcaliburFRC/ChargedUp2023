@@ -29,18 +29,21 @@ public final class Constants {
         public static final int EJECT_FWD_CHANNEL = 2;
         public static final int EJECT_REV_CHANNEL = 3;
 
-        public static double kS = 0.42896;
-        public static double kV = 0.14964 / 60;
+        public static double kS = 0.70626;
+        public static double kV = 0.15447 / 60;
+        public static double kA = 0.097631;
 
-        public static double kP = 0.01;
-//        public static double kD = 0.0025;
+//        public static double kP = 0.00031849;
+        public static double kP = 0;
+//        public static double kD = 0.0015;
+        //shai is a scammer
         public static double kD = 0;
 
         public static final double LOW_RPM = 0;
         public static final double MID_RPM = -685;
-        public static final double HIGH_RPM = -875;
+        public static final double HIGH_RPM = -900;
 
-        public static final double TOLERANCE = 75;
+        public static final double TOLERANCE = 100;
     }
 
     public static final class SpindexerConstants {
@@ -105,12 +108,13 @@ public final class Constants {
                     new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
                     new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
-        public static final double kPhysicalMaxSpeedMetersPerSecond = 5; //TODO find
+        public static final double kPhysicalMaxSpeedMetersPerSecond = 3.6576; //TODO find
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
         public static final double RAMP_BALANCE_KP = 0.0075;
         public static final double RAMP_BALANCE_KD = 0.002;
+        // yehuda ha-gever
 
         // intentional limitations
 

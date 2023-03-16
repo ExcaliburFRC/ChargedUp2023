@@ -8,17 +8,27 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.utility.Limelight;
 
 import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
-import static edu.wpi.first.wpilibj.PneumaticsModuleType.REVPH;
 import static frc.robot.Constants.IntakeConstants.*;
+// have every grid button so the driver can easily choose which game piece to put and where
+// 3/10 not realistic
+//have a timer, and tell him enough time before he should climb
+
+//a button for defense mode that disables other systems and only keeps the swerve
+
+//detects a game piece with the lime so know not to shoot twice to the same place
+
+//detects an april tag, so once he is on the human player place thing the intake will open
+//3/10 not iuseful
+//opens / flashes the lime light , light, when we are about to approach the human player for cube / cone ( will be checked)
+// 8/10 could be an idea
+// button on driver joystick while pressed enables balance ramp
 
 public class Intake extends SubsystemBase {
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, kBrushless);
@@ -27,7 +37,7 @@ public class Intake extends SubsystemBase {
   private final DoubleSolenoid ejectPiston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
 
   private final PIDController pidController = new PIDController(kP, 0, kD);
-  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV);
+  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
 
   public final Trigger isAtTargetVelocity = new Trigger(
         () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.1);
@@ -156,14 +166,19 @@ public class Intake extends SubsystemBase {
    * @return
    */
   public Command pulseMotorCommand() { // -10, 0.07
-    return Commands.runEnd(() -> intakeMotor.setVoltage(-10), intakeMotor::stopMotor).withTimeout(0.07);
+    return Commands.runEnd(() -> intakeMotor.setVoltage(-11), intakeMotor::stopMotor).withTimeout(0.07);
   }
 
-  public Command orientCubeCommand(){
-    return this.runEnd(
-          ()-> intakeMotor.set(0.4),
-          intakeMotor::stopMotor
-          );
+  public Command intakeFromSlideCommand(){
+    return new StartEndCommand(
+          ()-> {
+            intakeMotor.set(0.4);
+            ejectPiston.set(DoubleSolenoid.Value.kForward);
+          },
+          ()-> {
+            intakeMotor.stopMotor();
+            ejectPiston.set(DoubleSolenoid.Value.kReverse);
+          }, this);
   }
 
   double x = 0;

@@ -4,12 +4,11 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Compressor;
+import  edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.SystemTester;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
@@ -53,7 +52,7 @@ public class RobotContainer {
   private void configureBindings() {
     swerve.setDefaultCommand(
           swerve.driveSwerveCommand(
-                ()-> Calculation.deadband(-driveJoystick.getLeftY()),
+                () -> Calculation.deadband(-driveJoystick.getLeftY()),
                 () -> Calculation.deadband(driveJoystick.getLeftX()),
                 () -> Calculation.deadband(driveJoystick.getRightX()),
                 driveJoystick.R2().negate()));
@@ -75,19 +74,20 @@ public class RobotContainer {
     // other
     driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
-    armJoystick.touchpad().whileTrue(intake.orientCubeCommand());
+    armJoystick.touchpad().whileTrue(intake.intakeFromSlideCommand());
 
     //armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
+    driveJoystick.square().whileTrue(swerve.balanceRampCommand());
   }
 
   public Command toggleCompressorCommand() {
     return new StartEndCommand(
           compressor::disable,
           compressor::enableDigital
-          );
+    );
   }
-
-  Command SystemTester(){
+// Yehuda Ha-Gever, GOTLIV IS A GOAT
+  Command SystemTester() {
 //    return new SystemTester(swerve, intake, superstructure.rollergripper);
     return null;
   }
