@@ -68,7 +68,6 @@ public class RobotContainer {
 
     armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
-//    armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
     armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
 
     // other
@@ -86,10 +85,15 @@ public class RobotContainer {
           compressor::enableDigital
     );
   }
-// Yehuda Ha-Gever, GOTLIV IS A GOAT
+
   Command SystemTester() {
 //    return new SystemTester(swerve, intake, superstructure.rollergripper);
     return null;
+  }
+
+  Command manual(){
+    return superstructure.arm.joystickManualCommand(armJoystick::getLeftY, armJoystick::getRightY)
+          .alongWith(superstructure.rollergripper.manualCommand(armJoystick.square(), armJoystick.circle()));
   }
 
   /**

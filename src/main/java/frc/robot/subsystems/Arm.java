@@ -80,10 +80,8 @@ public class Arm extends SubsystemBase {
     angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 22f);
     angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 
-//    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, -2.5f);
-//    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kReverse, true);
-
-    angleMotor.setOpenLoopRampRate(2);
+    angleMotor.setOpenLoopRampRate(5);
+    angleFollowerMotor.setOpenLoopRampRate(15);
   }
 
   /**
@@ -221,8 +219,6 @@ public class Arm extends SubsystemBase {
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
 
-    SmartDashboard.putNumber("abs pose", absAngleEncoder.getAbsolutePosition());
     SmartDashboard.putNumber("neo encoder position", angleMotor.getEncoder().getPosition());
-
   }
 }

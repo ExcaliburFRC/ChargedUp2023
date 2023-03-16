@@ -40,7 +40,7 @@ public class Intake extends SubsystemBase {
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
 
   public final Trigger isAtTargetVelocity = new Trigger(
-        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.1);
+        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.25);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
   public boolean ballShotTrigger;
@@ -134,6 +134,7 @@ public class Intake extends SubsystemBase {
 
                   intakeMotor.setVoltage(pid + ff);
                   SmartDashboard.putNumber("rpm", intakeEncoder.getVelocity());
+                  SmartDashboard.putNumber("output", rpm);
                 }).alongWith(new WaitUntilCommand(isAtTargetVelocity).andThen(pushCubeCommand()))
                 .finallyDo((__) -> {
                   intakeMotor.stopMotor();
@@ -152,12 +153,7 @@ public class Intake extends SubsystemBase {
    * @return the command
    */
   public Command shootCubeToLowCommand() {
-    return Commands.repeatingSequence(
-                Commands.runEnd(() -> intakeMotor.setVoltage(-1), intakeMotor::stopMotor, this)
-                      .withTimeout(0.2), //-1, 0.2
-                pulseMotorCommand())
-          .alongWith(pushCubeCommand())
-          .finallyDo((__) -> ejectPiston.set(DoubleSolenoid.Value.kReverse));
+    return this.runEnd(()-> intakeMotor.set(0.5), intakeMotor::stopMotor).withTimeout(1);
   }
 
   /**
@@ -172,7 +168,7 @@ public class Intake extends SubsystemBase {
   public Command intakeFromSlideCommand(){
     return new StartEndCommand(
           ()-> {
-            intakeMotor.set(0.4);
+            intakeMotor.set(0.25);
             ejectPiston.set(DoubleSolenoid.Value.kForward);
           },
           ()-> {
@@ -203,7 +199,6 @@ public class Intake extends SubsystemBase {
     updateVel();
     ballShotTrigger = prevVel > velocity + 500;
     prevVel = velocity;
-    System.out.println("velocity: " + velocity);
   }
 
   @Override
@@ -211,5 +206,6 @@ public class Intake extends SubsystemBase {
     builder.addDoubleProperty("shooter current", intakeMotor::getOutputCurrent, null);
     builder.addDoubleProperty("shooter velocity", intakeEncoder::getVelocity, null);
     builder.addDoubleProperty("applied output", intakeMotor::getAppliedOutput, null);
+    builder.addDoubleProperty("velocity", ()-> velocity, null);
   }
 }

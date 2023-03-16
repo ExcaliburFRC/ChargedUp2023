@@ -17,7 +17,7 @@ public class Superstructure extends SubsystemBase {
 	}
 
 	public Command intakeFromShelfCommand() {
-		return arm.resetLengthCommand().andThen(
+		return arm.moveToLengthCommand(MIDDLE.setpoint).andThen(
 //          new InstantCommand(()-> Shuffleboard.selectTab("armCamera")),
 				rollergripper.intakeCommand().alongWith(arm.holdSetpointCommand(SHELF_EXTENDED.setpoint))
 						.until(rollergripper.beambreakTrigger),
