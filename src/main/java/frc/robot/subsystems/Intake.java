@@ -4,6 +4,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -16,20 +17,6 @@ import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.IntakeConstants.*;
-// have every grid button so the driver can easily choose which game piece to put and where
-// 3/10 not realistic
-//have a timer, and tell him enough time before he should climb
-
-//a button for defense mode that disables other systems and only keeps the swerve
-
-//detects a game piece with the lime so know not to shoot twice to the same place
-
-//detects an april tag, so once he is on the human player place thing the intake will open
-//3/10 not iuseful
-//opens / flashes the lime light , light, when we are about to approach the human player for cube / cone ( will be checked)
-// 8/10 could be an idea
-// button on driver joystick while pressed enables balance ramp
-
 public class Intake extends SubsystemBase {
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, kBrushless);
 
@@ -40,11 +27,14 @@ public class Intake extends SubsystemBase {
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
 
   public final Trigger isAtTargetVelocity = new Trigger(
-        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.25);
+        () -> Math.abs(pidController.getPositionError()) < PID_TOLERANCE).debounce(0.25);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
-  public boolean ballShotTrigger;
+  double velocity;
   double prevVel = 0;
+
+  // only true after the motor has returned to its original speed
+  public Trigger cubeShotTrigger = new Trigger(()-> Math.abs(prevVel - velocity) > TRIGGER_TOLERANCE).debounce(0.1, Debouncer.DebounceType.kFalling);
 
   public Intake() {
     intakeMotor.restoreFactoryDefaults();
@@ -86,7 +76,7 @@ public class Intake extends SubsystemBase {
 //            ejectPiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
 //            Shuffleboard.selectTab("Swerve");
-          }, this).andThen();
+          }, this).until(cubeShotTrigger);
   }
 
   private Command pushCubeCommand() {
@@ -143,7 +133,7 @@ public class Intake extends SubsystemBase {
           // pulse shooter to low
           shootCubeToLowCommand(),
           () -> rpm != 0
-    );
+    ).until(cubeShotTrigger);
   }
 
   /**
@@ -179,7 +169,6 @@ public class Intake extends SubsystemBase {
 
   double x = 0;
   double t = Timer.getFPGATimestamp();
-  double velocity;
 
   private void updateVel(){
     double prev_x = x;
@@ -197,7 +186,6 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     updateVel();
-    ballShotTrigger = prevVel > velocity + 500;
     prevVel = velocity;
   }
 

@@ -42,7 +42,8 @@ public final class Constants {
         public static final double MID_RPM = -675;
         public static final double HIGH_RPM = -950;
 
-        public static final double TOLERANCE = 125;
+        public static final double PID_TOLERANCE = 125;
+        public static final double TRIGGER_TOLERANCE = 125;
     }
 
     public static final class SpindexerConstants {
