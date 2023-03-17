@@ -27,14 +27,13 @@ public class Intake extends SubsystemBase {
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
 
   public final Trigger isAtTargetVelocity = new Trigger(
-        () -> Math.abs(pidController.getPositionError()) < PID_TOLERANCE).debounce(0.25);
+        () -> Math.abs(pidController.getPositionError()) < PID_TOLERANCE).debounce(0.25, Debouncer.DebounceType.kRising);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
   double velocity;
   double prevVel = 0;
 
-  // only true after the motor has returned to its original speed
-  public Trigger cubeShotTrigger = new Trigger(()-> Math.abs(prevVel - velocity) > TRIGGER_TOLERANCE).debounce(0.1, Debouncer.DebounceType.kFalling);
+  boolean cubeShot = false;
 
   public Intake() {
     intakeMotor.restoreFactoryDefaults();
@@ -76,7 +75,7 @@ public class Intake extends SubsystemBase {
 //            ejectPiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
 //            Shuffleboard.selectTab("Swerve");
-          }, this).until(cubeShotTrigger);
+          }, this);
   }
 
   private Command pushCubeCommand() {
@@ -133,7 +132,7 @@ public class Intake extends SubsystemBase {
           // pulse shooter to low
           shootCubeToLowCommand(),
           () -> rpm != 0
-    ).until(cubeShotTrigger);
+    );
   }
 
   /**
@@ -167,25 +166,11 @@ public class Intake extends SubsystemBase {
           }, this);
   }
 
-  double x = 0;
-  double t = Timer.getFPGATimestamp();
-
-  private void updateVel(){
-    double prev_x = x;
-    double prev_t = t;
-
-    x = intakeEncoder.getPosition();
-    t = Timer.getFPGATimestamp();
-
-    double dx = x - prev_x;
-    double dt = t - prev_t;
-
-    velocity = dx / dt;
-  }
-
   @Override
   public void periodic() {
-    updateVel();
+    velocity = intakeEncoder.getVelocity();
+    cubeShot = Math.abs(prevVel - velocity) > TRIGGER_TOLERANCE;
+
     prevVel = velocity;
   }
 
@@ -194,6 +179,6 @@ public class Intake extends SubsystemBase {
     builder.addDoubleProperty("shooter current", intakeMotor::getOutputCurrent, null);
     builder.addDoubleProperty("shooter velocity", intakeEncoder::getVelocity, null);
     builder.addDoubleProperty("applied output", intakeMotor::getAppliedOutput, null);
-    builder.addDoubleProperty("velocity", ()-> velocity, null);
+    builder.addBooleanProperty("cube shot trigger", ()-> cubeShot, null);
   }
 }

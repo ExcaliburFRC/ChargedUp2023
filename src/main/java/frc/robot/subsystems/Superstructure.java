@@ -9,19 +9,18 @@ import static frc.robot.Constants.ArmConstants.Setpoints.*;
 public class Superstructure extends SubsystemBase {
 	public final Arm arm = new Arm();
 	public final Rollergripper rollergripper = new Rollergripper();
-
+//
 	public Superstructure() {
 		rollergripper.setDefaultCommand(rollergripper.holdConeCommand());
 
-		arm.setDefaultCommand(arm.fadeArmCommand());
+		arm.setDefaultCommand(arm.fadeArmCommand().alongWith(arm.stopTelescopeMotors()));
 	}
 
 	public Command intakeFromShelfCommand() {
 		return arm.moveToLengthCommand(MIDDLE.setpoint).andThen(
-//          new InstantCommand(()-> Shuffleboard.selectTab("armCamera")),
-				rollergripper.intakeCommand().alongWith(arm.holdSetpointCommand(SHELF_EXTENDED.setpoint))
-						.until(rollergripper.beambreakTrigger),
-//                new InstantCommand(() -> Shuffleboard.selectTab("Swerve")),
+       //   new InstantCommand(()-> Shuffleboard.selectTab("armCamera")),
+				rollergripper.intakeCommand().alongWith(arm.holdSetpointCommand(SHELF_EXTENDED.setpoint)).until(rollergripper.beambreakTrigger),
+         //       new InstantCommand(() -> Shuffleboard.selectTab("Swerve")),
 				arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5));
 	}
 
@@ -62,5 +61,4 @@ public class Superstructure extends SubsystemBase {
 		return new InstantCommand(() -> {
 		});
 	}
-
 }

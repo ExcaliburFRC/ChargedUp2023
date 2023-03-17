@@ -33,17 +33,17 @@ public final class Constants {
         public static double kV = 0.15617 / 60;
         public static double kA = 0;
 
-        public static double kP = 0.013;
+        public static double kP = 0.0135;
 //        public static double kP = 0;
 //        public static double kD = 0.0015;
         public static double kD = 0;
 
         public static final double LOW_RPM = 0;
         public static final double MID_RPM = -675;
-        public static final double HIGH_RPM = -950;
+        public static final double HIGH_RPM = -1035;
 
-        public static final double PID_TOLERANCE = 125;
-        public static final double TRIGGER_TOLERANCE = 125;
+        public static final double PID_TOLERANCE = 100;
+        public static final double TRIGGER_TOLERANCE = 50;
     }
 
     public static final class SpindexerConstants {
@@ -149,16 +149,16 @@ public final class Constants {
         public enum Setpoints {
             // cone, cube
             LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),//
-            MID(new Translation2d(0.7, Rotation2d.fromDegrees(168))),
-            HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(120))),
+            MID(new Translation2d(0.7, Rotation2d.fromDegrees(172))),
+            HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
             HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(190))),
-            SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(171))),
-            SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(171))),
+            SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(173))),
+            SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(173))),
 
             MIDDLE(new Translation2d((MINIMAL_LENGTH_METERS + MAXIMAL_LENGTH_METERS) / 2, Rotation2d.fromDegrees(135))),
 
             CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(90))),
-            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(87)));
+            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.01, Rotation2d.fromDegrees(86)));
 
             public final Translation2d setpoint;
 
@@ -173,15 +173,16 @@ public final class Constants {
 
         public static final int CLOSED_LIMIT_SWITCH_ID = 6;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
+        public static final int ABS_ANGLE_ENCODER_CHANNEL = 9;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
 
+              //0.17815;
+
         public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.951 - 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
-        public static final double CLOSED_DEGREES = -90;
 
         // Angle control
         public static final double kS_ANGLE = 0.10622;

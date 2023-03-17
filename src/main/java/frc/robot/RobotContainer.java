@@ -6,9 +6,12 @@ package frc.robot;
 
 import  edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.SystemTester;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
@@ -38,6 +41,8 @@ public class RobotContainer {
   public RobotContainer() {
     configureBindings();
     AutoBuilder.loadAutoChoosers(swerve);
+
+    SmartDashboard.putData("intake", intake);
   }
 
   /**
@@ -59,23 +64,23 @@ public class RobotContainer {
 
     // intake commands
     armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.3));
-    //armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
+    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
     // place commands
-    //armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
-    //armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
-    //armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand());
+    armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
+    armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
+    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
     armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
     armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
 
     // other
-    driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
+    armJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
-    armJoystick.touchpad().whileTrue(intake.intakeFromSlideCommand());
+//    armJoystick.touchpad().whileTrue(intake.intakeFromSlideCommand());
 
-    //armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
+    armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
     driveJoystick.square().whileTrue(swerve.balanceRampCommand());
   }
 
@@ -87,8 +92,7 @@ public class RobotContainer {
   }
 
   Command SystemTester() {
-//    return new SystemTester(swerve, intake, superstructure.rollergripper);
-    return null;
+    return new SystemTester(swerve, intake, superstructure.rollergripper);
   }
 
   Command manual(){

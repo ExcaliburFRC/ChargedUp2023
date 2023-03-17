@@ -44,10 +44,7 @@ public class Robot extends TimedRobot {
     enableLiveWindowInTest(false);
 
     startUpTimer.start();
-
-    DriverStation.reportError("robot init has run", false);
   }
-
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
