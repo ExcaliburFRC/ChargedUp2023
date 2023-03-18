@@ -39,6 +39,9 @@ public class Arm extends SubsystemBase {
 
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
+  public final Trigger armStuckTrigger =
+        new Trigger(()-> armFullyOpenedTrigger.getAsBoolean() && getArmAngle() > 100);
+
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
   public static double floatDutyCycle = 0;
@@ -207,8 +210,9 @@ public class Arm extends SubsystemBase {
   }
 
   public Command lockArmCommand(Trigger bbTrigger){
-    return moveToAngleCommand(LOCKED.setpoint).alongWith(
-            resetLengthCommand().andThen(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
+    return moveToAngleCommand(LOCKED.setpoint)
+                .alongWith(resetLengthCommand()
+                      .andThen(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
           .until(armLockedTrigger);
   }
 

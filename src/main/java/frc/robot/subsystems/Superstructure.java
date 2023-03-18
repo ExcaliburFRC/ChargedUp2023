@@ -26,7 +26,7 @@ public class Superstructure extends SubsystemBase {
 
 	public Command placeOnHighCommand(Trigger release) {
 		return new SequentialCommandGroup(
-				arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1),
+				arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.5),
 				arm.holdSetpointCommand(HIGH.setpoint))
 				.raceWith(new WaitUntilCommand(release))
 				.andThen(arm.fadeArmCommand().alongWith(rollergripper.ejectCommand(0.035)))
@@ -40,9 +40,8 @@ public class Superstructure extends SubsystemBase {
 				.until(rollergripper.beambreakTrigger.negate().debounce(0.2));
 	}
 
-	public Command placeOnLowCommand() {
-		return arm.holdSetpointCommand(LOW.setpoint)
-				.raceWith(new WaitCommand(0.35))
+	public Command placeOnLowCommand(Trigger release) {
+		return arm.holdSetpointCommand(LOW.setpoint).until(release)
 				.andThen(rollergripper.ejectCommand(0.2))
 				.until(rollergripper.beambreakTrigger.negate().debounce(0.05));
 	}
@@ -53,8 +52,8 @@ public class Superstructure extends SubsystemBase {
 
 	@Deprecated
 	public Command switchCommand(double height) {
-		if (height == Constants.IntakeConstants.LOW_RPM)
-			return placeOnLowCommand(); //TODO: find minimal time for cone placement
+//		if (height == Constants.IntakeConstants.LOW_RPM)
+//			return placeOnLowCommand(); //TODO: find minimal time for cone placement
 		if (height == Constants.IntakeConstants.MID_RPM) return placeOnMidCommand(new Trigger(() -> true).debounce(5));
 		if (height == Constants.IntakeConstants.HIGH_RPM)
 			return placeOnHighCommand(new Trigger(() -> true).debounce(5));

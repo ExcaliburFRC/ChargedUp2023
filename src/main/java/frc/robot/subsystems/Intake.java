@@ -27,13 +27,8 @@ public class Intake extends SubsystemBase {
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
 
   public final Trigger isAtTargetVelocity = new Trigger(
-        () -> Math.abs(pidController.getPositionError()) < PID_TOLERANCE).debounce(0.25, Debouncer.DebounceType.kRising);
+        () -> Math.abs(pidController.getPositionError()) < PID_TOLERANCE).debounce(0.25);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
-
-  double velocity;
-  double prevVel = 0;
-
-  boolean cubeShot = false;
 
   public Intake() {
     intakeMotor.restoreFactoryDefaults();
@@ -123,8 +118,9 @@ public class Intake extends SubsystemBase {
 
                   intakeMotor.setVoltage(pid + ff);
                   SmartDashboard.putNumber("rpm", intakeEncoder.getVelocity());
-                  SmartDashboard.putNumber("output", rpm);
-                }).alongWith(new WaitUntilCommand(isAtTargetVelocity).andThen(pushCubeCommand()))
+                  SmartDashboard.putNumber("intake setpoint", rpm);
+                }).alongWith(new WaitUntilCommand(isAtTargetVelocity)
+                      .andThen(new WaitCommand(0.25), pushCubeCommand()))
                 .finallyDo((__) -> {
                   intakeMotor.stopMotor();
                   ejectPiston.set(DoubleSolenoid.Value.kReverse);
@@ -167,18 +163,11 @@ public class Intake extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-    velocity = intakeEncoder.getVelocity();
-    cubeShot = Math.abs(prevVel - velocity) > TRIGGER_TOLERANCE;
-
-    prevVel = velocity;
-  }
-
-  @Override
   public void initSendable(SendableBuilder builder) {
     builder.addDoubleProperty("shooter current", intakeMotor::getOutputCurrent, null);
     builder.addDoubleProperty("shooter velocity", intakeEncoder::getVelocity, null);
     builder.addDoubleProperty("applied output", intakeMotor::getAppliedOutput, null);
-    builder.addBooleanProperty("cube shot trigger", ()-> cubeShot, null);
+    builder.addDoubleProperty("velocityError", pidController::getPositionError, null);
+    builder.addBooleanProperty("isAtTargetVelocity", isAtTargetVelocity, null);
   }
 }

@@ -40,7 +40,7 @@ public final class Constants {
 
         public static final double LOW_RPM = 0;
         public static final double MID_RPM = -675;
-        public static final double HIGH_RPM = -1035;
+        public static final double HIGH_RPM = -950;
 
         public static final double PID_TOLERANCE = 100;
         public static final double TRIGGER_TOLERANCE = 50;
