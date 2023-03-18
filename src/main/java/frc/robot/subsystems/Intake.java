@@ -23,8 +23,8 @@ public class Intake extends SubsystemBase {
   private final DoubleSolenoid intakePiston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, INTAKE_FWD_CHANNEL, INTAKE_REV_CHANNEL);
   private final DoubleSolenoid ejectPiston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
 
-  private final PIDController pidController = new PIDController(kP, 0, kD);
-  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, kA);
+  private final PIDController pidController = new PIDController(kP, 0, 0);
+  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, 0);
 
   public final Trigger isAtTargetVelocity = new Trigger(
         () -> Math.abs(pidController.getPositionError()) < PID_TOLERANCE).debounce(0.25);

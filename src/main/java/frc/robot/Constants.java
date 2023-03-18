@@ -29,21 +29,16 @@ public final class Constants {
         public static final int EJECT_FWD_CHANNEL = 2;
         public static final int EJECT_REV_CHANNEL = 3;
 
-        public static double kS = 0.21198;
-        public static double kV = 0.15617 / 60;
-        public static double kA = 0;
+        public static double kS = 0.14344;
+        public static double kV = 0.13011 / 60;
 
-        public static double kP = 0.0135;
-//        public static double kP = 0;
-//        public static double kD = 0.0015;
-        public static double kD = 0;
+        public static double kP = 0.00025;
 
         public static final double LOW_RPM = 0;
-        public static final double MID_RPM = -675;
-        public static final double HIGH_RPM = -950;
+        public static final double MID_RPM = -1900;
+        public static final double HIGH_RPM = -3600;
 
         public static final double PID_TOLERANCE = 100;
-        public static final double TRIGGER_TOLERANCE = 50;
     }
 
     public static final class SpindexerConstants {
