@@ -100,8 +100,8 @@ public class Swerve extends SubsystemBase {
           .withPosition(0, 0).withSize(4, 2);
     swerveTab.add("Field2d", field).withSize(9, 5).withPosition(4, 0);
 
-    swerveTab.addDouble("rampAngle", ()-> getRampAngle());
-    swerveTab.addDouble("pid ramp", ()-> rampController.calculate(getRampAngle(), 0));
+    swerveTab.addDouble("rampAngle", () -> getRampAngle());
+    swerveTab.addDouble("pid ramp", () -> rampController.calculate(getRampAngle(), 0));
     swerveTab.addBoolean("robot balanced", robotBalancedTrigger::getAsBoolean);
 
     RobotContainer.driveTab.addDouble("SwerveAngle", () -> getRotation().getDegrees())
@@ -189,7 +189,8 @@ public class Swerve extends SubsystemBase {
         DoubleSupplier xSpeedSupplier,
         DoubleSupplier ySpeedSupplier,
         DoubleSupplier spinningSpeedSupplier,
-        BooleanSupplier fieldOriented) {
+        BooleanSupplier fieldOriented,
+        BooleanSupplier slowMode) {
 
     final SlewRateLimiter
           xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
@@ -204,7 +205,7 @@ public class Swerve extends SubsystemBase {
                   //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
                   double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
                         ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
-                        spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed;
+                        spinningSpeed = spinningLimiter.calculate(slowMode.getAsBoolean() ? spinningSpeedSupplier.getAsDouble() / 5 : spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed;
 
                   // create a CassisSpeeds object and apply it the speeds
                   ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
@@ -225,8 +226,16 @@ public class Swerve extends SubsystemBase {
                 this));
   }
 
+  public Command driveSwerveCommand(
+        DoubleSupplier xSpeedSupplier,
+        DoubleSupplier ySpeedSupplier,
+        DoubleSupplier spinningSpeedSupplier,
+        BooleanSupplier fieldOriented){
+    return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, ()-> false);
+  }
+
   public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fieldOriented) {
-    return driveSwerveCommand(speed, ()-> 0, turn, () -> fieldOriented);
+    return driveSwerveCommand(speed, () -> 0, turn, () -> fieldOriented);
   }
 
   // angle based swerve drive
@@ -325,12 +334,12 @@ public class Swerve extends SubsystemBase {
           setPointDegrees = setPoint.getRotation().getDegrees(),
           measuredDegrees = measurement.getRotation().getDegrees(),
           thetaAbsError = Math.abs(setPointDegrees - measuredDegrees);
-    thetaAbsError =thetaAbsError<=180?thetaAbsError:360-thetaAbsError;
+    thetaAbsError = thetaAbsError <= 180 ? thetaAbsError : 360 - thetaAbsError;
     return xAbsError < xTolerance && yAbsError < yTolerance && thetaAbsError < thetaTolerance;
   }
 
-  public Command turnToAngleCommand(double angle){
-    return driveSwerveCommand(()-> 0, ()-> 0, ()-> thetaTeleopController.calculate(getRotation().getDegrees(), angle), ()-> true)
+  public Command turnToAngleCommand(double angle) {
+    return driveSwerveCommand(() -> 0, () -> 0, () -> thetaTeleopController.calculate(getRotation().getDegrees(), angle), () -> true)
           .until(new Trigger(thetaTeleopController::atSetpoint).debounce(0.15));
   }
 
@@ -375,14 +384,14 @@ public class Swerve extends SubsystemBase {
 
   public Command driveToRampCommand(boolean forward) {
     final double speed = forward ? 0.45 : -0.45;
-    return driveSwerveCommand(()-> speed, ()-> 0, ()-> 0, ()-> false)
+    return driveSwerveCommand(() -> speed, () -> 0, () -> 0, () -> false)
           .until(robotBalancedTrigger.negate())
           .andThen(new InstantCommand(this::stopModules));
   }
 
   public Command balanceRampCommand() {
     return driveSwerveCommand(
-          ()-> rampController.calculate(getRampAngle(), 0),
+          () -> rampController.calculate(getRampAngle(), 0),
           () -> 0,
           () -> 0,
           () -> false);

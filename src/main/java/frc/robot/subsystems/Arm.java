@@ -153,9 +153,13 @@ public class Arm extends SubsystemBase {
     return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
   }
 
-  public Command fadeArmCommand() {
+  public Command fadeArmCommand(double offset) {
     //when the motor stops, gravity slowly pulls the arm down, making the arm "fade" down
-    return new RunCommand(angleMotor::stopMotor, this);
+    return new RunCommand(() -> angleMotor.set(-offset / 100), this);
+  }
+
+  public Command fadeArmCommand(){
+    return fadeArmCommand(0);
   }
 
   public Command moveToLengthCommand(Translation2d setPoint) {

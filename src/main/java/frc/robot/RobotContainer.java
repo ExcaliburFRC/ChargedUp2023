@@ -70,7 +70,8 @@ public class RobotContainer {
                 () -> Calculation.deadband(-driveJoystick.getLeftY()),
                 () -> Calculation.deadband(driveJoystick.getLeftX()),
                 () -> Calculation.deadband(driveJoystick.getRightX()),
-                driveJoystick.R2().negate()));
+                driveJoystick.R1().negate(),
+                driveJoystick.L1()));
 
     intake.setDefaultCommand(
           intake.setIntakeSpeedCommand(0.05).withTimeout(1.25)
@@ -83,7 +84,7 @@ public class RobotContainer {
     // place commands
     armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
     armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
-    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand(armJoystick.R1()));
+    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
     armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
     armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
@@ -127,7 +128,7 @@ public class RobotContainer {
    * d to run in autonomous
    */
   public Command getAutonomousCommand() {
-//    return AutoBuilder.getAutonomousCommand(intake, swerve);
-    return null;
+    return AutoBuilder.getAutonomousCommand(superstructure, intake, swerve);
+//    return null;
   }
 }

@@ -139,8 +139,8 @@ public class Intake extends SubsystemBase {
    * @return the command
    */
   public Command shootCubeToLowCommand() {
-//    return this.runEnd(()-> intakeMotor.set(0.5), intakeMotor::stopMotor).withTimeout(1);
-    return this.run(()-> intakeMotor.set(-0.5));
+    return this.runEnd(()-> intakeMotor.set(0.5), intakeMotor::stopMotor).withTimeout(1);
+//    return this.run(()-> intakeMotor.set(-0.5));
   }
 
   /**

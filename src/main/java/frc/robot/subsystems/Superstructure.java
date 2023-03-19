@@ -6,7 +6,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
+import java.util.Map;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
+import static frc.robot.Constants.IntakeConstants.*;
 
 public class Superstructure extends SubsystemBase {
 	public final Arm arm = new Arm();
@@ -27,7 +32,7 @@ public class Superstructure extends SubsystemBase {
 					arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5));
 	}
 
-	public Command placeOnHighCommand(Trigger release) {
+	public Command placeOnHighCommand(BooleanSupplier release) {
 		return new SequentialCommandGroup(
 				arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.5),
 				arm.holdSetpointCommand(HIGH.setpoint).until(release),
@@ -36,15 +41,14 @@ public class Superstructure extends SubsystemBase {
 					arm.resetLengthCommand());
 	}
 
-	public Command placeOnMidCommand(Trigger release) {
-		return arm.holdSetpointCommand(MID.setpoint)
-				.raceWith(new WaitUntilCommand(release))
-				.andThen(arm.fadeArmCommand().alongWith(rollergripper.ejectCommand()))
+	public Command placeOnMidCommand(BooleanSupplier release) {
+		return arm.holdSetpointCommand(MID.setpoint).until(release)
+				.andThen(arm.fadeArmCommand(6.5).alongWith(rollergripper.ejectCommand()))
 				.until(rollergripper.beambreakTrigger.negate().debounce(0.2));
 	}
 
-	public Command placeOnLowCommand(Trigger release) {
-		return arm.holdSetpointCommand(LOW.setpoint).until(release).withTimeout(0.65)
+	public Command placeOnLowCommand() {
+		return arm.holdSetpointCommand(LOW.setpoint).withTimeout(0.65)
 				.andThen(rollergripper.ejectCommand(0.2))
 				.until(rollergripper.beambreakTrigger.negate().debounce(0.05));
 	}
@@ -53,14 +57,13 @@ public class Superstructure extends SubsystemBase {
 		return arm.lockArmCommand(rollergripper.beambreakTrigger);
 	}
 
-	@Deprecated
 	public Command switchCommand(double height) {
-//		if (height == Constants.IntakeConstants.LOW_RPM)
-//			return placeOnLowCommand(); //TODO: find minimal time for cone placement
-		if (height == Constants.IntakeConstants.MID_RPM) return placeOnMidCommand(new Trigger(() -> true).debounce(5));
-		if (height == Constants.IntakeConstants.HIGH_RPM)
-			return placeOnHighCommand(new Trigger(() -> true).debounce(5));
-		return new InstantCommand(() -> {
-		});
+		return new SelectCommand(
+					Map.of(
+								LOW_RPM, placeOnLowCommand(),
+								MID_RPM, placeOnMidCommand(()-> new WaitCommand(4).isFinished()),
+								HIGH_RPM, placeOnHighCommand(()-> new WaitCommand(3).isFinished())),
+					()-> height
+		);
 	}
 }
