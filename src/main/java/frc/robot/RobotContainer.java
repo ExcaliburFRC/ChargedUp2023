@@ -5,8 +5,10 @@
 package frc.robot;
 
 import  edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
@@ -16,6 +18,8 @@ import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
 import frc.robot.utility.Calculation;
+
+import java.util.Map;
 
 import static frc.robot.Constants.IntakeConstants.*;
 
@@ -35,6 +39,8 @@ public class RobotContainer {
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
 
+  public static final ShuffleboardTab driveTab = Shuffleboard.getTab("driveTab");
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -43,6 +49,10 @@ public class RobotContainer {
     AutoBuilder.loadAutoChoosers(swerve);
 
     SmartDashboard.putData("intake", intake);
+
+    driveTab.addDouble("Remaining Time", DriverStation::getMatchTime).withSize(3, 3)
+          .withPosition(10, 0).withWidget("Simple Dial")
+          .withProperties(Map.of("min", 0, "max", 135));
   }
 
   /**
@@ -61,6 +71,10 @@ public class RobotContainer {
                 () -> Calculation.deadband(driveJoystick.getLeftX()),
                 () -> Calculation.deadband(driveJoystick.getRightX()),
                 driveJoystick.R2().negate()));
+
+    intake.setDefaultCommand(
+          intake.setIntakeSpeedCommand(0.05).withTimeout(1.25)
+                .andThen(new RunCommand(()-> {}, intake)));
 
     // intake commands
     armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.3));
@@ -82,6 +96,8 @@ public class RobotContainer {
 
     armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
     driveJoystick.square().whileTrue(swerve.balanceRampCommand());
+
+    driveJoystick.button(15).onTrue(new InstantCommand(()-> Shuffleboard.selectTab("driveTab")));
   }
 
   public Command toggleCompressorCommand() {
@@ -93,6 +109,10 @@ public class RobotContainer {
 
   Command SystemTester() {
     return new SystemTester(swerve, intake, superstructure.rollergripper);
+  }
+
+  public static Command selectDriveTabCommand(){
+    return new InstantCommand(()-> Shuffleboard.selectTab(driveTab.getTitle()));
   }
 
   Command manual(){
@@ -107,6 +127,7 @@ public class RobotContainer {
    * d to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return AutoBuilder.getAutonomousCommand(intake, swerve);
+//    return AutoBuilder.getAutonomousCommand(intake, swerve);
+    return null;
   }
 }

@@ -8,7 +8,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,6 +19,7 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
 import static frc.robot.Constants.ArmConstants.Setpoints.LOCKED;
+import static frc.robot.Constants.ArmConstants.Setpoints.MIDDLE;
 
 public class Arm extends SubsystemBase {
   private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -40,7 +40,7 @@ public class Arm extends SubsystemBase {
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
   public final Trigger armStuckTrigger =
-        new Trigger(()-> armFullyOpenedTrigger.getAsBoolean() && getArmAngle() > 100);
+        new Trigger(() -> armFullyOpenedTrigger.getAsBoolean() && getArmAngle() > 100);
 
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
@@ -79,6 +79,7 @@ public class Arm extends SubsystemBase {
           .withSize(2, 1);
     armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(4, 3)
           .withSize(2, 1);
+    armTab.addBoolean("arm stuck", armStuckTrigger);
 
 //    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 22f);
 //    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
@@ -137,7 +138,7 @@ public class Arm extends SubsystemBase {
     return new RunCommand(() -> lengthMotor.set(lengthSpeed.getAsDouble() / 2));
   }
 
-  public double getArmAngle(){
+  public double getArmAngle() {
     return MathUtil.clamp(angleEncoder.getDistance(), 80, 220);
   }
 
@@ -154,7 +155,7 @@ public class Arm extends SubsystemBase {
 
   public Command fadeArmCommand() {
     //when the motor stops, gravity slowly pulls the arm down, making the arm "fade" down
-    return new RunCommand(angleMotor::stopMotor ,this);
+    return new RunCommand(angleMotor::stopMotor, this);
   }
 
   public Command moveToLengthCommand(Translation2d setPoint) {
@@ -178,7 +179,8 @@ public class Arm extends SubsystemBase {
 
   public Command moveToAngleCommand(Translation2d setpoint) {
     return Commands.runEnd(() -> {
-      double pid = kP_ANGLE * (setpoint.getAngle().getDegrees() - getArmAngle());
+      double setpointDeg = setpoint.getAngle().getDegrees() < 0? setpoint.getAngle().getDegrees() + 360 : setpoint.getAngle().getDegrees();
+      double pid = kP_ANGLE * (setpointDeg - getArmAngle());
       double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
       if (getArmAngle() == 0) {
@@ -186,9 +188,12 @@ public class Arm extends SubsystemBase {
         angleMotor.stopMotor();
       } else angleMotor.setVoltage(pid + feedforward);
 
-      SmartDashboard.putNumber("arm output sum", feedforward + pid);
-      SmartDashboard.putNumber("arm setpoint", setpoint.getAngle().getDegrees());
-          }, angleMotor::stopMotor, this);
+      System.out.println("pid: " + pid);
+      System.out.println("kP: " + kP_ANGLE);
+      System.out.println("setpoint Degrees: " + setpoint.getAngle().getDegrees());
+      System.out.println("arm angle: " + getArmAngle());
+
+    }, angleMotor::stopMotor, this);
   }
 
   /**
@@ -209,10 +214,10 @@ public class Arm extends SubsystemBase {
     return Math.abs(angleA - angleB) < tolerance;
   }
 
-  public Command lockArmCommand(Trigger bbTrigger){
-    return moveToAngleCommand(LOCKED.setpoint)
-                .alongWith(resetLengthCommand()
-                      .andThen(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
+  public Command lockArmCommand(Trigger bbTrigger) {
+    return resetLengthCommand()
+          .andThen(moveToAngleCommand(LOCKED.setpoint)
+          .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
           .until(armLockedTrigger);
   }
 
@@ -224,7 +229,7 @@ public class Arm extends SubsystemBase {
     lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
   }
 
-  public Command stopTelescopeMotors(){
+  public Command stopTelescopeMotors() {
     return new InstantCommand(lengthMotor::disable);
   }
 

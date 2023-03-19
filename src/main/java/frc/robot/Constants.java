@@ -36,7 +36,7 @@ public final class Constants {
 
         public static final double LOW_RPM = 0;
         public static final double MID_RPM = -1900;
-        public static final double HIGH_RPM = -3600;
+        public static final double HIGH_RPM = -3100;
 
         public static final double PID_TOLERANCE = 100;
     }
@@ -113,7 +113,7 @@ public final class Constants {
 
         // intentional limitations
 
-        public static final double kSpeedPercantageLimit = 90; // %
+        public static final double kSpeedPercantageLimit = 100; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -150,7 +150,7 @@ public final class Constants {
             SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(173))),
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(173))),
 
-            MIDDLE(new Translation2d((MINIMAL_LENGTH_METERS + MAXIMAL_LENGTH_METERS) / 2, Rotation2d.fromDegrees(135))),
+            MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
 
             CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.01, Rotation2d.fromDegrees(86)));

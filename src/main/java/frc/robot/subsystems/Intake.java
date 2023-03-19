@@ -9,6 +9,7 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -63,13 +64,13 @@ public class Intake extends SubsystemBase {
             intakePiston.set(DoubleSolenoid.Value.kForward);
 //            ejectPiston.set(DoubleSolenoid.Value.kForward);
             intakeMotor.set(intakeSpeed);
-//            Shuffleboard.selectTab("intakeCamera");
+            Shuffleboard.selectTab("intakeCamera");
           },
           () -> {
             intakePiston.set(DoubleSolenoid.Value.kReverse);
 //            ejectPiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
-//            Shuffleboard.selectTab("Swerve");
+            Shuffleboard.selectTab("Swerve");
           }, this);
   }
 
@@ -109,7 +110,7 @@ public class Intake extends SubsystemBase {
    * @param rpm the desired rpm to shoot at
    */
   public Command shootCubeCommand(double rpm) {
-    return new ConditionalCommand(
+          return new ConditionalCommand(
           // pid shooter
           this.run(
                 () -> {
@@ -119,8 +120,8 @@ public class Intake extends SubsystemBase {
                   intakeMotor.setVoltage(pid + ff);
                   SmartDashboard.putNumber("rpm", intakeEncoder.getVelocity());
                   SmartDashboard.putNumber("intake setpoint", rpm);
-                }).alongWith(new WaitUntilCommand(isAtTargetVelocity)
-                      .andThen(new WaitCommand(0.25), pushCubeCommand()))
+                }).alongWith(new WaitCommand(0.05).andThen(
+                      new WaitUntilCommand(isAtTargetVelocity), pushCubeCommand()))
                 .finallyDo((__) -> {
                   intakeMotor.stopMotor();
                   ejectPiston.set(DoubleSolenoid.Value.kReverse);
@@ -138,7 +139,8 @@ public class Intake extends SubsystemBase {
    * @return the command
    */
   public Command shootCubeToLowCommand() {
-    return this.runEnd(()-> intakeMotor.set(0.5), intakeMotor::stopMotor).withTimeout(1);
+//    return this.runEnd(()-> intakeMotor.set(0.5), intakeMotor::stopMotor).withTimeout(1);
+    return this.run(()-> intakeMotor.set(-0.5));
   }
 
   /**
@@ -160,6 +162,10 @@ public class Intake extends SubsystemBase {
             intakeMotor.stopMotor();
             ejectPiston.set(DoubleSolenoid.Value.kReverse);
           }, this);
+  }
+
+  public Command setIntakeSpeedCommand(double speed){
+    return this.runEnd(()-> intakeMotor.set(speed), intakeMotor::stopMotor);
   }
 
   @Override

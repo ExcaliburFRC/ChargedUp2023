@@ -1,15 +1,17 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
 public class Superstructure extends SubsystemBase {
 	public final Arm arm = new Arm();
 	public final Rollergripper rollergripper = new Rollergripper();
-//
+
 	public Superstructure() {
 		rollergripper.setDefaultCommand(rollergripper.holdConeCommand());
 
@@ -18,10 +20,11 @@ public class Superstructure extends SubsystemBase {
 
 	public Command intakeFromShelfCommand() {
 		return arm.moveToLengthCommand(MIDDLE.setpoint).andThen(
-       //   new InstantCommand(()-> Shuffleboard.selectTab("armCamera")),
-				rollergripper.intakeCommand().alongWith(arm.holdSetpointCommand(SHELF_EXTENDED.setpoint)).until(rollergripper.beambreakTrigger),
-         //       new InstantCommand(() -> Shuffleboard.selectTab("Swerve")),
-				arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5));
+          new InstantCommand(()-> Shuffleboard.selectTab("armCamera")),
+				rollergripper.intakeCommand().alongWith(arm.holdSetpointCommand(SHELF_EXTENDED.setpoint))
+							.until(rollergripper.beambreakTrigger),
+					RobotContainer.selectDriveTabCommand(),
+					arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5));
 	}
 
 	public Command placeOnHighCommand(Trigger release) {

@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -62,10 +63,12 @@ public class Rollergripper extends SubsystemBase {
                 () -> {
                   rightRoller.set(0.6);
                   leftRoller.set(0.6);
+                  Shuffleboard.selectTab("armCamera");
                 },
                 () -> {
                   rightRoller.stopMotor();
                   leftRoller.stopMotor();
+                  Shuffleboard.selectTab("driveTab");
                 },
                 this)
           .until(beambreakTrigger);

@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -102,6 +103,9 @@ public class Swerve extends SubsystemBase {
     swerveTab.addDouble("rampAngle", ()-> getRampAngle());
     swerveTab.addDouble("pid ramp", ()-> rampController.calculate(getRampAngle(), 0));
     swerveTab.addBoolean("robot balanced", robotBalancedTrigger::getAsBoolean);
+
+    RobotContainer.driveTab.addDouble("SwerveAngle", () -> getRotation().getDegrees())
+          .withWidget(BuiltInWidgets.kGyro).withPosition(0, 0).withSize(4, 2);
 
     odometry.resetPosition(
           getGyroRotation(),
