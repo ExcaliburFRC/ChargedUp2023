@@ -155,7 +155,7 @@ public class Intake extends SubsystemBase {
   public Command intakeFromSlideCommand(){
     return new StartEndCommand(
           ()-> {
-            intakeMotor.set(0.25);
+            intakeMotor.set(0.4);
             ejectPiston.set(DoubleSolenoid.Value.kForward);
           },
           ()-> {
@@ -168,6 +168,23 @@ public class Intake extends SubsystemBase {
     return this.runEnd(()-> intakeMotor.set(speed), intakeMotor::stopMotor);
   }
 
+  public Command collectCommand(){
+    return setIntakeSpeedCommand(0.4);
+  }
+
+  public Command letoutCommand(){
+    return setIntakeSpeedCommand(-0.4).alongWith(
+            new StartEndCommand(
+                    ()-> ejectPiston.set(DoubleSolenoid.Value.kForward),
+                    ()-> ejectPiston.set(DoubleSolenoid.Value.kReverse))
+    );
+  }
+
+  public Command togglePistonCommand(){
+    return new StartEndCommand(
+            ()->  intakePiston.set(DoubleSolenoid.Value.kForward),
+            ()-> intakePiston.set(DoubleSolenoid.Value.kReverse));
+  }
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.addDoubleProperty("shooter current", intakeMotor::getOutputCurrent, null);

@@ -107,7 +107,7 @@ public final class Constants {
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
-        public static final double RAMP_BALANCE_KP = 0.0075;
+        public static final double RAMP_BALANCE_KP = 0.00725;
         public static final double RAMP_BALANCE_KD = 0.002;
         // yehuda ha-gever
 

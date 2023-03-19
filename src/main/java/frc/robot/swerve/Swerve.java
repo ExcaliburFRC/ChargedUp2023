@@ -384,7 +384,7 @@ public class Swerve extends SubsystemBase {
 
   public Command driveToRampCommand(boolean forward) {
     final double speed = forward ? 0.45 : -0.45;
-    return driveSwerveCommand(() -> speed, () -> 0, () -> 0, () -> false)
+    return driveSwerveCommand(() -> speed, () -> 0, () -> 0, () -> true)
           .until(robotBalancedTrigger.negate())
           .andThen(new InstantCommand(this::stopModules));
   }
@@ -399,7 +399,12 @@ public class Swerve extends SubsystemBase {
   }
 
   public Command climbCommand(boolean isForward) {
-    return driveToRampCommand(isForward).andThen(balanceRampCommand());
+    return driveToRampCommand(isForward)
+            .andThen(
+                    tankDriveCommand(()-> 0.375, ()-> 0, true)
+                            .withTimeout(1.315),
+                    new WaitCommand(0.25),
+                    balanceRampCommand());
   }
 
   private void stopModules() {

@@ -11,6 +11,7 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.swerve.Swerve;
 
 import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
 public class AutoBuilder {
   public static final SendableChooser<Command> autoChooser = new SendableChooser<>();
@@ -39,11 +40,14 @@ public class AutoBuilder {
   public static Command getAutonomousCommand(Superstructure superstructure, Intake intake, Swerve swerve){
     return new ProxyCommand(
 //           cone or cube
-          swerve.resetGyroCommand(initialGamePiece.equals(GamePiece.CUBE)? 0 : 180)
-                .andThen(
-                      new PrintCommand("gyro angle: " + swerve.getGyroRotation().getDegrees()),
+          swerve.resetGyroCommand(initialGamePiece.getSelected().equals(GamePiece.CUBE)? 180 : 0)
+                .andThen(new InstantCommand(()->
+                        CommandScheduler.getInstance().setDefaultCommand(
+                                        superstructure.rollergripper, superstructure.rollergripper.holdConeCommand())),
           new ConditionalCommand(
+                  superstructure.arm.moveToLengthCommand(MIDDLE.setpoint).andThen(
                 superstructure.switchCommand(heightChooser.getSelected()),
+                          new WaitCommand(1)),
                 intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2),
                 () -> initialGamePiece.getSelected().equals(GamePiece.CONE)),
 //                 leave or climb
