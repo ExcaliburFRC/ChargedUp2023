@@ -30,10 +30,10 @@ public class Superstructure extends SubsystemBase {
 	public Command placeOnHighCommand(Trigger release) {
 		return new SequentialCommandGroup(
 				arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.5),
-				arm.holdSetpointCommand(HIGH.setpoint))
-				.raceWith(new WaitUntilCommand(release))
-				.andThen(arm.fadeArmCommand().alongWith(rollergripper.ejectCommand(0.035)))
-				.until(rollergripper.beambreakTrigger.negate().debounce(1.5));
+				arm.holdSetpointCommand(HIGH.setpoint).until(release),
+				arm.fadeArmCommand().alongWith(rollergripper.ejectCommand(0.035))
+				.until(rollergripper.beambreakTrigger.negate().debounce(0.1)),
+					arm.resetLengthCommand());
 	}
 
 	public Command placeOnMidCommand(Trigger release) {
@@ -44,7 +44,7 @@ public class Superstructure extends SubsystemBase {
 	}
 
 	public Command placeOnLowCommand(Trigger release) {
-		return arm.holdSetpointCommand(LOW.setpoint).until(release)
+		return arm.holdSetpointCommand(LOW.setpoint).until(release).withTimeout(0.65)
 				.andThen(rollergripper.ejectCommand(0.2))
 				.until(rollergripper.beambreakTrigger.negate().debounce(0.05));
 	}

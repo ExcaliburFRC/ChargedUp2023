@@ -146,7 +146,7 @@ public final class Constants {
             LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),//
             MID(new Translation2d(0.7, Rotation2d.fromDegrees(172))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
-            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(190))),
+            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(192))),
             SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(173))),
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(173))),
 
