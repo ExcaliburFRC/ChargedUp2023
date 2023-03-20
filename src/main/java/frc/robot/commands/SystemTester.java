@@ -13,7 +13,8 @@ public class SystemTester extends SequentialCommandGroup {
     super(
           swerve.tankDriveCommand(()-> 0, ()-> 0.3, false).withTimeout(5),
           intake.shootCubeCommand(LOW_RPM).withTimeout(2),
-//          intake.intakeCommand(0).withTimeout(2),
+          intake.intakeCommand(0).withTimeout(3),
+          intake.toggleEjectPistonCommand().withTimeout(1),
           rollerGripper.intakeCommand().withTimeout(2),
           rollerGripper.holdConeCommand());
   }

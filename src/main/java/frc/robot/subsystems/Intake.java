@@ -185,6 +185,12 @@ public class Intake extends SubsystemBase {
             ()->  intakePiston.set(DoubleSolenoid.Value.kForward),
             ()-> intakePiston.set(DoubleSolenoid.Value.kReverse));
   }
+
+  public Command toggleEjectPistonCommand(){
+    return new StartEndCommand(
+            ()->  ejectPiston.set(DoubleSolenoid.Value.kForward),
+            ()-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
+  }
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.addDoubleProperty("shooter current", intakeMotor::getOutputCurrent, null);

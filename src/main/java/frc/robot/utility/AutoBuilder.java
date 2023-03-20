@@ -1,5 +1,6 @@
 package frc.robot.utility;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
@@ -18,6 +19,8 @@ public class AutoBuilder {
     public static final SendableChooser<Command> autoChooser = new SendableChooser<>();
     public static final SendableChooser<Double> heightChooser = new SendableChooser<>();
     public static final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
+
+    public static final Timer autoTimer = new Timer();
 
     public static void loadAutoChoosers(Swerve swerve) {
         initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
@@ -42,15 +45,17 @@ public class AutoBuilder {
     public static Command getAutonomousCommand(Superstructure superstructure, Intake intake, Swerve swerve) {
         return new ProxyCommand(
                 new SequentialCommandGroup(
+                        new InstantCommand(autoTimer::start),
                         swerve.resetGyroCommand(initialGamePiece.getSelected().equals(GamePiece.CUBE) ? 180 : 0),
                         new InstantCommand(() -> CommandScheduler.getInstance().setDefaultCommand(
                                 superstructure.rollergripper, superstructure.rollergripper.holdConeCommand())),
                         new ConditionalCommand(
-                                superstructure.arm.moveToLengthCommand(MIDDLE.setpoint).andThen(
-                                        superstructure.placeOnHeightCommand(heightChooser.getSelected()), new WaitCommand(1)),
+                                superstructure.arm.resetLengthCommand().andThen(
+                                        superstructure.placeOnHeightCommand(heightChooser.getSelected()),
+                                        superstructure.arm.lockArmCommand(new Trigger())),
                                 intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2),
                                 () -> initialGamePiece.getSelected().equals(GamePiece.CONE)),
-                        autoChooser.getSelected().alongWith(superstructure.arm.lockArmCommand(new Trigger()))
-                ));
+                        autoChooser.getSelected())
+                );
     }
 }

@@ -197,8 +197,12 @@ public class Arm extends SubsystemBase {
   }
 
   private boolean angleInRange(double angleA, double angleB) {
-    double tolorance = 3;
-    return Math.abs(angleA - angleB) < tolorance;
+    double tolerance = 3; // degrees
+    return Math.abs(angleA - angleB) < tolerance;
+  }
+  private boolean lengthInRange(double lengthA, double lengthB) {
+    double tolerance = 5.0 / 100.0; // cm
+    return Math.abs(lengthA - lengthB) < tolerance;
   }
 
   public Command lockArmCommand(Trigger bbTrigger) {
@@ -206,6 +210,11 @@ public class Arm extends SubsystemBase {
           .andThen(moveToAngleCommand(LOCKED.setpoint)
           .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
           .until(armLockedTrigger);
+  }
+
+  public boolean armAtSetpoint(Translation2d setpoint){
+    return lengthInRange(setpoint.getNorm(), lengthEncoder.getPosition()) &&
+            angleInRange(setpoint.getAngle().getDegrees(), getArmAngle());
   }
 
   public Command stopTelescopeMotors() {

@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.RobotContainer;
+import frc.robot.utility.AutoBuilder;
 
 import java.util.Map;
 import java.util.function.BooleanSupplier;
@@ -44,6 +45,15 @@ public class Superstructure extends SubsystemBase {
                 .until(rollergripper.beambreakTrigger.negate().debounce(0.2));
     }
 
+    public Command placeOnMidSequentially(){
+        return arm.moveToAngleCommand(MID.setpoint)
+                .alongWith(new WaitCommand(1).andThen(arm.moveToLengthCommand(MID.setpoint)))
+                .until(()-> arm.armAtSetpoint(MID.setpoint)).andThen(
+                        new PrintCommand("at setpoint!"),
+                        placeOnMidCommand(()-> true)
+                );
+    }
+
     public Command placeOnLowCommand() {
         return arm.holdSetpointCommand(LOW.setpoint).withTimeout(0.65)
                 .andThen(rollergripper.ejectCommand(0.2))
@@ -55,12 +65,13 @@ public class Superstructure extends SubsystemBase {
     }
 
     public Command placeOnHeightCommand(double height) {
-        return new SelectCommand(
+        return new ProxyCommand(
+                new SelectCommand(
                 Map.of(
                         LOW_RPM, placeOnLowCommand(),
-                        MID_RPM, placeOnMidCommand(() -> new WaitCommand(5).isFinished()),
-                        HIGH_RPM, placeOnHighCommand(() -> new WaitCommand(7).isFinished())),
+                        MID_RPM, placeOnMidSequentially(),
+                        HIGH_RPM, new InstantCommand(()-> {})),
                 () -> height
-        );
+        ));
     }
 }
