@@ -50,8 +50,8 @@ public class RobotContainer {
 
     SmartDashboard.putData("intake", intake);
 
-    driveTab.addDouble("Remaining Time", DriverStation::getMatchTime).withSize(3, 3)
-          .withPosition(10, 0).withWidget("Simple Dial")
+    driveTab.addDouble("Remaining Time", DriverStation::getMatchTime)
+            .withSize(4, 4).withPosition(16, 0).withWidget("Simple Dial")
           .withProperties(Map.of("min", 0, "max", 135));
   }
 

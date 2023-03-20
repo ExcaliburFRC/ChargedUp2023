@@ -89,19 +89,19 @@ public class Swerve extends SubsystemBase {
 
     var swerveTab = Shuffleboard.getTab("Swerve");
     swerveTab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(0, 2).withSize(2, 2);
+          .withPosition(4, 0).withSize(4, 4);
     swerveTab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(2, 2).withSize(2, 2);
+          .withPosition(8, 0).withSize(4, 4);
     swerveTab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(0, 4).withSize(2, 2);
+          .withPosition(4, 4).withSize(4, 4);
     swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(2, 4).withSize(2, 2);
+          .withPosition(8, 4).withSize(4, 4);
     swerveTab.addDouble("SwerveAngle", () -> getRotation().getDegrees()).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(0, 0).withSize(4, 2);
-    swerveTab.add("Field2d", field).withSize(9, 5).withPosition(4, 0);
+          .withPosition(0, 2).withSize(4, 4);
+    swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
 
-    swerveTab.addDouble("rampAngle", () -> getRampAngle());
-    swerveTab.addDouble("pid ramp", () -> rampController.calculate(getRampAngle(), 0));
+    swerveTab.addDouble("rampAngle", () -> getRampAngle()).withSize(2, 2);
+    swerveTab.addDouble("pid ramp", () -> rampController.calculate(getRampAngle(), 0)).withSize(2, 2);
     swerveTab.addBoolean("robot balanced", robotBalancedTrigger::getAsBoolean);
 
     RobotContainer.driveTab.addDouble("SwerveAngle", () -> getRotation().getDegrees())
