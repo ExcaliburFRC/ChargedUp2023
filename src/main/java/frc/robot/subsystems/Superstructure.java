@@ -2,13 +2,10 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
 import java.util.Map;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 import static frc.robot.Constants.IntakeConstants.*;
@@ -43,7 +40,7 @@ public class Superstructure extends SubsystemBase {
 
     public Command placeOnMidCommand(BooleanSupplier release) {
         return arm.holdSetpointCommand(MID.setpoint).until(release)
-                .andThen(arm.fadeArmCommand(6.5).alongWith(rollergripper.ejectCommand()))
+                .andThen(arm.setAngleSpeed(-6.5).alongWith(rollergripper.ejectCommand()))
                 .until(rollergripper.beambreakTrigger.negate().debounce(0.2));
     }
 
@@ -57,7 +54,7 @@ public class Superstructure extends SubsystemBase {
         return arm.lockArmCommand(rollergripper.beambreakTrigger);
     }
 
-    public Command switchCommand(double height) {
+    public Command placeOnHeightCommand(double height) {
         return new SelectCommand(
                 Map.of(
                         LOW_RPM, placeOnLowCommand(),

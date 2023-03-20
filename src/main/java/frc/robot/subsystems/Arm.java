@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -19,7 +18,6 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
 import static frc.robot.Constants.ArmConstants.Setpoints.LOCKED;
-import static frc.robot.Constants.ArmConstants.Setpoints.MIDDLE;
 
 public class Arm extends SubsystemBase {
   private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -79,10 +77,9 @@ public class Arm extends SubsystemBase {
           .withSize(2, 1);
     armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(4, 3)
           .withSize(2, 1);
-    armTab.addBoolean("arm stuck", armStuckTrigger);
 
-//    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 22f);
-//    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+    lengthMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 1.03f);
+    lengthMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 
     angleMotor.setOpenLoopRampRate(1.5);
 
@@ -153,13 +150,17 @@ public class Arm extends SubsystemBase {
     return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
   }
 
-  public Command fadeArmCommand(double offset) {
-    //when the motor stops, gravity slowly pulls the arm down, making the arm "fade" down
-    return new RunCommand(() -> angleMotor.set(-offset / 100), this);
+  public Command setAngleSpeed(double speed) {
+    return new RunCommand(() -> angleMotor.set(speed / 100), this);
   }
 
+  /**
+   * when the motor stops, gravity slowly pulls the arm down, making the arm "fade" down
+   *
+   * @return the command
+   */
   public Command fadeArmCommand(){
-    return fadeArmCommand(0);
+    return setAngleSpeed(0);
   }
 
   public Command moveToLengthCommand(Translation2d setPoint) {
@@ -187,35 +188,17 @@ public class Arm extends SubsystemBase {
       double pid = kP_ANGLE * (setpointDeg - getArmAngle());
       double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
-      if (getArmAngle() == 0) {
-        DriverStation.reportError("arm angle at 0 while motor running!!!", false);
+      if (getArmAngle() <= 80 || getArmAngle() >= 230) {
+        DriverStation.reportError("odd arm angle reading while motor running! please check.", false);
         angleMotor.stopMotor();
       } else angleMotor.setVoltage(pid + feedforward);
-
-      System.out.println("pid: " + pid);
-      System.out.println("kP: " + kP_ANGLE);
-      System.out.println("setpoint Degrees: " + setpoint.getAngle().getDegrees());
-      System.out.println("arm angle: " + getArmAngle());
 
     }, angleMotor::stopMotor, this);
   }
 
-  /**
-   * floats the arm using the current DutyCycle
-   *
-   * @return the command
-   */
-  public Command floatCommand() {
-    return new RunCommand(
-          () -> {
-            angleMotor.set(floatDutyCycle);
-          }, this
-    );
-  }
-
   private boolean angleInRange(double angleA, double angleB) {
-    double tolerance = 3;
-    return Math.abs(angleA - angleB) < tolerance;
+    double tolorance = 3;
+    return Math.abs(angleA - angleB) < tolorance;
   }
 
   public Command lockArmCommand(Trigger bbTrigger) {
@@ -225,16 +208,8 @@ public class Arm extends SubsystemBase {
           .until(armLockedTrigger);
   }
 
-  public double getArmLength() {
-    return lengthEncoder.getPosition();
-  }
-
-  public void setArmLengthToMax() {
-    lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
-  }
-
   public Command stopTelescopeMotors() {
-    return new InstantCommand(lengthMotor::disable);
+    return new InstantCommand(lengthMotor::stopMotor);
   }
 
   @Override
