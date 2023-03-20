@@ -31,9 +31,9 @@ public class Arm extends SubsystemBase {
   private final DigitalInput lowerLimitSwitch = new DigitalInput(CLOSED_LIMIT_SWITCH_ID);
 
   public final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
-  public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 1);
+  public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 0.98);
 
-  public final Trigger armAngleClosedTrigger = new Trigger(() -> getArmAngle() <= 92);
+  public final Trigger armAngleClosedTrigger = new Trigger(() -> getArmAngle() <= 100);
 
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 

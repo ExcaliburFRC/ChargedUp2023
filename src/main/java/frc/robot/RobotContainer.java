@@ -46,7 +46,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     configureBindings();
-    AutoBuilder.loadAutoChoosers(swerve);
+    AutoBuilder.loadAutoChoosers(swerve, intake);
 
     SmartDashboard.putData("intake", intake);
 
@@ -135,5 +135,6 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return AutoBuilder.getAutonomousCommand(superstructure, intake, swerve);
 //    return null;
+//    return swerve.turnToAngleCommand(180);
   }
 }

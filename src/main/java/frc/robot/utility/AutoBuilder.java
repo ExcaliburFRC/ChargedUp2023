@@ -12,6 +12,8 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.swerve.Swerve;
 
+import javax.print.attribute.standard.PrinterURI;
+
 import static frc.robot.Constants.IntakeConstants.*;
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
@@ -22,7 +24,7 @@ public class AutoBuilder {
 
     public static final Timer autoTimer = new Timer();
 
-    public static void loadAutoChoosers(Swerve swerve) {
+    public static void loadAutoChoosers(Swerve swerve, Intake intake) {
         initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
         initialGamePiece.addOption("cube", GamePiece.CUBE);
 
@@ -33,8 +35,9 @@ public class AutoBuilder {
         autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve, true));
         autoChooser.addOption("balance ramp", swerve.climbCommand(true));
         autoChooser.addOption("climb over & balance ramp", new ClimbOverRampCommand(swerve, true));
-        autoChooser.addOption("don't drive", new InstantCommand(() -> {
-        }));
+        autoChooser.addOption("collect cube", swerve.driveSwerveWithAngleCommand(()-> 0.4, ()-> 0, ()-> 0, ()-> true)
+                .alongWith(intake.intakeCommand(0.4)).withTimeout(5.5));
+        autoChooser.addOption("don't drive", new InstantCommand(() -> {}));
 
         var tab = Shuffleboard.getTab("Autonomous builder");
         tab.add("initial game piece", initialGamePiece).withSize(4, 2).withPosition(8, 1);
@@ -51,11 +54,14 @@ public class AutoBuilder {
                                 superstructure.rollergripper, superstructure.rollergripper.holdConeCommand())),
                         new ConditionalCommand(
                                 superstructure.arm.resetLengthCommand().andThen(
-                                        superstructure.placeOnHeightCommand(heightChooser.getSelected()),
-                                        superstructure.arm.lockArmCommand(new Trigger())),
+                                        superstructure.placeOnHeightCommand(heightChooser.getSelected())),
                                 intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2),
                                 () -> initialGamePiece.getSelected().equals(GamePiece.CONE)),
-                        autoChooser.getSelected())
+                        autoChooser.getSelected()
+                                .alongWith(new ConditionalCommand(
+                                        new InstantCommand(),
+                                        superstructure.arm.lockArmCommand(new Trigger()),
+                                        superstructure.arm.armLockedTrigger)))
                 );
     }
 }

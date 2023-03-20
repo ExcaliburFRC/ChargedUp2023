@@ -62,7 +62,7 @@ public final class Constants {
             FL(18, 17, 1, 0.093 + 0.25, false, false),
             FR(12, 11, 0, 0.372 + 0.25, false, false),
             BL(16, 15, 2, 0.05, false, false),
-            BR(14, 13, 3, 0.570 + 0.25, false, false);
+            BR(14, 13, 3, 0.834, false, false);
 
             public int DRIVE_MOTOR_ID;
             public int SPIN_MOTOR_ID;
@@ -123,8 +123,8 @@ public final class Constants {
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
 
         // autonomous constants
-        public static final double kp_Theta = 0.0155;
-        public static final double kd_Theta = 0.002;
+        public static final double kp_Theta = 0.00585;
+        public static final double kd_Theta = 0;
         public static final double kp_X = 0.2;
         public static final double kp_Y = 0.2;
     }
@@ -153,7 +153,7 @@ public final class Constants {
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
 
             CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(90))),
-            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.01, Rotation2d.fromDegrees(86)));
+            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(86)));
 
             public final Translation2d setpoint;
 

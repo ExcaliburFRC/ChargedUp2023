@@ -42,16 +42,13 @@ public class Superstructure extends SubsystemBase {
     public Command placeOnMidCommand(BooleanSupplier release) {
         return arm.holdSetpointCommand(MID.setpoint).until(release)
                 .andThen(arm.setAngleSpeed(-6.5).alongWith(rollergripper.ejectCommand()))
-                .until(rollergripper.beambreakTrigger.negate().debounce(0.2));
+                .until(rollergripper.beambreakTrigger.negate().debounce(0.1));
     }
 
     public Command placeOnMidSequentially(){
         return arm.moveToAngleCommand(MID.setpoint)
                 .alongWith(new WaitCommand(1).andThen(arm.moveToLengthCommand(MID.setpoint)))
-                .until(()-> arm.armAtSetpoint(MID.setpoint)).andThen(
-                        new PrintCommand("at setpoint!"),
-                        placeOnMidCommand(()-> true)
-                );
+                .until(()-> arm.armAtSetpoint(MID.setpoint)).andThen(placeOnMidCommand(()-> true));
     }
 
     public Command placeOnLowCommand() {
@@ -65,13 +62,11 @@ public class Superstructure extends SubsystemBase {
     }
 
     public Command placeOnHeightCommand(double height) {
-        return new ProxyCommand(
-                new SelectCommand(
+        return new SelectCommand(
                 Map.of(
                         LOW_RPM, placeOnLowCommand(),
                         MID_RPM, placeOnMidSequentially(),
                         HIGH_RPM, new InstantCommand(()-> {})),
-                () -> height
-        ));
+                () -> height).andThen(new PrintCommand("finished select command"));
     }
 }

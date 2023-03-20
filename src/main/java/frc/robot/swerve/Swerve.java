@@ -68,6 +68,8 @@ public class Swerve extends SubsystemBase {
   private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
   private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
 
+  private final SlewRateLimiter angleRateLimiter = new SlewRateLimiter(0.15);
+
   //    private final Limelight limelight = new Limelight();
   private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
         kSwerveKinematics,
@@ -169,21 +171,6 @@ public class Swerve extends SubsystemBase {
           this);
   }
 
-  // returns a command that enables the driver to control the swerve at each method
-  public Command dualDriveSwerveCommand(
-        DoubleSupplier xSpeedSupplier,
-        DoubleSupplier ySpeedSupplier,
-        DoubleSupplier xAngle,
-        DoubleSupplier yAngle,
-        BooleanSupplier fieldOriented,
-        BooleanSupplier withAngle) {
-    return new RepeatCommand(
-          driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, xAngle, fieldOriented)
-                .until(withAngle)
-                .andThen(driveSwerveWithAngleCommand(xSpeedSupplier, ySpeedSupplier, () -> -xAngle.getAsDouble(), () -> yAngle.getAsDouble(), fieldOriented)
-                      .until(() -> !withAngle.getAsBoolean())));
-  }
-
   // turning speed based swerve drive
   public Command driveSwerveCommand(
         DoubleSupplier xSpeedSupplier,
@@ -242,15 +229,18 @@ public class Swerve extends SubsystemBase {
   public Command driveSwerveWithAngleCommand(
         DoubleSupplier xSpeed,
         DoubleSupplier ySpeed,
-        DoubleSupplier xAngle,
-        DoubleSupplier yAngle,
+        DoubleSupplier angle,
+//        DoubleSupplier xAngle,
+//        DoubleSupplier yAngle,
         BooleanSupplier fieldOriented) {
-    return new InstantCommand(() -> lastJoystickAngle.set((int) getDegrees()))
-          .andThen(new ParallelCommandGroup(
-                new RunCommand(() -> updateJoystickAngle(xAngle.getAsDouble(), yAngle.getAsDouble())),
-                driveSwerveCommand(xSpeed, ySpeed, () -> -thetaTeleopController.calculate(getDegrees(), lastJoystickAngle.get()), fieldOriented))
+//    return new InstantCommand(() -> lastJoystickAngle.set((int) getRotation().getDegrees()))
+          return new ParallelCommandGroup(
+//                new RunCommand(() -> updateJoystickAngle(xAngle.getAsDouble(), yAngle.getAsDouble())),
+                driveSwerveCommand(xSpeed, ySpeed, () -> thetaTeleopController.calculate(getRotation().getDegrees(), angle.getAsDouble()), fieldOriented)
           );
   }
+
+
 
   // returns the joystick angle in 0 to 360 (right is 0, up is 90)
   //TODO: fix and make simple
@@ -338,8 +328,11 @@ public class Swerve extends SubsystemBase {
     return xAbsError < xTolerance && yAbsError < yTolerance && thetaAbsError < thetaTolerance;
   }
 
-  public Command turnToAngleCommand(double angle) {
-    return driveSwerveCommand(() -> 0, () -> 0, () -> thetaTeleopController.calculate(getRotation().getDegrees(), angle), () -> true)
+  public Command turnToAngleCommand(double setpoint) {
+    return driveSwerveCommand(
+            () -> 0,
+            () -> 0,
+            () -> thetaTeleopController.calculate(getRotation().getDegrees(), setpoint), () -> false)
           .until(new Trigger(thetaTeleopController::atSetpoint).debounce(0.15));
   }
 
