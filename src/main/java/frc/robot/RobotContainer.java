@@ -78,7 +78,7 @@ public class RobotContainer {
                 .andThen(new RunCommand(()-> {}, intake)));
 
     // intake commands
-    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.3));
+    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.45));
     armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
     armJoystick.PS().toggleOnTrue(intake.togglePistonCommand());
@@ -103,7 +103,7 @@ public class RobotContainer {
     armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
     driveJoystick.square().whileTrue(swerve.balanceRampCommand());
 
-    driveJoystick.button(15).onTrue(new InstantCommand(()-> Shuffleboard.selectTab("driveTab")));
+    driveJoystick.button(15).onTrue(swerve.resetModulesCommand());
   }
 
   public Command toggleCompressorCommand() {

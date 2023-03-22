@@ -26,7 +26,7 @@ public final class Constants {
         public static final int INTAKE_FWD_CHANNEL = 1;
         public static final int INTAKE_REV_CHANNEL = 0;
 
-        public static final int EJECT_FWD_CHANNEL = 2;
+        public static final int EJECT_FWD_CHANNEL = 4;
         public static final int EJECT_REV_CHANNEL = 3;
 
         public static double kS = 0.14344;
@@ -35,10 +35,10 @@ public final class Constants {
         public static double kP = 0.00025;
 
         public static final double LOW_RPM = 0;
-        public static final double MID_RPM = -1900;
+        public static final double MID_RPM = -1800;
         public static final double HIGH_RPM = -3100;
 
-        public static final double PID_TOLERANCE = 100;
+        public static final double PID_TOLERANCE = 150;
     }
 
     public static final class SpindexerConstants {
@@ -107,7 +107,7 @@ public final class Constants {
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
-        public static final double RAMP_BALANCE_KP = 0.00725;
+        public static final double RAMP_BALANCE_KP = 0.006;
         public static final double RAMP_BALANCE_KD = 0.002;
         // yehuda ha-gever
 
@@ -147,8 +147,8 @@ public final class Constants {
             MID(new Translation2d(0.72, Rotation2d.fromDegrees(172))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
             HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(192))),
-            SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(173))),
-            SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(173))),
+            SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(174))),
+            SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(174))),
 
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
 
@@ -175,7 +175,7 @@ public final class Constants {
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
 
-              //0.17815;
+        public static final double ARM_GEAR_RATIO = 6.1;
 
         public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.951 - 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
 

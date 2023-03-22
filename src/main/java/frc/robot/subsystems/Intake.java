@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.RobotContainer;
 
 import java.util.function.DoubleSupplier;
 
@@ -28,7 +29,7 @@ public class Intake extends SubsystemBase {
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, 0);
 
   public final Trigger isAtTargetVelocity = new Trigger(
-        () -> Math.abs(pidController.getPositionError()) < PID_TOLERANCE).debounce(0.25);
+        () -> Math.abs(pidController.getPositionError()) < PID_TOLERANCE).debounce(0.1);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
   public Intake() {
@@ -70,7 +71,7 @@ public class Intake extends SubsystemBase {
             intakePiston.set(DoubleSolenoid.Value.kReverse);
 //            ejectPiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
-            Shuffleboard.selectTab("Swerve");
+            Shuffleboard.selectTab(RobotContainer.driveTab.getTitle());
           }, this);
   }
 
@@ -120,7 +121,7 @@ public class Intake extends SubsystemBase {
                   intakeMotor.setVoltage(pid + ff);
                   SmartDashboard.putNumber("rpm", intakeEncoder.getVelocity());
                   SmartDashboard.putNumber("intake setpoint", rpm);
-                }).alongWith(new WaitCommand(0.05).andThen(
+                }).alongWith(new WaitCommand(0.03).andThen(
                       new WaitUntilCommand(isAtTargetVelocity), pushCubeCommand()))
                 .finallyDo((__) -> {
                   intakeMotor.stopMotor();
@@ -140,7 +141,11 @@ public class Intake extends SubsystemBase {
    */
   public Command shootCubeToLowCommand() {
     return this.runEnd(()-> intakeMotor.set(0.5), intakeMotor::stopMotor).withTimeout(1);
-//    return this.run(()-> intakeMotor.set(-0.5));
+//    return Commands.repeatingSequence(
+//            Commands.runEnd(()-> intakeMotor.setVoltage(-1), intakeMotor::stopMotor, this)
+//                    .withTimeout(0.2), pulseMotorCommand())
+//            .alongWith(pushCubeCommand())
+//            .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
   }
 
   /**

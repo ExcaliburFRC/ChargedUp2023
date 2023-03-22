@@ -34,7 +34,7 @@ public class AutoBuilder {
 
         autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve, true));
         autoChooser.addOption("balance ramp", swerve.climbCommand(true));
-        autoChooser.addOption("climb over & balance ramp", new ClimbOverRampCommand(swerve, true));
+//        autoChooser.addOption("climb over & balance ramp", new ClimbOverRampCommand(swerve, true));
         autoChooser.addOption("collect cube", swerve.driveSwerveWithAngleCommand(()-> 0.4, ()-> 0, ()-> 0, ()-> true)
                 .alongWith(intake.intakeCommand(0.4)).withTimeout(5.5));
         autoChooser.addOption("don't drive", new InstantCommand(() -> {}));

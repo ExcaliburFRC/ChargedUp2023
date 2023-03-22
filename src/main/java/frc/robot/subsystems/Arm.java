@@ -8,11 +8,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import java.sql.Time;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
@@ -37,14 +39,16 @@ public class Arm extends SubsystemBase {
 
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
-  public final Trigger armStuckTrigger =
-        new Trigger(() -> armFullyOpenedTrigger.getAsBoolean() && getArmAngle() > 100);
+//  public final Trigger armStuckTrigger =
+//        new Trigger(() -> armFullyOpenedTrigger.getAsBoolean() && getArmAngle() > 100);
 
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
   public static double floatDutyCycle = 0;
 
   public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
+
+  private final RelativeEncoder angleRelativeEncoder = angleFollowerMotor.getEncoder();
 
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
@@ -71,7 +75,7 @@ public class Arm extends SubsystemBase {
 
     armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(10, 0).withSize(4, 4)
            .withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
-    armTab.addDouble("Arm degrees", this::getArmAngle).withPosition(6, 0).withSize(4, 4)
+    armTab.addDouble("Arm degrees", angleEncoder::getDistance).withPosition(6, 0).withSize(4, 4)
           .withWidget("Simple Dial").withProperties(Map.of("min", 90, "max", 190));
     armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(6, 4)
           .withSize(4, 2);
@@ -84,6 +88,10 @@ public class Arm extends SubsystemBase {
     angleMotor.setOpenLoopRampRate(1.5);
 
     if (lengthEncoder.getPosition() < 0.1) lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
+
+    angleRelativeEncoder.setPositionConversionFactor(ARM_GEAR_RATIO);
+//    angleRelativeEncoder.setPosition(90);
+
   }
 
   /**
@@ -136,6 +144,8 @@ public class Arm extends SubsystemBase {
   }
 
   public double getArmAngle() {
+    if (angleEncoder.getDistance() > 220 || angleEncoder.getDistance() < 80)
+      DriverStation.reportError("arm encoder bugged!!", true);
     return MathUtil.clamp(angleEncoder.getDistance(), 80, 220);
   }
 
@@ -188,7 +198,7 @@ public class Arm extends SubsystemBase {
       double pid = kP_ANGLE * (setpointDeg - getArmAngle());
       double feedforward = kS_ANGLE * Math.signum(pid) + kG_ANGLE * setpoint.getAngle().getCos();
 
-      if (getArmAngle() <= 80 || getArmAngle() >= 230) {
+      if (getArmAngle() <= 80 || getArmAngle() >= 220) {
         DriverStation.reportError("odd arm angle reading while motor running! please check.", false);
         angleMotor.stopMotor();
       } else angleMotor.setVoltage(pid + feedforward);
@@ -221,8 +231,17 @@ public class Arm extends SubsystemBase {
     return new InstantCommand(lengthMotor::stopMotor);
   }
 
+
+  boolean hasReset = false;
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
+
+//    if (Timer.getFPGATimestamp() > 6 && !hasReset){
+//      angleRelativeEncoder.setPosition(angleEncoder.getDistance());
+//      hasReset = true;
+//    }
+
+//    System.out.println(angleEncoder.getDistance());
   }
 }

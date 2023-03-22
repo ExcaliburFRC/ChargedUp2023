@@ -67,6 +67,6 @@ public class Superstructure extends SubsystemBase {
                         LOW_RPM, placeOnLowCommand(),
                         MID_RPM, placeOnMidSequentially(),
                         HIGH_RPM, new InstantCommand(()-> {})),
-                () -> height).andThen(new PrintCommand("finished select command"));
+                () -> height);
     }
 }
