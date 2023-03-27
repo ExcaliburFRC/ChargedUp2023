@@ -227,6 +227,7 @@ public final class Constants {
 
     public static class LedsConstants {
         public static final int LEDS_PORT = 0;
+        public static final int LEDS_LENGTH = 0;
     }
 }
     // DIO:

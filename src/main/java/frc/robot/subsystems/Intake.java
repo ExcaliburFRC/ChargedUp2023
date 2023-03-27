@@ -36,7 +36,6 @@ public class Intake extends SubsystemBase {
     intakeMotor.restoreFactoryDefaults();
     intakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     intakeMotor.clearFaults();
-//        intakeMotor.getFault()
   }
 
   public Command openPistonCommand() {
