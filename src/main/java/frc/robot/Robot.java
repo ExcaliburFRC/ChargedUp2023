@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.SystemTester;
 import frc.robot.utility.FaultReporter;
 
 /**
@@ -21,9 +22,6 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
-
-  EventLoop TestEventLoop = new EventLoop();
-  EventLoop defaultEventLoop;
 
   public static Timer startUpTimer = new Timer();
 
@@ -45,13 +43,9 @@ public class Robot extends TimedRobot {
     DriverStation.startDataLog(DataLogManager.getLog(), true);
 
     enableLiveWindowInTest(false);
-    defaultEventLoop = CommandScheduler.getInstance().getDefaultButtonLoop();
 
     startUpTimer.start();
-
-    DriverStation.reportError("robot init has run", false);
   }
-
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -85,8 +79,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-
-    m_robotContainer.swerve.resetGyroCommand(180).schedule();
   }
 
   /** This function is called periodically during autonomous. */
@@ -102,7 +94,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    CommandScheduler.getInstance().setActiveButtonLoop(defaultEventLoop);
+
+    Shuffleboard.selectTab("driveTab");
   }
 
   /** This function is called periodically during operator control. */
@@ -116,8 +109,8 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
     CommandScheduler.getInstance().enable();
 
-    CommandScheduler.getInstance().setActiveButtonLoop(TestEventLoop);
-    m_robotContainer.manual();
+//    m_robotContainer.SystemTester().schedule();
+    m_robotContainer.manual().schedule();
   }
 
   /** This function is called periodically during test mode. */

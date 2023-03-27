@@ -1,65 +1,67 @@
 package frc.robot.utility;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ProxyCommand;
-import frc.robot.Constants;
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.Coordinates.GamePiece;
+import frc.robot.commands.autonomous.ClimbOverRampCommand;
 import frc.robot.commands.autonomous.LeaveCommunityCommand;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.swerve.Swerve;
 
+import javax.print.attribute.standard.PrinterURI;
+
 import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
 public class AutoBuilder {
-  public static final SendableChooser<Command> autoChooser = new SendableChooser<>();
-  public static final SendableChooser<Double> heightChooser = new SendableChooser<>();
-  public static final SendableChooser<Constants.Coordinates.GamePiece> initialGamePiece = new SendableChooser<>();
-  public static final SendableChooser<Boolean> facingChooser = new SendableChooser<>();
+    public static final SendableChooser<Command> autoChooser = new SendableChooser<>();
+    public static final SendableChooser<Double> heightChooser = new SendableChooser<>();
+    public static final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
 
-  public static void loadAutoChoosers(Swerve swerve){
-    initialGamePiece.setDefaultOption("cone", Constants.Coordinates.GamePiece.CONE);
-    initialGamePiece.addOption("cube", Constants.Coordinates.GamePiece.CUBE);
+    public static final Timer autoTimer = new Timer();
 
-    heightChooser.setDefaultOption("low", LOW_RPM);
-    heightChooser.addOption("mid", MID_RPM);
-    heightChooser.addOption("high", HIGH_RPM);
+    public static void loadAutoChoosers(Swerve swerve, Intake intake) {
+        initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
+        initialGamePiece.addOption("cube", GamePiece.CUBE);
 
-    facingChooser.setDefaultOption("forward (place cone)", true);
-    facingChooser.addOption("backwards (place cube)", false);
+        heightChooser.setDefaultOption("low", LOW_RPM);
+        heightChooser.addOption("mid", MID_RPM);
+        heightChooser.addOption("high", HIGH_RPM);
 
-    autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve));
-    autoChooser.addOption("balance ramp", swerve.climbCommand(false));
-    autoChooser.addOption("don't drive", new InstantCommand(()-> {}));
+        autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve, true));
+        autoChooser.addOption("balance ramp", swerve.climbCommand(true));
+//        autoChooser.addOption("climb over & balance ramp", new ClimbOverRampCommand(swerve, true));
+        autoChooser.addOption("collect cube", swerve.driveSwerveWithAngleCommand(()-> 0.4, ()-> 0, ()-> 0, ()-> true)
+                .alongWith(intake.intakeCommand(0.4)).withTimeout(5.5));
+        autoChooser.addOption("don't drive", new InstantCommand(() -> {}));
 
-    var tab = Shuffleboard.getTab("Autonomous builder");
-//    tab.add("initial game piece", initialGamePiece).withSize(3, 1)
-//          .withPosition(5, 1);
-    tab.add("height", heightChooser).withSize(3, 1).withPosition(5, 2);
-//    tab.add("facing forwards", facingChooser).withSize(3, 1)
-//          .withPosition(5, 3);
-    tab.add("auto", autoChooser).withSize(3, 1).withPosition(5, 3); // 5, 4
-  }
+        var tab = Shuffleboard.getTab("Autonomous builder");
+        tab.add("initial game piece", initialGamePiece).withSize(4, 2).withPosition(8, 1);
+        tab.add("height", heightChooser).withSize(4, 2).withPosition(8, 3);
+        tab.add("auto", autoChooser).withSize(4, 2).withPosition(8, 5);
+    }
 
-//  public static Command getAutonomousCommand(Superstructure superstructure, Intake intake){
-//    return new ProxyCommand(
-//           cone or cube
-//          new ConditionalCommand(
-//                superstructure.switchCommand(heightChooser.getSelected()),
-//                intake.shootCubeCommand(heightChooser.getSelected()),
-//                () -> initialGamePiece.getSelected().equals(Constants.Coordinates.GamePiece.CONE))
-//                 leave or climb
-//                .andThen(autoChooser.getSelected()));
-//  }
-
-  public static Command getAutonomousCommand(Intake intake, Swerve swerve){
-    return new ProxyCommand(
-          new InstantCommand(()-> swerve.resetGyroCommand(180)).andThen(
-                intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2),
-                autoChooser.getSelected()));
-  }
-
+    public static Command getAutonomousCommand(Superstructure superstructure, Intake intake, Swerve swerve) {
+        return new ProxyCommand(
+                new SequentialCommandGroup(
+                        new InstantCommand(autoTimer::start),
+                        swerve.resetGyroCommand(initialGamePiece.getSelected().equals(GamePiece.CUBE) ? 180 : 0),
+                        new InstantCommand(() -> CommandScheduler.getInstance().setDefaultCommand(
+                                superstructure.rollergripper, superstructure.rollergripper.holdConeCommand())),
+                        new ConditionalCommand(
+                                superstructure.arm.resetLengthCommand().andThen(
+                                        superstructure.placeOnHeightCommand(heightChooser.getSelected())),
+                                intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2),
+                                () -> initialGamePiece.getSelected().equals(GamePiece.CONE)),
+                        autoChooser.getSelected()
+                                .alongWith(new ConditionalCommand(
+                                        new InstantCommand(),
+                                        superstructure.arm.lockArmCommand(new Trigger()),
+                                        superstructure.arm.armLockedTrigger)))
+                );
+    }
 }

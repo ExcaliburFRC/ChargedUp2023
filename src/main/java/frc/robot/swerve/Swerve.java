@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -67,6 +68,8 @@ public class Swerve extends SubsystemBase {
   private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
   private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
 
+  private final SlewRateLimiter angleRateLimiter = new SlewRateLimiter(0.15);
+
   //    private final Limelight limelight = new Limelight();
   private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
         kSwerveKinematics,
@@ -88,20 +91,23 @@ public class Swerve extends SubsystemBase {
 
     var swerveTab = Shuffleboard.getTab("Swerve");
     swerveTab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(0, 2).withSize(2, 2);
+          .withPosition(4, 0).withSize(4, 4);
     swerveTab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(2, 2).withSize(2, 2);
+          .withPosition(8, 0).withSize(4, 4);
     swerveTab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(0, 4).withSize(2, 2);
+          .withPosition(4, 4).withSize(4, 4);
     swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(2, 4).withSize(2, 2);
+          .withPosition(8, 4).withSize(4, 4);
     swerveTab.addDouble("SwerveAngle", () -> getRotation().getDegrees()).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(0, 0).withSize(4, 2);
-    swerveTab.add("Field2d", field).withSize(9, 5).withPosition(4, 0);
+          .withPosition(0, 2).withSize(4, 4);
+    swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
 
-    swerveTab.addDouble("rampAngle", ()-> getRampAngle());
-    swerveTab.addDouble("pid ramp", ()-> rampController.calculate(getRampAngle(), 0));
+    swerveTab.addDouble("rampAngle", () -> getRampAngle()).withSize(2, 2);
+    swerveTab.addDouble("pid ramp", () -> rampController.calculate(getRampAngle(), 0)).withSize(2, 2);
     swerveTab.addBoolean("robot balanced", robotBalancedTrigger::getAsBoolean);
+
+    RobotContainer.driveTab.addDouble("SwerveAngle", () -> getRotation().getDegrees())
+          .withWidget(BuiltInWidgets.kGyro).withPosition(0, 0).withSize(4, 2);
 
     odometry.resetPosition(
           getGyroRotation(),
@@ -136,7 +142,7 @@ public class Swerve extends SubsystemBase {
 
   // return the pitch of the robot
   //TODO: check if works
-  private double getRampAngle() {
+  public double getRampAngle() {
     double roll = _gyro.getRoll();
     roll -= 0.46;
     return roll;
@@ -165,27 +171,13 @@ public class Swerve extends SubsystemBase {
           this);
   }
 
-  // returns a command that enables the driver to control the swerve at each method
-  public Command dualDriveSwerveCommand(
-        DoubleSupplier xSpeedSupplier,
-        DoubleSupplier ySpeedSupplier,
-        DoubleSupplier xAngle,
-        DoubleSupplier yAngle,
-        BooleanSupplier fieldOriented,
-        BooleanSupplier withAngle) {
-    return new RepeatCommand(
-          driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, xAngle, fieldOriented)
-                .until(withAngle)
-                .andThen(driveSwerveWithAngleCommand(xSpeedSupplier, ySpeedSupplier, () -> -xAngle.getAsDouble(), () -> yAngle.getAsDouble(), fieldOriented)
-                      .until(() -> !withAngle.getAsBoolean())));
-  }
-
   // turning speed based swerve drive
   public Command driveSwerveCommand(
         DoubleSupplier xSpeedSupplier,
         DoubleSupplier ySpeedSupplier,
         DoubleSupplier spinningSpeedSupplier,
-        BooleanSupplier fieldOriented) {
+        BooleanSupplier fieldOriented,
+        BooleanSupplier slowMode) {
 
     final SlewRateLimiter
           xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
@@ -200,7 +192,7 @@ public class Swerve extends SubsystemBase {
                   //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
                   double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
                         ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
-                        spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed;
+                        spinningSpeed = spinningLimiter.calculate(slowMode.getAsBoolean() ? spinningSpeedSupplier.getAsDouble() / 5 : spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed;
 
                   // create a CassisSpeeds object and apply it the speeds
                   ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
@@ -221,23 +213,34 @@ public class Swerve extends SubsystemBase {
                 this));
   }
 
-  public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fielOriented) {
-    return driveSwerveCommand(speed, ()-> 0, turn, () -> fielOriented);
+  public Command driveSwerveCommand(
+        DoubleSupplier xSpeedSupplier,
+        DoubleSupplier ySpeedSupplier,
+        DoubleSupplier spinningSpeedSupplier,
+        BooleanSupplier fieldOriented){
+    return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, ()-> false);
+  }
+
+  public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fieldOriented) {
+    return driveSwerveCommand(speed, () -> 0, turn, () -> fieldOriented);
   }
 
   // angle based swerve drive
   public Command driveSwerveWithAngleCommand(
         DoubleSupplier xSpeed,
         DoubleSupplier ySpeed,
-        DoubleSupplier xAngle,
-        DoubleSupplier yAngle,
+        DoubleSupplier angle,
+//        DoubleSupplier xAngle,
+//        DoubleSupplier yAngle,
         BooleanSupplier fieldOriented) {
-    return new InstantCommand(() -> lastJoystickAngle.set((int) getDegrees()))
-          .andThen(new ParallelCommandGroup(
-                new RunCommand(() -> updateJoystickAngle(xAngle.getAsDouble(), yAngle.getAsDouble())),
-                driveSwerveCommand(xSpeed, ySpeed, () -> -thetaTeleopController.calculate(getDegrees(), lastJoystickAngle.get()), fieldOriented))
+//    return new InstantCommand(() -> lastJoystickAngle.set((int) getRotation().getDegrees()))
+          return new ParallelCommandGroup(
+//                new RunCommand(() -> updateJoystickAngle(xAngle.getAsDouble(), yAngle.getAsDouble())),
+                driveSwerveCommand(xSpeed, ySpeed, () -> thetaTeleopController.calculate(getRotation().getDegrees(), angle.getAsDouble()), fieldOriented)
           );
   }
+
+
 
   // returns the joystick angle in 0 to 360 (right is 0, up is 90)
   //TODO: fix and make simple
@@ -321,12 +324,15 @@ public class Swerve extends SubsystemBase {
           setPointDegrees = setPoint.getRotation().getDegrees(),
           measuredDegrees = measurement.getRotation().getDegrees(),
           thetaAbsError = Math.abs(setPointDegrees - measuredDegrees);
-    thetaAbsError =thetaAbsError<=180?thetaAbsError:360-thetaAbsError;
+    thetaAbsError = thetaAbsError <= 180 ? thetaAbsError : 360 - thetaAbsError;
     return xAbsError < xTolerance && yAbsError < yTolerance && thetaAbsError < thetaTolerance;
   }
 
-  public Command turnToAngleCommand(double angle){
-    return driveSwerveCommand(()-> 0, ()-> 0, ()-> thetaTeleopController.calculate(getRotation().getDegrees(), angle), ()-> true)
+  public Command turnToAngleCommand(double setpoint) {
+    return driveSwerveCommand(
+            () -> 0,
+            () -> 0,
+            () -> thetaTeleopController.calculate(getRotation().getDegrees(), setpoint), () -> false)
           .until(new Trigger(thetaTeleopController::atSetpoint).debounce(0.15));
   }
 
@@ -371,14 +377,14 @@ public class Swerve extends SubsystemBase {
 
   public Command driveToRampCommand(boolean forward) {
     final double speed = forward ? 0.45 : -0.45;
-    return driveSwerveCommand(()-> speed, ()-> 0, ()-> 0, ()-> false)
+    return driveSwerveCommand(() -> speed, () -> 0, () -> 0, () -> true)
           .until(robotBalancedTrigger.negate())
           .andThen(new InstantCommand(this::stopModules));
   }
 
   public Command balanceRampCommand() {
     return driveSwerveCommand(
-          ()-> rampController.calculate(getRampAngle(), 0),
+          () -> rampController.calculate(getRampAngle(), 0),
           () -> 0,
           () -> 0,
           () -> false);
@@ -386,7 +392,12 @@ public class Swerve extends SubsystemBase {
   }
 
   public Command climbCommand(boolean isForward) {
-    return driveToRampCommand(isForward).andThen(balanceRampCommand());
+    return driveToRampCommand(isForward)
+            .andThen(
+                    tankDriveCommand(()-> 0.375, ()-> 0, true)
+                            .withTimeout(1.315),
+                    new WaitCommand(0.25),
+                    balanceRampCommand());
   }
 
   private void stopModules() {

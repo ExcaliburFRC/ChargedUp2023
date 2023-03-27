@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -12,7 +13,7 @@ import java.util.function.BooleanSupplier;
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.RollerGripperConstants.*;
 
-public class RollerGripper extends SubsystemBase {
+public class Rollergripper extends SubsystemBase {
   private final CANSparkMax rightRoller = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
   private final CANSparkMax leftRoller = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
 
@@ -20,7 +21,7 @@ public class RollerGripper extends SubsystemBase {
 
   public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 
-  public RollerGripper() {
+  public Rollergripper() {
     rightRoller.restoreFactoryDefaults();
     rightRoller.clearFaults();
     rightRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -33,9 +34,9 @@ public class RollerGripper extends SubsystemBase {
     rightRoller.setInverted(true);
 
     Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
-          .withPosition(6, 2).withSize(2, 2);
+          .withPosition(10, 4).withSize(4, 2);
     Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
-          .withPosition(0, 0).withSize(2, 6);
+          .withSize(2, 8);
   }
 
   /**
@@ -60,12 +61,14 @@ public class RollerGripper extends SubsystemBase {
   public Command intakeCommand() {
     return Commands.runEnd(
                 () -> {
-                  rightRoller.set(0.6);
-                  leftRoller.set(0.6);
+                  rightRoller.set(0.75);
+                  leftRoller.set(0.75);
+                  Shuffleboard.selectTab("armCamera");
                 },
                 () -> {
                   rightRoller.stopMotor();
                   leftRoller.stopMotor();
+                  Shuffleboard.selectTab("driveTab");
                 },
                 this)
           .until(beambreakTrigger);

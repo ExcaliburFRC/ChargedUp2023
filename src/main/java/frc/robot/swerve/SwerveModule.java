@@ -55,7 +55,7 @@ public class SwerveModule implements Sendable {
     _spinningMotor.clearFaults();
 
     _spinningMotor.setSmartCurrentLimit(20);
-    _driveMotor.setSmartCurrentLimit(50);
+    _driveMotor.setSmartCurrentLimit(60);
 
     _driveEncoder = _driveMotor.getEncoder();
     _spinningEncoder = _spinningMotor.getEncoder();
@@ -155,5 +155,6 @@ public class SwerveModule implements Sendable {
     builder.addDoubleProperty("Value", () -> Math.toDegrees(getAbsEncoderRad()), null);
     builder.addDoubleProperty("absEncoderPos", this::getAbsPos, null);
     builder.addDoubleProperty("drive output current", _driveMotor::getOutputCurrent, null);
+    builder.addDoubleProperty("drive dc output", _driveMotor::getAppliedOutput, null);
   }
 }

@@ -4,21 +4,21 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.utility.Limelight;
+import frc.robot.RobotContainer;
 
 import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
-import static edu.wpi.first.wpilibj.PneumaticsModuleType.REVPH;
 import static frc.robot.Constants.IntakeConstants.*;
-
 public class Intake extends SubsystemBase {
   private final CANSparkMax intakeMotor = new CANSparkMax(INTAKE_MOTOR_ID, kBrushless);
 
@@ -26,18 +26,16 @@ public class Intake extends SubsystemBase {
   private final DoubleSolenoid ejectPiston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, EJECT_FWD_CHANNEL, EJECT_REV_CHANNEL);
 
   private final PIDController pidController = new PIDController(kP, 0, 0);
-  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV);
+  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV, 0);
 
   public final Trigger isAtTargetVelocity = new Trigger(
-        () -> Math.abs(pidController.getPositionError()) < TOLERANCE).debounce(0.1);
+        () -> Math.abs(pidController.getPositionError()) < PID_TOLERANCE).debounce(0.1);
   private final RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
   public Intake() {
     intakeMotor.restoreFactoryDefaults();
     intakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     intakeMotor.clearFaults();
-    intakeEncoder.setAverageDepth(8);
-    intakeEncoder.setMeasurementPeriod(32);
 //        intakeMotor.getFault()
   }
 
@@ -65,14 +63,16 @@ public class Intake extends SubsystemBase {
     return new StartEndCommand(
           () -> {
             intakePiston.set(DoubleSolenoid.Value.kForward);
+//            ejectPiston.set(DoubleSolenoid.Value.kForward);
             intakeMotor.set(intakeSpeed);
-//            Shuffleboard.selectTab("intakeCamera");
+            Shuffleboard.selectTab("intakeCamera");
           },
           () -> {
             intakePiston.set(DoubleSolenoid.Value.kReverse);
+//            ejectPiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
-//            Shuffleboard.selectTab("Swerve");
-          }, this).andThen();
+            Shuffleboard.selectTab(RobotContainer.driveTab.getTitle());
+          }, this);
   }
 
   private Command pushCubeCommand() {
@@ -111,7 +111,7 @@ public class Intake extends SubsystemBase {
    * @param rpm the desired rpm to shoot at
    */
   public Command shootCubeCommand(double rpm) {
-    return new ConditionalCommand(
+          return new ConditionalCommand(
           // pid shooter
           this.run(
                 () -> {
@@ -120,7 +120,9 @@ public class Intake extends SubsystemBase {
 
                   intakeMotor.setVoltage(pid + ff);
                   SmartDashboard.putNumber("rpm", intakeEncoder.getVelocity());
-                }).alongWith(new WaitUntilCommand(isAtTargetVelocity).andThen(pushCubeCommand()))
+                  SmartDashboard.putNumber("intake setpoint", rpm);
+                }).alongWith(new WaitCommand(0.03).andThen(
+                      new WaitUntilCommand(isAtTargetVelocity), pushCubeCommand()))
                 .finallyDo((__) -> {
                   intakeMotor.stopMotor();
                   ejectPiston.set(DoubleSolenoid.Value.kReverse);
@@ -138,12 +140,12 @@ public class Intake extends SubsystemBase {
    * @return the command
    */
   public Command shootCubeToLowCommand() {
-    return Commands.repeatingSequence(
-                Commands.runEnd(() -> intakeMotor.setVoltage(-1), intakeMotor::stopMotor, this)
-                      .withTimeout(0.2), //-1, 0.2
-                pulseMotorCommand())
-          .alongWith(pushCubeCommand())
-          .finallyDo((__) -> ejectPiston.set(DoubleSolenoid.Value.kReverse));
+    return this.runEnd(()-> intakeMotor.set(0.5), intakeMotor::stopMotor).withTimeout(1);
+//    return Commands.repeatingSequence(
+//            Commands.runEnd(()-> intakeMotor.setVoltage(-1), intakeMotor::stopMotor, this)
+//                    .withTimeout(0.2), pulseMotorCommand())
+//            .alongWith(pushCubeCommand())
+//            .finallyDo((__)-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
   }
 
   /**
@@ -152,20 +154,54 @@ public class Intake extends SubsystemBase {
    * @return
    */
   public Command pulseMotorCommand() { // -10, 0.07
-    return Commands.runEnd(() -> intakeMotor.setVoltage(-10), intakeMotor::stopMotor).withTimeout(0.07);
+    return Commands.runEnd(() -> intakeMotor.setVoltage(-11), intakeMotor::stopMotor).withTimeout(0.07);
   }
 
-  public Command orientCubeCommand(){
-    return this.runEnd(
-          ()-> intakeMotor.set(0.4),
-          intakeMotor::stopMotor
-          );
+  public Command intakeFromSlideCommand(){
+    return new StartEndCommand(
+          ()-> {
+            intakeMotor.set(0.4);
+            ejectPiston.set(DoubleSolenoid.Value.kForward);
+          },
+          ()-> {
+            intakeMotor.stopMotor();
+            ejectPiston.set(DoubleSolenoid.Value.kReverse);
+          }, this);
   }
 
+  public Command setIntakeSpeedCommand(double speed){
+    return this.runEnd(()-> intakeMotor.set(speed), intakeMotor::stopMotor);
+  }
+
+  public Command collectCommand(){
+    return setIntakeSpeedCommand(0.4);
+  }
+
+  public Command letoutCommand(){
+    return setIntakeSpeedCommand(-0.4).alongWith(
+            new StartEndCommand(
+                    ()-> ejectPiston.set(DoubleSolenoid.Value.kForward),
+                    ()-> ejectPiston.set(DoubleSolenoid.Value.kReverse))
+    );
+  }
+
+  public Command togglePistonCommand(){
+    return new StartEndCommand(
+            ()->  intakePiston.set(DoubleSolenoid.Value.kForward),
+            ()-> intakePiston.set(DoubleSolenoid.Value.kReverse));
+  }
+
+  public Command toggleEjectPistonCommand(){
+    return new StartEndCommand(
+            ()->  ejectPiston.set(DoubleSolenoid.Value.kForward),
+            ()-> ejectPiston.set(DoubleSolenoid.Value.kReverse));
+  }
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.addDoubleProperty("shooter current", intakeMotor::getOutputCurrent, null);
     builder.addDoubleProperty("shooter velocity", intakeEncoder::getVelocity, null);
     builder.addDoubleProperty("applied output", intakeMotor::getAppliedOutput, null);
+    builder.addDoubleProperty("velocityError", pidController::getPositionError, null);
+    builder.addBooleanProperty("isAtTargetVelocity", isAtTargetVelocity, null);
   }
 }
