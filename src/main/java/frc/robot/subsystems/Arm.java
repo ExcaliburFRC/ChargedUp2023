@@ -149,6 +149,11 @@ public class Arm extends SubsystemBase {
     return MathUtil.clamp(angleEncoder.getDistance(), 80, 220);
   }
 
+  public Command blindCloseArmCommand(){
+    return resetLengthCommand().andThen(new RunCommand(()-> angleMotor.set(-0.2))
+            .finallyDo((__)-> moveToLengthCommand(LOCKED.setpoint).schedule()));
+  }
+
   public Command resetLengthCommand() {
     return Commands.runEnd(
           () -> lengthMotor.set(-0.7),

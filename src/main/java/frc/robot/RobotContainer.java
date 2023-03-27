@@ -104,6 +104,7 @@ public class RobotContainer {
     driveJoystick.square().whileTrue(swerve.balanceRampCommand());
 
     driveJoystick.button(15).onTrue(swerve.resetModulesCommand());
+    armJoystick.button(15).whileTrue(superstructure.arm.blindCloseArmCommand());
   }
 
   public Command toggleCompressorCommand() {

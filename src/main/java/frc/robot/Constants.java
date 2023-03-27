@@ -29,8 +29,8 @@ public final class Constants {
         public static final int EJECT_FWD_CHANNEL = 4;
         public static final int EJECT_REV_CHANNEL = 3;
 
-        public static double kS = 0.14344;
-        public static double kV = 0.13011 / 60;
+        public static double kS = 0.16564;
+        public static double kV = 0.12836 / 60;
 
         public static double kP = 0.00025;
 
@@ -168,7 +168,7 @@ public final class Constants {
 
         public static final int CLOSED_LIMIT_SWITCH_ID = 6;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 9;
+        public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
