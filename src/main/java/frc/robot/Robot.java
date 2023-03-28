@@ -5,11 +5,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.SystemTester;
 import frc.robot.utility.FaultReporter;
 
 /**
@@ -110,7 +108,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().enable();
 
 //    m_robotContainer.SystemTester().schedule();
-    m_robotContainer.manual().schedule();
+    m_robotContainer.manualArm().schedule();
   }
 
   /** This function is called periodically during test mode. */

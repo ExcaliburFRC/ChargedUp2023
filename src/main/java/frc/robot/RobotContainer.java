@@ -104,7 +104,7 @@ public class RobotContainer {
     driveJoystick.square().whileTrue(swerve.balanceRampCommand());
 
     driveJoystick.button(15).onTrue(swerve.resetModulesCommand());
-    armJoystick.button(15).whileTrue(superstructure.arm.blindCloseArmCommand());
+    armJoystick.button(15).whileTrue(superstructure.arm.blindLockArmCommand());
   }
 
   public Command toggleCompressorCommand() {
@@ -122,7 +122,7 @@ public class RobotContainer {
     return new InstantCommand(()-> Shuffleboard.selectTab(driveTab.getTitle()));
   }
 
-  Command manual(){
+  Command manualArm(){
     return superstructure.arm.joystickManualCommand(armJoystick::getLeftY, armJoystick::getRightY)
           .alongWith(superstructure.rollergripper.manualCommand(armJoystick.square(), armJoystick.circle()));
   }
@@ -135,7 +135,5 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return AutoBuilder.getAutonomousCommand(superstructure, intake, swerve);
-//    return null;
-//    return swerve.turnToAngleCommand(180);
   }
 }

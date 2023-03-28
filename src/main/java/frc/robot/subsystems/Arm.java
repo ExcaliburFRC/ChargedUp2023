@@ -8,13 +8,11 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import java.sql.Time;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
@@ -149,7 +147,7 @@ public class Arm extends SubsystemBase {
     return MathUtil.clamp(angleEncoder.getDistance(), 80, 220);
   }
 
-  public Command blindCloseArmCommand(){
+  public Command blindLockArmCommand(){
     return resetLengthCommand().andThen(new RunCommand(()-> angleMotor.set(-0.2))
             .finallyDo((__)-> moveToLengthCommand(LOCKED.setpoint).schedule()));
   }
