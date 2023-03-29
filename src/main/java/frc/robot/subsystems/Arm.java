@@ -1,6 +1,9 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.*;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -12,10 +15,9 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
 import frc.robot.Constants.LedsConstants.Colors;
+import frc.robot.Robot;
 
-import java.awt.*;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
@@ -135,7 +137,7 @@ public class Arm extends SubsystemBase {
   }
 
   public double getArmAngle() {
-    if (angleEncoder.getDistance() > 220 || angleEncoder.getDistance() < 80)
+    if ((angleEncoder.getDistance() > 220 || angleEncoder.getDistance() < 80) && Robot.isReal())
       DriverStation.reportError("arm encoder bugged!!", false);
     return MathUtil.clamp(angleEncoder.getDistance(), 80, 220);
   }

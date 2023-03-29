@@ -10,6 +10,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utility.Color;
 
+import java.util.HashMap;
+
 import static java.lang.Math.PI;
 
 /**
@@ -219,8 +221,9 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-        public static final int LEDS_PORT = 0;
-        public static final int LENGTH = 60 * 5;
+        public static final int LEDS_PORT = 1;
+//        public static final int LENGTH = 60 * 5;
+        public static final int LENGTH = 50;
 
         public enum Colors{
             OFF(new Color(0, 0, 0)),
@@ -243,6 +246,12 @@ public final class Constants {
             Colors(Color color){
                 this.color = color;
             }
+        }
+
+        public static final HashMap<Color, String> consoleColor = new HashMap<>();
+        static {
+            consoleColor.put(Colors.TEAM_BLUE.color, "\u001B[34m");
+            consoleColor.put(Colors.TEAM_YELLOW.color, "\u001B[33m");
         }
     }
 }
