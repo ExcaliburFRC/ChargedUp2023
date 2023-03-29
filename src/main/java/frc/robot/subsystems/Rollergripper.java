@@ -11,6 +11,7 @@ import frc.robot.utility.Limelight;
 import java.util.function.BooleanSupplier;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
+import static frc.robot.Constants.LedsConstants.Colors.*;
 import static frc.robot.Constants.RollerGripperConstants.*;
 
 public class Rollergripper extends SubsystemBase {
@@ -78,7 +79,7 @@ public class Rollergripper extends SubsystemBase {
    * ejectCommand
    * <p><b> noInit </b>starts spinning the motors outwards<br>
    * <b>noEnd </b>stops the motors</p>
-   * ends when the button senses that a cone is not longer in the roller gripper
+   * ends when the button senses that a cone is no longer in the roller gripper
    * @return the command
    */
   public Command ejectCommand(double offset) {

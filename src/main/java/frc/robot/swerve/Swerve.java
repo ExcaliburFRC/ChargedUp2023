@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.LEDs;
+import frc.robot.utility.Color;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -67,6 +69,7 @@ public class Swerve extends SubsystemBase {
 
   private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
   private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
+  private final Trigger rampStreightTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 3);
 
   private final SlewRateLimiter angleRateLimiter = new SlewRateLimiter(0.15);
 
@@ -387,7 +390,12 @@ public class Swerve extends SubsystemBase {
           () -> rampController.calculate(getRampAngle(), 0),
           () -> 0,
           () -> 0,
-          () -> false);
+          () -> false)
+            .alongWith(new ConditionalCommand(
+                            LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.RANDOM, new Color()).until(()-> true),
+                            new InstantCommand(()-> LEDs.getInstance().restoreLEDs()),
+                            rampStreightTrigger)
+            );
 //          .until(robotBalancedTrigger.debounce(0.2));
   }
 

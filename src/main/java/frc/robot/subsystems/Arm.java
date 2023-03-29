@@ -12,7 +12,10 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
+import frc.robot.Constants.LedsConstants.Colors;
 
+import java.awt.*;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
@@ -131,19 +134,9 @@ public class Arm extends SubsystemBase {
     }, this);
   }
 
-  /**
-   * moves the arm's length in a given speed
-   *
-   * @param lengthSpeed the speed to move the length motor in
-   * @return the command
-   */
-  public Command manualLengthCommand(DoubleSupplier lengthSpeed) {
-    return new RunCommand(() -> lengthMotor.set(lengthSpeed.getAsDouble() / 2));
-  }
-
   public double getArmAngle() {
     if (angleEncoder.getDistance() > 220 || angleEncoder.getDistance() < 80)
-      DriverStation.reportError("arm encoder bugged!!", true);
+      DriverStation.reportError("arm encoder bugged!!", false);
     return MathUtil.clamp(angleEncoder.getDistance(), 80, 220);
   }
 
@@ -219,9 +212,11 @@ public class Arm extends SubsystemBase {
   }
 
   public Command lockArmCommand(Trigger bbTrigger) {
-    return resetLengthCommand()
-          .andThen(moveToAngleCommand(LOCKED.setpoint)
-          .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
+    return new ParallelCommandGroup(
+            resetLengthCommand().andThen(
+            moveToAngleCommand(LOCKED.setpoint)
+            .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger))),
+          LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.RED.color)).unless(bbTrigger)
           .until(armLockedTrigger);
   }
 
@@ -235,16 +230,9 @@ public class Arm extends SubsystemBase {
   }
 
 
-  boolean hasReset = false;
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
 
-//    if (Timer.getFPGATimestamp() > 6 && !hasReset){
-//      angleRelativeEncoder.setPosition(angleEncoder.getDistance());
-//      hasReset = true;
-//    }
-
-//    System.out.println(angleEncoder.getDistance());
   }
 }

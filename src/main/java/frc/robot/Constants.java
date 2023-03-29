@@ -233,7 +233,8 @@ public final class Constants {
             ORANGE(new Color(0, 0, 0)), // TODO: find values
             CYAN(new Color(0, 0, 0)), // TODO: find values
             YELLOW(new Color(0, 0, 0)), // TODO: find values
-            PINK(new Color(0, 0, 0)); // TODO: find values
+            PINK(new Color(0, 0, 0)), // TODO: find values
+            PURPLE(new Color(0, 0, 0)); // TODO: find values
 
             // TODO: add more colors
 

@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SystemTester;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.LEDs.LEDPattern;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
 import frc.robot.utility.Calculation;
@@ -22,6 +23,7 @@ import frc.robot.utility.Calculation;
 import java.util.Map;
 
 import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.Constants.LedsConstants.Colors.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -77,6 +79,11 @@ public class RobotContainer {
           intake.setIntakeSpeedCommand(0.05).withTimeout(1.25)
                 .andThen(new RunCommand(()-> {}, intake)));
 
+    LEDs.getInstance().setDefaultCommand(
+//            LEDs.getInstance().applyPatternCommand(LEDPattern.TRAIN_CIRCLE, TEAM_BLUE.color, TEAM_YELLOW.color)
+            LEDs.getInstance().applyPatternCommand(LEDPattern.SOLID, TEAM_BLUE.color)
+    );
+
     // intake commands
     armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.45));
     armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
@@ -103,8 +110,8 @@ public class RobotContainer {
     armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
     driveJoystick.square().whileTrue(swerve.balanceRampCommand());
 
-    driveJoystick.button(15).onTrue(swerve.resetModulesCommand());
-    armJoystick.button(15).whileTrue(superstructure.arm.blindLockArmCommand());
+    armJoystick.share().onTrue(LEDs.getInstance().applyPatternCommand(LEDPattern.BLINKING, ORANGE.color, OFF.color).withTimeout(3));
+    armJoystick.options().onTrue(LEDs.getInstance().applyPatternCommand(LEDPattern.BLINKING, PURPLE.color, OFF.color).withTimeout(3));
   }
 
   public Command toggleCompressorCommand() {

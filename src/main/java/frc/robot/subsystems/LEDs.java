@@ -17,8 +17,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class LEDs extends SubsystemBase {
     private final AddressableLED leds = new AddressableLED(LEDS_PORT);
     private final AddressableLEDBuffer buffer = new AddressableLEDBuffer(LENGTH);
+    private static LEDs instance = null;
 
     private double brightness = 1;
+
 
     public double getBrightness() {
         return brightness;
@@ -28,10 +30,17 @@ public class LEDs extends SubsystemBase {
         this.brightness = brightness;
     }
 
-    public LEDs() {
+    private LEDs() {
         leds.setData(buffer);
         leds.setLength(LENGTH);
         leds.start();
+    }
+
+    public static LEDs getInstance(){
+        if (instance == null){
+            instance = new LEDs();
+        }
+        return instance;
     }
 
     private void setLedColor(Color[] colors){

@@ -10,6 +10,8 @@ import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.Constants.LedsConstants.Colors.GREEN;
+import static frc.robot.Constants.LedsConstants.Colors.OFF;
 
 public class Superstructure extends SubsystemBase {
     public final Arm arm = new Arm();
@@ -24,7 +26,9 @@ public class Superstructure extends SubsystemBase {
     public Command intakeFromShelfCommand() {
         return arm.moveToLengthCommand(MIDDLE.setpoint).andThen(
                 new InstantCommand(() -> Shuffleboard.selectTab("armCamera")),
-                rollergripper.intakeCommand().alongWith(arm.holdSetpointCommand(SHELF_EXTENDED.setpoint))
+                rollergripper.intakeCommand().alongWith(
+                        arm.holdSetpointCommand(SHELF_EXTENDED.setpoint),
+                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, GREEN.color, OFF.color))
                         .until(rollergripper.beambreakTrigger.debounce(0.3)),
                 RobotContainer.selectDriveTabCommand(),
                 arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5));
@@ -66,7 +70,7 @@ public class Superstructure extends SubsystemBase {
                 Map.of(
                         LOW_RPM, placeOnLowCommand(),
                         MID_RPM, placeOnMidSequentially(),
-                        HIGH_RPM, new InstantCommand(()-> {})),
+                        HIGH_RPM, new InstantCommand(()-> {})), // arm mechanics doesn't allow high cone placement in autonomous
                 () -> height);
     }
 }
