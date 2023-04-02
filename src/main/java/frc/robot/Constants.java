@@ -248,10 +248,17 @@ public final class Constants {
             }
         }
 
+        //https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println/5762502#5762502
         public static final HashMap<Color, String> consoleColor = new HashMap<>();
         static {
             consoleColor.put(Colors.TEAM_BLUE.color, "\u001B[34m");
             consoleColor.put(Colors.TEAM_YELLOW.color, "\u001B[33m");
+            consoleColor.put(Colors.OFF.color, "\\u001B[30m");
+            consoleColor.put(Colors.RED.color, "\u001B[31m");
+            consoleColor.put(Colors.GREEN.color, "\u001B[32m");
+            consoleColor.put(Colors.PURPLE.color, "\u001B[35m");
+            consoleColor.put(Colors.CYAN.color, "\u001B[36m");
+            consoleColor.put(Colors.WHITE.color, "\u001B[37m");
         }
     }
 }

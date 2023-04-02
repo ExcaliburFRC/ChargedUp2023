@@ -131,11 +131,15 @@ public class LEDs extends SubsystemBase {
 
             case BLINKING:
                 command = Commands.repeatingSequence(
-                        new InstantCommand(()-> Arrays.fill(colors, mainColor)),
-                        new InstantCommand(() -> setLedColor(colors), this),
+                        new InstantCommand(() -> {
+                            Arrays.fill(colors, mainColor);
+                            setLedColor(colors);
+                        }, this),
                         new WaitCommand(0.5),
-                        new InstantCommand(()-> Arrays.fill(colors, accentColor)),
-                        new InstantCommand(() -> setLedColor(colors), this),
+                        new InstantCommand(() -> {
+                            Arrays.fill(colors, accentColor);
+                            setLedColor(colors);
+                        }, this),
                         new WaitCommand(0.5)
                 ).withName("BLINKING, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
                 break;
@@ -143,13 +147,25 @@ public class LEDs extends SubsystemBase {
             case TRAIN:
                 command = new InstantCommand(() -> {
                     Arrays.fill(colors, mainColor);
-                    for (int j = 0; j < trainLength; j++) colors[j + tailIndex] = accentColor;
+                    for (int j = 0; j < trainLength; j++) colors[MathUtil.clamp(j + tailIndex - 1, 0 , LENGTH)] = accentColor;
                     this.tailIndex = invert.get() ? this.tailIndex - 1 : this.tailIndex + 1;
                     if (this.tailIndex == LENGTH - trainLength || this.tailIndex == 0) invert.set(!invert.get());
                     setLedColor(colors);
                 }, this)
                         .andThen(new WaitCommand(0.05)).repeatedly()
                         .withName("TRAIN_BACK_AND_FOURTH, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
+                break;
+
+            case TRAIN_CIRCLE:
+                command = new InstantCommand(() -> {
+                    Arrays.fill(colors, mainColor);
+                    for (int j = 0; j < trainLength; j++) colors[stayInBounds(j + tailIndex, LENGTH)] = accentColor;
+                    tailIndex ++;
+                    if (tailIndex == LENGTH) tailIndex = 0;
+                    setLedColor(colors);
+                }, this)
+                        .andThen(new WaitCommand(0.05)).repeatedly()
+                        .withName("TRAIN_CIRCLE, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
 
             default:
                 break;
