@@ -52,7 +52,7 @@ public class LEDs extends SubsystemBase {
         }
 
         // debug for console
-        if (!Robot.isReal()) {
+        if (!Robot.isRobotReal) {
             for (int i = 0; i < LENGTH; i++) {
                 System.out.print("[]" + consoleColor.get(currentColors[i]));
             }

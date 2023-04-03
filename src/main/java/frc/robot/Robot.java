@@ -26,8 +26,10 @@ public class Robot extends TimedRobot {
 
   public static Timer startUpTimer = new Timer();
 
+  public static boolean isRobotReal = isReal();
+
   public Robot(){
-    addPeriodic(new FaultReporter()::check, 1);
+    addPeriodic(new FaultReporter()::check, 3);
   }
 
   /**

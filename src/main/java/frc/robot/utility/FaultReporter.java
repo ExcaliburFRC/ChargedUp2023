@@ -2,9 +2,7 @@ package frc.robot.utility;
 
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.RobotController;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -14,6 +12,7 @@ public class FaultReporter {
   PowerDistribution pd = new PowerDistribution();
 //  PneumaticHub ph = new PneumaticHub();
 
+  // empty pdh ports - to ignore in pdh checks
   String[] toIgnore = new String[]{"10", "11", "12", "13", "14"};
 
   public void check() {
