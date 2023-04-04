@@ -82,7 +82,7 @@ public class RobotContainer {
 //                .andThen(new RunCommand(()-> {}, intake)));
 //
     leds.setDefaultCommand(
-            leds.controllableLedCommand(()-> 0.1, TEAM_BLUE.color, TEAM_YELLOW.color)
+            leds.controllableLedCommand(()-> 0.01, TEAM_BLUE.color, TEAM_YELLOW.color)
 // //             leds.applyPatternCommand(LEDPattern.SOLID, TEAM_BLUE.color)
     );
 //

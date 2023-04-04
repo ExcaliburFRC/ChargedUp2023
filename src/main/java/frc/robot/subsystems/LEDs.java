@@ -166,7 +166,7 @@ public class LEDs extends SubsystemBase {
 
         return new RunCommand(()->{
             this.offset += offset.getAsDouble();
-            shiftTrain(colors, mainColor, accentColor, trainLength, Math.min((int) offset.getAsDouble() + (int) this.offset, 1));
+            shiftTrain(colors, mainColor, accentColor, trainLength, Math.min((int) this.offset, 1));
 
             if (this.offset >= 1) this.offset = 0;
 

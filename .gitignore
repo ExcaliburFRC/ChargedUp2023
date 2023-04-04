@@ -165,4 +165,4 @@ bin/
 .idea/
 
 # wpilib simulation logs
-.wpilog
+/*.wpilog
