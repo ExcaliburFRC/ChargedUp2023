@@ -1,5 +1,4 @@
 package frc.robot.utility;
-
 public class Color extends edu.wpi.first.wpilibj.util.Color {
     public Color(double red, double green, double blue) {
         super(green, red, blue);

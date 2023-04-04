@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SystemTester;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.LEDs.LEDPattern;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
@@ -37,6 +36,7 @@ public class RobotContainer {
   private final Intake intake = new Intake();
   public final Swerve swerve = new Swerve();
   private final Superstructure superstructure = new Superstructure();
+  LEDs leds = LEDs.getInstance();
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
@@ -81,9 +81,9 @@ public class RobotContainer {
 //          intake.setIntakeSpeedCommand(0.05).withTimeout(1.25)
 //                .andThen(new RunCommand(()-> {}, intake)));
 //
-    LEDs.getInstance().setDefaultCommand(
-            LEDs.getInstance().applyPatternCommand(LEDPattern.SOLID, TEAM_BLUE.color, TEAM_YELLOW.color)
-// //             LEDs.getInstance().applyPatternCommand(LEDPattern.SOLID, TEAM_BLUE.color)
+    leds.setDefaultCommand(
+            leds.controllableLedCommand(()-> 0.1, TEAM_BLUE.color, TEAM_YELLOW.color)
+// //             leds.applyPatternCommand(LEDPattern.SOLID, TEAM_BLUE.color)
     );
 //
 // //     intake commands

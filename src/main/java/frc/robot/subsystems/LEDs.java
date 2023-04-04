@@ -5,8 +5,11 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Robot;
+import frc.robot.utility.Color;
+
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.LedsConstants.Colors.OFF;
 import static frc.robot.Constants.LedsConstants.*;
@@ -18,18 +21,8 @@ public class LEDs extends SubsystemBase {
 
     private Color[] currentColors = new Color[LENGTH];
 
-    private double brightness = 1;
-
     private int tailIndex = 0;
-
-
-    public double getBrightness() {
-        return brightness;
-    }
-
-    public void setBrightness(double brightness) {
-        this.brightness = brightness;
-    }
+    private double offset = 0;
 
     private LEDs() {
         leds.setLength(LENGTH);
@@ -43,7 +36,7 @@ public class LEDs extends SubsystemBase {
         return instance;
     }
 
-    private void setLedColor(Color[] colors) {
+    private void setLedStrip(Color[] colors) {
         this.currentColors = colors;
         for (int i = 0; i < colors.length; i++) {
             buffer.setLED(i, colors[i]);
@@ -61,12 +54,7 @@ public class LEDs extends SubsystemBase {
     }
 
     public Color applyBrightness(double brightness, Color color) {
-        this.brightness = brightness;
-        return new Color(color.red * this.brightness, color.green * this.brightness, color.blue * this.brightness);
-    }
-
-    public Color applyBrightness(Color color) {
-        return applyBrightness(this.brightness, color);
+        return new Color(color.red * brightness, color.green * brightness, color.blue * brightness);
     }
 
     public void restoreLEDs() {
@@ -98,12 +86,12 @@ public class LEDs extends SubsystemBase {
         switch (pattern) {
             case OFF:
                 Arrays.fill(colors, OFF.color);
-                command = new RunCommand(() -> setLedColor(colors), this).withName("OFF");
+                command = new RunCommand(() -> setLedStrip(colors), this).withName("OFF");
                 break;
 
             case SOLID:
                 Arrays.fill(colors, mainColor);
-                command = new RunCommand(() -> setLedColor(colors), this).withName("SOLID: " + mainColor.toString());
+                command = new RunCommand(() -> setLedStrip(colors), this).withName("SOLID: " + mainColor.toString());
                 break;
 
             case ALTERNATING:
@@ -112,14 +100,14 @@ public class LEDs extends SubsystemBase {
                     colors[i + 1] = accentColor;
                     i++;
                 }
-                command = new RunCommand(() -> setLedColor(colors), this)
+                command = new RunCommand(() -> setLedStrip(colors), this)
                         .withName("ALTERNATING, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
                 break;
 
             case RANDOM:
                 command = new InstantCommand(() -> {
                     Arrays.fill(colors, new Color(Math.random() * 255, Math.random() * 255, Math.random() * 255));
-                    setLedColor(colors);
+                    setLedStrip(colors);
                 }, this)
                         // adds a delay to the command iteration
                         .andThen(new WaitCommand(0.1)).repeatedly()
@@ -130,12 +118,12 @@ public class LEDs extends SubsystemBase {
                 command = Commands.repeatingSequence(
                         new InstantCommand(() -> {
                             Arrays.fill(colors, mainColor);
-                            setLedColor(colors);
+                            setLedStrip(colors);
                         }, this),
                         new WaitCommand(0.5),
                         new InstantCommand(() -> {
                             Arrays.fill(colors, accentColor);
-                            setLedColor(colors);
+                            setLedStrip(colors);
                         }, this),
                         new WaitCommand(0.5)
                 ).withName("BLINKING, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
@@ -147,7 +135,7 @@ public class LEDs extends SubsystemBase {
                     for (int j = 0; j < trainLength; j++) colors[MathUtil.clamp(j + tailIndex - 1, 0 , LENGTH)] = accentColor;
                     this.tailIndex = invert.get() ? this.tailIndex - 1 : this.tailIndex + 1;
                     if (this.tailIndex == LENGTH - trainLength || this.tailIndex == 0) invert.set(!invert.get());
-                    setLedColor(colors);
+                    setLedStrip(colors);
                 }, this)
                         .andThen(new WaitCommand(0.05)).repeatedly()
                         .withName("TRAIN_BACK_AND_FOURTH, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
@@ -159,7 +147,7 @@ public class LEDs extends SubsystemBase {
                     for (int j = 0; j < trainLength; j++) colors[stayInBounds(j + tailIndex, LENGTH)] = accentColor;
                     tailIndex ++;
                     if (tailIndex == LENGTH) tailIndex = 0;
-                    setLedColor(colors);
+                    setLedStrip(colors);
                 }, this)
                         .andThen(new WaitCommand(0.01)).repeatedly()
                         .withName("TRAIN_CIRCLE, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
@@ -171,8 +159,43 @@ public class LEDs extends SubsystemBase {
         return command.ignoringDisable(true).finallyDo((__) -> restoreLEDs());
     }
 
+    public Command controllableLedCommand(DoubleSupplier offset, Color mainColor, Color accentColor){
+        Color[] colors = new Color[LENGTH];
+        Arrays.fill(colors, mainColor);
+        int trainLength = (int) Math.max(LENGTH * 0.25, 1.0);
+
+        return new RunCommand(()->{
+            this.offset += offset.getAsDouble();
+            shiftTrain(colors, mainColor, accentColor, trainLength, Math.min((int) offset.getAsDouble() + (int) this.offset, 1));
+
+            if (this.offset >= 1) this.offset = 0;
+
+            setLedStrip(colors);
+        }, this)
+                .ignoringDisable(true).finallyDo((__)-> restoreLEDs())
+                .withName("CONTROLLABLE, main: " + mainColor + ", accent: " + accentColor);
+    }
+
+    private void shiftTrain(Color[] colors, Color mainColor, Color trainColor, int trainLength, int offset){
+        if (this.tailIndex == -1) tailIndex = findTailIndex(colors, trainColor);
+        Arrays.fill(colors, mainColor);
+        for (int i = 0; i < trainLength; i++) {
+            colors[stayInBounds(i + tailIndex + offset, colors.length)] = trainColor;
+        }
+        tailIndex += offset;
+        if (findTailIndex(colors, trainColor) == 0) tailIndex = 0;
+
+        System.out.println("tail index: " + tailIndex);
+    }
+
     private int findHeadIndex(Color[] colors, Color trainColor) {
         for (int i = colors.length - 1; i >= 0; i--) {
+            if (colors[i].equals(trainColor)) return i;
+        }
+        return -1;
+    }
+    private int findTailIndex(Color[] colors, Color trainColor) {
+        for (int i = 0; i < colors.length; i++) {
             if (colors[i].equals(trainColor)) return i;
         }
         return -1;
