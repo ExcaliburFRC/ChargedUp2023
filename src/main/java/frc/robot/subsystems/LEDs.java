@@ -5,8 +5,6 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Robot;
-import frc.robot.utility.Color;
-
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,7 +46,7 @@ public class LEDs extends SubsystemBase {
     private void setLedColor(Color[] colors) {
         this.currentColors = colors;
         for (int i = 0; i < colors.length; i++) {
-            buffer.setLED(i, Color.balance(colors[i]));
+            buffer.setLED(i, colors[i]);
         }
 
         // debug for console
@@ -114,8 +112,7 @@ public class LEDs extends SubsystemBase {
                     colors[i + 1] = accentColor;
                     i++;
                 }
-                command = new InstantCommand(() -> setLedColor(colors), this)
-                        .andThen(new RunCommand(() -> {}, this))
+                command = new RunCommand(() -> setLedColor(colors), this)
                         .withName("ALTERNATING, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
                 break;
 
@@ -164,7 +161,7 @@ public class LEDs extends SubsystemBase {
                     if (tailIndex == LENGTH) tailIndex = 0;
                     setLedColor(colors);
                 }, this)
-                        .andThen(new WaitCommand(0.05)).repeatedly()
+                        .andThen(new WaitCommand(0.01)).repeatedly()
                         .withName("TRAIN_CIRCLE, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
 
             default:
