@@ -5,10 +5,13 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Robot;
+import frc.robot.utility.Calculation;
 import frc.robot.utility.Color;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.LedsConstants.Colors.OFF;
@@ -18,6 +21,7 @@ public class LEDs extends SubsystemBase {
     private final AddressableLED leds = new AddressableLED(LEDS_PORT);
     private final AddressableLEDBuffer buffer = new AddressableLEDBuffer(LENGTH);
     private static LEDs instance = null;
+    private Random rnd = new Random();
 
     private Color[] currentColors = new Color[LENGTH];
 
@@ -39,7 +43,7 @@ public class LEDs extends SubsystemBase {
     private void setLedStrip(Color[] colors) {
         this.currentColors = colors;
         for (int i = 0; i < colors.length; i++) {
-            buffer.setLED(i, colors[i]);
+            buffer.setLED(i, Color.balance(colors[i]));
         }
 
         // debug for console
@@ -66,7 +70,8 @@ public class LEDs extends SubsystemBase {
         OFF,
         RAINBOW,
         SOLID,
-        ALTERNATING,
+        ALTERNATING_STATIC,
+        ALTERNATING_MOVING,
         TRAIN_CIRCLE,
         TRAIN,
         RANDOM,
@@ -80,7 +85,7 @@ public class LEDs extends SubsystemBase {
     public Command applyPatternCommand(LEDPattern pattern, Color mainColor, Color accentColor) {
         Command command = new InstantCommand();
         Color[] colors = new Color[LENGTH];
-        int trainLength = (int) MathUtil.clamp(LENGTH * 0.25, 1.0, LENGTH / 2.0);
+        int trainLength = (int) MathUtil.clamp(LENGTH * 0.15, 1.0, LENGTH / 2.0);
         final AtomicBoolean invert = new AtomicBoolean(false);
 
         switch (pattern) {
@@ -94,7 +99,7 @@ public class LEDs extends SubsystemBase {
                 command = new RunCommand(() -> setLedStrip(colors), this).withName("SOLID: " + mainColor.toString());
                 break;
 
-            case ALTERNATING:
+            case ALTERNATING_STATIC:
                 for (int i = 0; i < LENGTH; i++) {
                     colors[i] = mainColor;
                     colors[i + 1] = accentColor;
@@ -104,13 +109,33 @@ public class LEDs extends SubsystemBase {
                         .withName("ALTERNATING, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
                 break;
 
+            case ALTERNATING_MOVING:
+                AtomicReference<Color> mainAlternatingColor = new AtomicReference<>(mainColor);
+                AtomicReference<Color> accentAlternatingColor = new AtomicReference<>(accentColor);
+                AtomicReference<Color> tempAlternatingColor = new AtomicReference<>();
+
+                command = this.runOnce(()-> {
+                            for (int i = 0; i < LENGTH; i++) {
+                                colors[i] = mainAlternatingColor.get();
+                                colors[i + 1] = accentAlternatingColor.get();
+                                i++;
+                            }
+                            setLedStrip(colors);
+
+                            tempAlternatingColor.set(mainAlternatingColor.get());
+                            mainAlternatingColor.set(accentAlternatingColor.get());
+                            accentAlternatingColor.set(tempAlternatingColor.get());
+                        })
+                        .andThen(new WaitCommand(0.25)).repeatedly()
+                        .withName("ALTERNATING_MOVING, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
+
+                break;
+
             case RANDOM:
-                command = new InstantCommand(() -> {
-                    Arrays.fill(colors, new Color(Math.random() * 255, Math.random() * 255, Math.random() * 255));
+                command = this.runOnce(()-> {
+                    Arrays.fill(colors, new Color(rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255)));
                     setLedStrip(colors);
-                }, this)
-                        // adds a delay to the command iteration
-                        .andThen(new WaitCommand(0.1)).repeatedly()
+                }).andThen(new WaitCommand(1)).repeatedly()
                         .withName("RANDOM");
                 break;
 
@@ -120,12 +145,12 @@ public class LEDs extends SubsystemBase {
                             Arrays.fill(colors, mainColor);
                             setLedStrip(colors);
                         }, this),
-                        new WaitCommand(0.5),
+                        new WaitCommand(0.15),
                         new InstantCommand(() -> {
                             Arrays.fill(colors, accentColor);
                             setLedStrip(colors);
                         }, this),
-                        new WaitCommand(0.5)
+                        new WaitCommand(0.15)
                 ).withName("BLINKING, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
                 break;
 
@@ -162,13 +187,13 @@ public class LEDs extends SubsystemBase {
     public Command controllableLedCommand(DoubleSupplier offset, Color mainColor, Color accentColor){
         Color[] colors = new Color[LENGTH];
         Arrays.fill(colors, mainColor);
-        int trainLength = (int) Math.max(LENGTH * 0.25, 1.0);
+        int trainLength = (int) Math.max(LENGTH * 0.15, 1.0);
 
         return new RunCommand(()->{
-            this.offset += offset.getAsDouble();
-            shiftTrain(colors, mainColor, accentColor, trainLength, Math.min((int) this.offset, 1));
+            this.offset -= offset.getAsDouble();
+            shiftTrain(colors, mainColor, accentColor, trainLength, MathUtil.clamp((int) this.offset, -1, 1));
 
-            if (this.offset >= 1) this.offset = 0;
+            if (this.offset >= 1 || this.offset <= -1) this.offset = 0;
 
             setLedStrip(colors);
         }, this)
@@ -177,15 +202,11 @@ public class LEDs extends SubsystemBase {
     }
 
     private void shiftTrain(Color[] colors, Color mainColor, Color trainColor, int trainLength, int offset){
-        if (this.tailIndex == -1) tailIndex = findTailIndex(colors, trainColor);
+        tailIndex = findTailIndex(colors, trainColor);
         Arrays.fill(colors, mainColor);
         for (int i = 0; i < trainLength; i++) {
             colors[stayInBounds(i + tailIndex + offset, colors.length)] = trainColor;
         }
-        tailIndex += offset;
-        if (findTailIndex(colors, trainColor) == 0) tailIndex = 0;
-
-        System.out.println("tail index: " + tailIndex);
     }
 
     private int findHeadIndex(Color[] colors, Color trainColor) {

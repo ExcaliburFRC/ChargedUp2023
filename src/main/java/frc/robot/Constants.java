@@ -220,24 +220,24 @@ public final class Constants {
         public static double middleAxisXValue = 8.3;
     }
 
+
     public static class LedsConstants {
-        public static final int LEDS_PORT = 1;
-//        public static final int LENGTH = 60 * 5;
-        public static final int LENGTH = 50;
+        public static final int LEDS_PORT = 0;
+        //        public static final int LENGTH = 60 * 5;
+        public static final int LENGTH = 150;
 
         public enum Colors{
             OFF(new Color(0, 0, 0)),
-            TEAM_BLUE(new Color(1, 34, 101)),
-            TEAM_YELLOW(new Color(211, 175, 55)),
-            BLUE(new Color(0, 0, 255)),
+            TEAM_YELLOW(new Color(255, 175, 0)),
+            TEAM_BLUE(new Color(0, 0, 255)),
             GREEN(new Color(0, 255, 0)),
             RED(new Color(255, 0, 0)),
             WHITE(new Color(255, 255, 255)),
-            ORANGE(new Color(0, 0, 0)), // TODO: find values
+            ORANGE(new Color(255, 165, 0)), // TODO: find values
             CYAN(new Color(0, 0, 0)), // TODO: find values
             YELLOW(new Color(0, 0, 0)), // TODO: find values
             PINK(new Color(0, 0, 0)), // TODO: find values
-            PURPLE(new Color(0, 0, 0)); // TODO: find values
+            PURPLE(new Color(160, 32, 240)); // TODO: find values
 
             // TODO: add more colors
 

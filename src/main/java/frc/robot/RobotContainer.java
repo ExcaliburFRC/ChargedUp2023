@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SystemTester;
 import frc.robot.subsystems.Intake;
@@ -23,8 +24,7 @@ import frc.robot.utility.AutoBuilder;
 
 import java.util.Map;
 
-import static frc.robot.Constants.LedsConstants.Colors.TEAM_BLUE;
-import static frc.robot.Constants.LedsConstants.Colors.TEAM_YELLOW;
+import static frc.robot.Constants.LedsConstants.Colors.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -40,8 +40,8 @@ public class RobotContainer {
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
-//  public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
-//  public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
+  public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
+  public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
 
   public static final ShuffleboardTab driveTab = Shuffleboard.getTab("driveTab");
 
@@ -81,10 +81,11 @@ public class RobotContainer {
 //          intake.setIntakeSpeedCommand(0.05).withTimeout(1.25)
 //                .andThen(new RunCommand(()-> {}, intake)));
 //
+
     leds.setDefaultCommand(
-            leds.controllableLedCommand(()-> 0.01, TEAM_BLUE.color, TEAM_YELLOW.color)
-// //             leds.applyPatternCommand(LEDPattern.SOLID, TEAM_BLUE.color)
+            leds.applyPatternCommand(LEDs.LEDPattern.TRAIN_CIRCLE, TEAM_BLUE.color, RED.color)
     );
+
 //
 // //     intake commands
 //    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.45));
