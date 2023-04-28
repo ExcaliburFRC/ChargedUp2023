@@ -5,12 +5,12 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Robot;
-import frc.robot.utility.Calculation;
 import frc.robot.utility.Color;
 
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
@@ -176,6 +176,16 @@ public class LEDs extends SubsystemBase {
                 }, this)
                         .andThen(new WaitCommand(0.01)).repeatedly()
                         .withName("TRAIN_CIRCLE, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
+                break;
+
+            case RAINBOW:
+                AtomicInteger h = new AtomicInteger();
+                int s = 100, v = 100;
+                command = this.runOnce(()-> {
+                    Arrays.fill(colors, Color.fromHSV(h.get(), s, v));
+                    if (h.get() != 360) h.incrementAndGet();
+                    else h.set(0);
+                }).repeatedly().withName("RAINBOW");
 
             default:
                 break;
