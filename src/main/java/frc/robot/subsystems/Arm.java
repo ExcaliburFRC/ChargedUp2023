@@ -8,13 +8,11 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import java.sql.Time;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
@@ -236,17 +234,8 @@ public class Arm extends SubsystemBase {
     return new InstantCommand(lengthMotor::stopMotor);
   }
 
-
-  boolean hasReset = false;
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
-
-//    if (Timer.getFPGATimestamp() > 6 && !hasReset){
-//      angleRelativeEncoder.setPosition(angleEncoder.getDistance());
-//      hasReset = true;
-//    }
-
-//    System.out.println(angleEncoder.getDistance());
   }
 }
