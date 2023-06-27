@@ -109,11 +109,9 @@ public final class Constants {
 
         public static final double RAMP_BALANCE_KP = 0.006;
         public static final double RAMP_BALANCE_KD = 0.002;
-        // yehuda ha-gever
 
         // intentional limitations
-
-        public static final double kSpeedPercantageLimit = 100; // %
+        public static final double kSpeedPercantageLimit = 25; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
