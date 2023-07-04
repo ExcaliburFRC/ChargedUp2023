@@ -83,12 +83,12 @@ public class Swerve extends SubsystemBase {
         new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
 
   private final SwerveAutoBuilder SwerveAutoBuilder = new SwerveAutoBuilder(
-        () -> new Pose2d(getPose2d().getTranslation(), Rotation2d.fromDegrees(-getPose2d().getRotation().getDegrees())),
+        this::getPose2d,
         this::setPose2d,
-        Constants.SwerveConstants.kSwerveKinematics,
+        kSwerveKinematics,
         new PIDConstants(0,0,0),
         new PIDConstants(0,0,0),
-        this::setModulesStates,
+        states -> setModulesStates(states),
         new HashMap<>(),
         false,
         this
@@ -125,7 +125,7 @@ public class Swerve extends SubsystemBase {
     odometry.resetPosition(
           getGyroRotation(),
           getModulePositions(),
-          new Pose2d(0, 0, new Rotation2d(0)));
+          new Pose2d(0, 0, new Rotation2d()));
 
     thetaTeleopController.setTolerance(1);
   }
@@ -292,6 +292,21 @@ public class Swerve extends SubsystemBase {
             () -> 0,
             () -> thetaTeleopController.calculate(getOdometryRotation().getDegrees(), setpoint), () -> false)
           .until(new Trigger(thetaTeleopController::atSetpoint).debounce(0.15));
+  }
+
+  public Command resetGyroCommand(double angle) {
+    return new InstantCommand(() ->
+          odometry.resetPosition(
+                getGyroRotation(),
+                new SwerveModulePosition[]{
+                      swerveModules[FRONT_LEFT].getPosition(),
+                      swerveModules[FRONT_RIGHT].getPosition(),
+                      swerveModules[BACK_LEFT].getPosition(),
+                      swerveModules[BACK_RIGHT].getPosition()},
+                new Pose2d(odometry.getEstimatedPosition().getTranslation(), Rotation2d.fromDegrees(angle))));
+  }
+  public Command resetGyroCommand() {
+    return resetGyroCommand(0);
   }
 
   @Override

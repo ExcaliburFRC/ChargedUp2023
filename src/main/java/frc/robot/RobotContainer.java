@@ -60,7 +60,7 @@ public class RobotContainer {
                 driveJoystick.R1().negate(),
                 driveJoystick.L1()));
 
-    driveJoystick.PS().onTrue(new InstantCommand(swerve::resetGyro));
+    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
   }
 
   /**
@@ -77,6 +77,7 @@ public class RobotContainer {
             swerve.resetGyro();
             swerve.setPose2d(new Pose2d(0, 0, new Rotation2d(0)));
           }),
-            swerve.followTrajectoryCommand(trajectory));
+          swerve.resetGyroCommand(),
+          swerve.followTrajectoryCommand(trajectory));
   }
 }
