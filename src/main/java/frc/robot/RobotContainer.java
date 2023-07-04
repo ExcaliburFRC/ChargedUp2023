@@ -4,24 +4,22 @@
 
 package frc.robot;
 
-import  edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.auto.PIDConstants;
+import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.SystemTester;
-import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
-// import frc.robot.utility.AutoBuilder;
 import frc.robot.utility.Calculation;
 
-import java.util.Map;
-
-import static frc.robot.Constants.IntakeConstants.*;
+import java.util.HashMap;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,11 +28,7 @@ import static frc.robot.Constants.IntakeConstants.*;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  private final Intake intake = new Intake();
   public final Swerve swerve = new Swerve();
-  private final Superstructure superstructure = new Superstructure();
-
-  private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
@@ -46,13 +40,6 @@ public class RobotContainer {
    */
   public RobotContainer() {
     configureBindings();
-    // AutoBuilder.loadAutoChoosers(swerve, intake);
-
-    SmartDashboard.putData("intake", intake);
-
-    driveTab.addDouble("Remaining Time", DriverStation::getMatchTime)
-            .withSize(4, 4).withPosition(16, 0).withWidget("Simple Dial")
-          .withProperties(Map.of("min", 0, "max", 135));
   }
 
   /**
@@ -73,58 +60,7 @@ public class RobotContainer {
                 driveJoystick.R1().negate(),
                 driveJoystick.L1()));
 
-    intake.setDefaultCommand(
-          intake.setIntakeSpeedCommand(0.05).withTimeout(1.25)
-                .andThen(new RunCommand(()-> {}, intake)));
-
-    // intake commands
-    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.45));
-    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
-
-    armJoystick.PS().toggleOnTrue(intake.togglePistonCommand());
-
-    // place commands
-    armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
-    armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
-    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand());
-
-    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
-    armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
-    armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
-
-    armJoystick.L2().whileTrue(intake.collectCommand());
-    armJoystick.R2().whileTrue(intake.letoutCommand());
-
-    // other
-    driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
-    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
-    armJoystick.touchpad().whileTrue(intake.intakeFromSlideCommand());
-
-    armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
-    driveJoystick.square().whileTrue(swerve.balanceRampCommand());
-
-    driveJoystick.button(15).onTrue(swerve.resetModulesCommand());
-    armJoystick.button(15).whileTrue(superstructure.arm.blindCloseArmCommand());
-  }
-
-  public Command toggleCompressorCommand() {
-    return new StartEndCommand(
-          compressor::disable,
-          compressor::enableDigital
-    );
-  }
-
-  Command SystemTester() {
-    return new SystemTester(swerve, intake, superstructure.rollergripper);
-  }
-
-  public static Command selectDriveTabCommand(){
-    return new InstantCommand(()-> Shuffleboard.selectTab(driveTab.getTitle()));
-  }
-
-  Command manual(){
-    return superstructure.arm.joystickManualCommand(armJoystick::getLeftY, armJoystick::getRightY)
-          .alongWith(superstructure.rollergripper.manualCommand(armJoystick.square(), armJoystick.circle()));
+    driveJoystick.PS().onTrue(new InstantCommand(swerve::resetGyro));
   }
 
   /**
@@ -134,8 +70,13 @@ public class RobotContainer {
    * d to run in autonomous
    */
   public Command getAutonomousCommand() {
-//    return AutoBuilder.getAutonomousCommand(superstructure, intake, swerve);
-   return null;
-//    return swerve.turnToAngleCommand(180);
+      PathPlannerTrajectory trajectory = PathPlanner.loadPath("RightTurn",new PathConstraints(1,1));
+
+    return swerve.resetModulesCommand().andThen(
+          new InstantCommand(()-> {
+            swerve.resetGyro();
+            swerve.setPose2d(new Pose2d(0, 0, new Rotation2d(0)));
+          }),
+            swerve.followTrajectoryCommand(trajectory));
   }
 }
