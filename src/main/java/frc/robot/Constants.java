@@ -113,7 +113,7 @@ public final class Constants {
         // intentional limitations
         public static final double kSpeedPercantageLimit = 25; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
-        public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
+        public static final double kMaxTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
 
         //unclear values

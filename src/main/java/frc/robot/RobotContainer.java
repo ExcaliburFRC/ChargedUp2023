@@ -7,19 +7,15 @@ package frc.robot;
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.auto.PIDConstants;
-import com.pathplanner.lib.auto.SwerveAutoBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.Calculation;
-
-import java.util.HashMap;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -57,8 +53,7 @@ public class RobotContainer {
                 () -> Calculation.deadband(-driveJoystick.getLeftY()),
                 () -> Calculation.deadband(driveJoystick.getLeftX()),
                 () -> Calculation.deadband(driveJoystick.getRightX()),
-                driveJoystick.R1().negate(),
-                driveJoystick.L1()));
+                driveJoystick.R1().negate()));
 
     driveJoystick.PS().onTrue(swerve.resetGyroCommand());
   }
@@ -70,14 +65,10 @@ public class RobotContainer {
    * d to run in autonomous
    */
   public Command getAutonomousCommand() {
-      PathPlannerTrajectory trajectory = PathPlanner.loadPath("RightTurn",new PathConstraints(1,1));
+    PathPlannerTrajectory trajectory = PathPlanner.loadPath("RightTurn",new PathConstraints(1,1));
 
-    return swerve.resetModulesCommand().andThen(
-          new InstantCommand(()-> {
-            swerve.resetGyro();
-            swerve.setPose2d(new Pose2d(0, 0, new Rotation2d(0)));
-          }),
-          swerve.resetGyroCommand(),
+    return new SequentialCommandGroup(
+          new InstantCommand(()-> swerve.setPose2d(trajectory.getInitialHolonomicPose())),
           swerve.followTrajectoryCommand(trajectory));
   }
 }
