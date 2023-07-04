@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SystemTester;
 import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
-import frc.robot.utility.AutoBuilder;
+// import frc.robot.utility.AutoBuilder;
 import frc.robot.utility.Calculation;
 
 import java.util.Map;
@@ -46,7 +46,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     configureBindings();
-    AutoBuilder.loadAutoChoosers(swerve, intake);
+    // AutoBuilder.loadAutoChoosers(swerve, intake);
 
     SmartDashboard.putData("intake", intake);
 
@@ -134,8 +134,8 @@ public class RobotContainer {
    * d to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return AutoBuilder.getAutonomousCommand(superstructure, intake, swerve);
-//    return null;
+//    return AutoBuilder.getAutonomousCommand(superstructure, intake, swerve);
+   return null;
 //    return swerve.turnToAngleCommand(180);
   }
 }
