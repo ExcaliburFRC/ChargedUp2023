@@ -73,7 +73,7 @@ public class Arm extends SubsystemBase {
 
     armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(10, 0).withSize(4, 4)
            .withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
-    armTab.addDouble("Arm degrees", angleEncoder::getDistance).withPosition(6, 0).withSize(4, 4)
+    armTab.addDouble("Arm degrees", () -> -angleEncoder.getDistance()).withPosition(6, 0).withSize(4, 4)
           .withWidget("Simple Dial").withProperties(Map.of("min", 90, "max", 190));
     armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(6, 4)
           .withSize(4, 2);
@@ -142,9 +142,11 @@ public class Arm extends SubsystemBase {
   }
 
   public double getArmAngle() {
-    if (angleEncoder.getDistance() > 220 || angleEncoder.getDistance() < 80)
+    double angle = -angleEncoder.getDistance();
+
+    if (angle > 220 || angle < 80)
       DriverStation.reportError("arm encoder bugged!!", true);
-    return MathUtil.clamp(angleEncoder.getDistance(), 80, 220);
+    return MathUtil.clamp(angle, 80, 220);
   }
 
   public Command blindCloseArmCommand(){

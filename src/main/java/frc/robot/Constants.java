@@ -166,7 +166,7 @@ public final class Constants {
 
         public static final int CLOSED_LIMIT_SWITCH_ID = 6;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
+        public static final int ABS_ANGLE_ENCODER_CHANNEL = 5;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
@@ -175,7 +175,7 @@ public final class Constants {
 
         public static final double ARM_GEAR_RATIO = 6.1;
 
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.951 - 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.25167 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
 
         // Angle control
         public static final double kS_ANGLE = 0.10622;
