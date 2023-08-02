@@ -109,8 +109,8 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command holdConeCommand() {
         return new ConditionalCommand(
-          setRollerGripperMotor(0.05).until(() -> true),
-          setRollerGripperMotor(0).until(() -> true),
+          setRollerGripperMotor(0.05).withTimeout(0.25),
+          setRollerGripperMotor(0).withTimeout(0.25),
           beambreakTrigger)
           .repeatedly().withName("HoldCone");
     }
