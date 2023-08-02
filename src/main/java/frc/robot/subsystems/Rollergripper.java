@@ -14,24 +14,24 @@ import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.RollerGripperConstants.*;
 
 public class Rollergripper extends SubsystemBase {
-  private final CANSparkMax rightRoller = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
-  private final CANSparkMax leftRoller = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
+  private final CANSparkMax FollowRoller = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
+  private final CANSparkMax LeadRoller = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
 
   private final DigitalInput beambreak = new DigitalInput(INTAKE_BEAMBREAK);
 
   public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 
   public Rollergripper() {
-    rightRoller.restoreFactoryDefaults();
-    rightRoller.clearFaults();
-    rightRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    FollowRoller.restoreFactoryDefaults();
+    FollowRoller.clearFaults();
+    FollowRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
+FollowRoller.follow(LeadRoller,true);
+    LeadRoller.restoreFactoryDefaults();
+    LeadRoller.clearFaults();
+    LeadRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
-    leftRoller.restoreFactoryDefaults();
-    leftRoller.clearFaults();
-    leftRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
-
-    leftRoller.setInverted(false);
-    rightRoller.setInverted(true);
+    LeadRoller.setInverted(false);
+    FollowRoller.setInverted(true);
 
     Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
           .withPosition(10, 4).withSize(4, 2);
@@ -46,8 +46,8 @@ public class Rollergripper extends SubsystemBase {
    */
   private Command setRollerGripperMotor(double speed) {
     return new RunCommand(() -> {
-            rightRoller.set(speed);
-            leftRoller.set(speed);
+
+            LeadRoller.set(speed);
           }, this);
   }
 
@@ -61,13 +61,11 @@ public class Rollergripper extends SubsystemBase {
   public Command intakeCommand() {
     return Commands.runEnd(
                 () -> {
-                  rightRoller.set(0.75);
-                  leftRoller.set(0.75);
+                  LeadRoller.set(0.75);
                   Shuffleboard.selectTab("armCamera");
                 },
                 () -> {
-                  rightRoller.stopMotor();
-                  leftRoller.stopMotor();
+                  LeadRoller.stopMotor();
                   Shuffleboard.selectTab("driveTab");
                 },
                 this)
@@ -84,16 +82,15 @@ public class Rollergripper extends SubsystemBase {
   public Command ejectCommand(double offset) {
     return Commands.runEnd(
                 () -> {
-                  rightRoller.set(-0.025 - offset);
-                  leftRoller.set(-0.025 - offset);
+                  LeadRoller.set(-0.025 - offset);
                 },
                 () -> {
-                  rightRoller.stopMotor();
-                  leftRoller.stopMotor();
+                  LeadRoller.stopMotor();
                 },
                 this)
           .until(beambreakTrigger.negate().debounce(0.2));
   }
+
 
   public Command ejectCommand(){
     return ejectCommand(0);
@@ -131,24 +128,16 @@ public class Rollergripper extends SubsystemBase {
           () -> {
             if (intake.getAsBoolean() || outtake.getAsBoolean()) {
               if (intake.getAsBoolean()) {
-                rightRoller.set(0.6);
-                leftRoller.set(0.6);
+                LeadRoller.set(0.6);
               }
               if (outtake.getAsBoolean()) {
-                rightRoller.set(-0.1);
-                leftRoller.set(-0.1);
+                LeadRoller.set(-0.1);
               }
             } else {
-              rightRoller.set(0);
-              leftRoller.set(0);
+              LeadRoller.stopMotor();
             }
           },
-          () -> {
-            rightRoller.set(0);
-            leftRoller.set(0);
-          },
-          this
-    );
+          LeadRoller::stopMotor);
   }
 
   @Override
