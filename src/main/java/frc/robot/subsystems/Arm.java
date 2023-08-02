@@ -83,13 +83,10 @@ public class Arm extends SubsystemBase {
     lengthMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 1.03f);
     lengthMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 
-    angleMotor.setOpenLoopRampRate(1.5);
+//    angleMotor.setOpenLoopRampRate(1.5);
+    angleMotor.setOpenLoopRampRate(0.5);
 
     if (lengthEncoder.getPosition() < 0.1) lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
-
-    angleRelativeEncoder.setPositionConversionFactor(ARM_GEAR_RATIO);
-//    angleRelativeEncoder.setPosition(90);
-
   }
 
   /**
