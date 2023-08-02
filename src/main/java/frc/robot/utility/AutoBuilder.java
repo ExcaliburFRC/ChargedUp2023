@@ -60,7 +60,7 @@ public class AutoBuilder {
                         autoChooser.getSelected()
                                 .alongWith(new ConditionalCommand(
                                         new InstantCommand(),
-                                        superstructure.arm.lockArmCommand(new Trigger()),
+                                        superstructure.arm.lockArmCommand(new Trigger(()-> false)),
                                         superstructure.arm.armLockedTrigger)))
                 );
     }

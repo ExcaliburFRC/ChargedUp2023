@@ -95,7 +95,7 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
-    Shuffleboard.selectTab("driveTab");
+//    Shuffleboard.selectTab("driveTab");
   }
 
   /** This function is called periodically during operator control. */
@@ -110,7 +110,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().enable();
 
 //    m_robotContainer.SystemTester().schedule();
-    m_robotContainer.manual().schedule();
+//    m_robotContainer.manual().schedule();
   }
 
   /** This function is called periodically during test mode. */
