@@ -1,4 +1,4 @@
-// package frc.robot.utility;
+ package frc.robot.utility;
 
 // import edu.wpi.first.wpilibj.Timer;
 // import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -17,7 +17,11 @@
 // import static frc.robot.Constants.IntakeConstants.*;
 // import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
-// public class AutoBuilder {
+ import com.pathplanner.lib.PathPoint;
+ import edu.wpi.first.math.geometry.Rotation2d;
+ import edu.wpi.first.math.geometry.Translation2d;
+
+ public class AutoBuilder {
 //     public static final SendableChooser<Command> autoChooser = new SendableChooser<>();
 //     public static final SendableChooser<Double> heightChooser = new SendableChooser<>();
 //     public static final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
@@ -64,4 +68,9 @@
 //                                         superstructure.arm.armLockedTrigger)))
 //                 );
 //     }
-// }
+
+    public static PathPoint getPathpoint(PathPoint point){
+        return new PathPoint(new Translation2d(point.position.getX(), -point.position.getY()), point.heading.times(-1), Rotation2d.fromDegrees(360).minus(point.holonomicRotation));
+    }
+
+ }

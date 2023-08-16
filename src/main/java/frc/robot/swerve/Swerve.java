@@ -33,275 +33,275 @@ import static frc.robot.Constants.SwerveConstants.*;
 import static frc.robot.Constants.SwerveConstants.Modules.*;
 
 public class Swerve extends SubsystemBase {
-  private final SwerveModule[] swerveModules = {
-        new SwerveModule(
-              Modules.FL.DRIVE_MOTOR_ID,
-              Modules.FL.SPIN_MOTOR_ID,
-              Modules.FL.DRIVE_MOTOR_REVERSED,
-              Modules.FL.SPIN_MOTOR_REVERSED,
-              Modules.FL.ABS_ENCODER_CHANNEL,
-              Modules.FL.OFFSET_ANGLE),
-        new SwerveModule(
-              Modules.FR.DRIVE_MOTOR_ID,
-              Modules.FR.SPIN_MOTOR_ID,
-              Modules.FR.DRIVE_MOTOR_REVERSED,
-              Modules.FR.SPIN_MOTOR_REVERSED,
-              Modules.FR.ABS_ENCODER_CHANNEL,
-              Modules.FR.OFFSET_ANGLE),
-        new SwerveModule(
-              Modules.BL.DRIVE_MOTOR_ID,
-              Modules.BL.SPIN_MOTOR_ID,
-              Modules.BL.DRIVE_MOTOR_REVERSED,
-              Modules.BL.SPIN_MOTOR_REVERSED,
-              Modules.BL.ABS_ENCODER_CHANNEL,
-              Modules.BL.OFFSET_ANGLE),
-        new SwerveModule(
-              Modules.BR.DRIVE_MOTOR_ID,
-              Modules.BR.SPIN_MOTOR_ID,
-              Modules.BR.DRIVE_MOTOR_REVERSED,
-              Modules.BR.SPIN_MOTOR_REVERSED,
-              Modules.BR.ABS_ENCODER_CHANNEL,
-              Modules.BR.OFFSET_ANGLE)};
+    private final SwerveModule[] swerveModules = {
+            new SwerveModule(
+                    Modules.FL.DRIVE_MOTOR_ID,
+                    Modules.FL.SPIN_MOTOR_ID,
+                    Modules.FL.DRIVE_MOTOR_REVERSED,
+                    Modules.FL.SPIN_MOTOR_REVERSED,
+                    Modules.FL.ABS_ENCODER_CHANNEL,
+                    Modules.FL.OFFSET_ANGLE),
+            new SwerveModule(
+                    Modules.FR.DRIVE_MOTOR_ID,
+                    Modules.FR.SPIN_MOTOR_ID,
+                    Modules.FR.DRIVE_MOTOR_REVERSED,
+                    Modules.FR.SPIN_MOTOR_REVERSED,
+                    Modules.FR.ABS_ENCODER_CHANNEL,
+                    Modules.FR.OFFSET_ANGLE),
+            new SwerveModule(
+                    Modules.BL.DRIVE_MOTOR_ID,
+                    Modules.BL.SPIN_MOTOR_ID,
+                    Modules.BL.DRIVE_MOTOR_REVERSED,
+                    Modules.BL.SPIN_MOTOR_REVERSED,
+                    Modules.BL.ABS_ENCODER_CHANNEL,
+                    Modules.BL.OFFSET_ANGLE),
+            new SwerveModule(
+                    Modules.BR.DRIVE_MOTOR_ID,
+                    Modules.BR.SPIN_MOTOR_ID,
+                    Modules.BR.DRIVE_MOTOR_REVERSED,
+                    Modules.BR.SPIN_MOTOR_REVERSED,
+                    Modules.BR.ABS_ENCODER_CHANNEL,
+                    Modules.BR.OFFSET_ANGLE)};
 
-  private final AHRS _gyro = new AHRS(SPI.Port.kMXP);
+    private final AHRS _gyro = new AHRS(SPI.Port.kMXP);
 
-  private final PIDController rampController = new PIDController(Constants.SwerveConstants.RAMP_BALANCE_KP, 0, RAMP_BALANCE_KD);
-  private final PIDController thetaTeleopController = new PIDController(kp_Theta, 0, kd_Theta);
+    private final PIDController rampController = new PIDController(Constants.SwerveConstants.RAMP_BALANCE_KP, 0, RAMP_BALANCE_KD);
+    private final PIDController thetaTeleopController = new PIDController(kp_Theta, 0, kd_Theta);
 
-  private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
-  private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
+    private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
+    private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
 
-  //    private final Limelight limelight = new Limelight();
-  private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
-        kSwerveKinematics,
-        getGyroRotation(),
-        new SwerveModulePosition[]{
-              swerveModules[FRONT_LEFT].getPosition(),
-              swerveModules[FRONT_RIGHT].getPosition(),
-              swerveModules[BACK_LEFT].getPosition(),
-              swerveModules[BACK_RIGHT].getPosition()},
-        new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
+    //    private final Limelight limelight = new Limelight();
+    private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
+            kSwerveKinematics,
+            getGyroRotation(),
+            new SwerveModulePosition[]{
+                    swerveModules[FRONT_LEFT].getPosition(),
+                    swerveModules[FRONT_RIGHT].getPosition(),
+                    swerveModules[BACK_LEFT].getPosition(),
+                    swerveModules[BACK_RIGHT].getPosition()},
+            new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
 
-  private final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
-        this::getPose2d,
-        this::setPose2d,
-        kSwerveKinematics,
-        new PIDConstants(0,0,0),
-        new PIDConstants(0,0,0),
-        states -> setModulesStates(states),
-        new HashMap<>(),
-        false,
-        this
-  );
+    private final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
+            this::getPose2d,
+            this::setPose2d,
+            kSwerveKinematics,
+            new PIDConstants(0, 0, 0),
+            new PIDConstants(0, 0, 0),
+            states -> setModulesStates(states),
+            new HashMap<>(),
+            true,
+            this
+    );
 
-  private final Field2d field = new Field2d();
+    private final Field2d field = new Field2d();
 
-  public Swerve() {
-    resetGyro();
+    public Swerve() {
+        resetGyro();
 
-    thetaTeleopController.enableContinuousInput(-180, 180);
-    thetaTeleopController.setTolerance(1.5);
+        thetaTeleopController.enableContinuousInput(-180, 180);
+        thetaTeleopController.setTolerance(1.5);
 
-    var swerveTab = Shuffleboard.getTab("Swerve");
-    swerveTab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(4, 0).withSize(4, 4);
-    swerveTab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(8, 0).withSize(4, 4);
-    swerveTab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(4, 4).withSize(4, 4);
-    swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(8, 4).withSize(4, 4);
-    swerveTab.addDouble("SwerveAngle", () -> getDegrees()).withWidget(BuiltInWidgets.kGyro)
-          .withPosition(0, 2).withSize(4, 4);
-    swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
+        var swerveTab = Shuffleboard.getTab("Swerve");
+        swerveTab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(4, 0).withSize(4, 4);
+        swerveTab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(8, 0).withSize(4, 4);
+        swerveTab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(4, 4).withSize(4, 4);
+        swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(8, 4).withSize(4, 4);
+        swerveTab.addDouble("SwerveAngle", () -> getDegrees()).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(0, 2).withSize(4, 4);
+        swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
 
-    swerveTab.addDouble("rampAngle", () -> getRampAngle()).withSize(2, 2);
-    swerveTab.addDouble("pid ramp", () -> rampController.calculate(getRampAngle(), 0)).withSize(2, 2);
-    swerveTab.addBoolean("robot balanced", robotBalancedTrigger::getAsBoolean);
+        swerveTab.addDouble("rampAngle", () -> getRampAngle()).withSize(2, 2);
+        swerveTab.addDouble("pid ramp", () -> rampController.calculate(getRampAngle(), 0)).withSize(2, 2);
+        swerveTab.addBoolean("robot balanced", robotBalancedTrigger::getAsBoolean);
 
-    RobotContainer.driveTab.addDouble("SwerveAngle", () -> getOdometryRotation().getDegrees())
-          .withWidget(BuiltInWidgets.kGyro).withPosition(0, 0).withSize(4, 2);
+        RobotContainer.driveTab.addDouble("SwerveAngle", () -> getOdometryRotation().getDegrees())
+                .withWidget(BuiltInWidgets.kGyro).withPosition(0, 0).withSize(4, 2);
 
-    odometry.resetPosition(
-          getGyroRotation(),
-          getModulesPositions(),
-          new Pose2d(0, 0, new Rotation2d()));
-
-    thetaTeleopController.setTolerance(1);
-  }
-
-  public void resetGyro() {
-    _gyro.reset();
-  }
-
-  private double getDegrees() {
-    return Math.IEEEremainder(_gyro.getAngle(), 360);
-  }
-
-  public Rotation2d getGyroRotation() {
-    return Rotation2d.fromDegrees(getDegrees());
-  }
-
-  public Rotation2d getOdometryRotation() {
-    return odometry.getEstimatedPosition().getRotation();
-  }
-
-  // return the pitch of the robot
-  public double getRampAngle() {
-    return _gyro.getRoll() - 0.46;
-  }
-
-  public void setModulesStates(SwerveModuleState[] states) {
-    SwerveDriveKinematics.desaturateWheelSpeeds(states, kPhysicalMaxSpeedMetersPerSecond);
-    swerveModules[FRONT_LEFT].setDesiredState(states[FRONT_LEFT]);
-    swerveModules[FRONT_RIGHT].setDesiredState(states[FRONT_RIGHT]);
-    swerveModules[BACK_LEFT].setDesiredState(states[BACK_LEFT]);
-    swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
-  }
-
-  public void setPose2d(Pose2d pose) {
-    odometry.resetPosition(getGyroRotation(), getModulesPositions(), pose);
-  }
-
-  public Pose2d getPose2d(){
-    return odometry.getEstimatedPosition();
-  }
-
-  public SwerveModulePosition[] getModulesPositions(){
-    return new SwerveModulePosition[]{
-            swerveModules[0].getPosition(),
-            swerveModules[1].getPosition(),
-            swerveModules[2].getPosition(),
-            swerveModules[3].getPosition(),
-    };
-  }
-
-  public Command resetModulesCommand() {
-    return new FunctionalCommand(
-          () -> {
-          },
-          () -> {
-            swerveModules[FRONT_LEFT].spinTo(0);
-            swerveModules[FRONT_RIGHT].spinTo(0);
-            swerveModules[BACK_LEFT].spinTo(0);
-            swerveModules[BACK_RIGHT].spinTo(0);
-          },
-          (__) -> {
-            stopModules();
-            resetEncoders();
-            new PrintCommand("modules are reset").schedule();
-          },
-          () -> swerveModules[FRONT_LEFT].isReset
-                .and(swerveModules[FRONT_RIGHT].isReset)
-                .and(swerveModules[BACK_LEFT].isReset)
-                .and(swerveModules[BACK_RIGHT].isReset)
-                .getAsBoolean(),
-          this);
-  }
-
-  public Command driveSwerveCommand(
-        DoubleSupplier xSpeedSupplier,
-        DoubleSupplier ySpeedSupplier,
-        DoubleSupplier spinningSpeedSupplier,
-        BooleanSupplier fieldOriented) {
-
-    final SlewRateLimiter
-          xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
-          yLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
-          spinningLimiter = new SlewRateLimiter(kTeleDriveMaxAngularAccelerationUnitsPerSecond);
-
-    return resetModulesCommand().andThen(
-          new FunctionalCommand(
-                () -> {
-                }, //resetModulesCommand().schedule(),
-                () -> {
-                  //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
-                  double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
-                        ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
-                        spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxTurningSpeed;
-
-                  // create a CassisSpeeds object and apply it the speeds
-                  ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
-                        ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getOdometryRotation()) :
-                        new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
-
-                  //use the ChassisSpeedsObject to create an array of SwerveModuleStates
-                  SwerveModuleState[] moduleStates = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
-
-                  //apply the array to the swerve modules of the robot
-                  setModulesStates(moduleStates);
-                },
-                (__) -> {
-                  stopModules();
-                  resetEncoders();
-                },
-                () -> false,
-                this));
-  }
-
-  public Command driveSwerveWithAngleCommand(
-        DoubleSupplier xSpeed,
-        DoubleSupplier ySpeed,
-        DoubleSupplier angle,
-        DoubleSupplier xAngle,
-        DoubleSupplier yAngle,
-        BooleanSupplier fieldOriented) {
-//    return new InstantCommand(() -> lastJoystickAngle.set((int) getRotation().getDegrees()))
-          return new ParallelCommandGroup(
-//                new RunCommand(() -> updateJoystickAngle(xAngle.getAsDouble(), yAngle.getAsDouble())),
-                driveSwerveCommand(xSpeed, ySpeed, () -> thetaTeleopController.calculate(getOdometryRotation().getDegrees(), angle.getAsDouble()), fieldOriented)
-          );
-  }
-
-  public Command turnToAngleCommand(double setpoint) {
-    return driveSwerveCommand(
-            () -> 0,
-            () -> 0,
-            () -> thetaTeleopController.calculate(getOdometryRotation().getDegrees(), setpoint), () -> false)
-          .until(new Trigger(thetaTeleopController::atSetpoint).debounce(0.15));
-  }
-
-  public Command resetGyroCommand(double angle) {
-    return new InstantCommand(() ->
-          odometry.resetPosition(
+        odometry.resetPosition(
                 getGyroRotation(),
                 getModulesPositions(),
-                new Pose2d(odometry.getEstimatedPosition().getTranslation(), Rotation2d.fromDegrees(angle))));
-  }
+                new Pose2d(0, 0, new Rotation2d()));
 
-  public Command resetGyroCommand() {
-    return resetGyroCommand(0);
-  }
+        thetaTeleopController.setTolerance(1);
+    }
 
-  public Command followTrajectoryCommand(PathPlannerTrajectory traj){
-    return resetModulesCommand().andThen(swerveAutoBuilder.fullAuto(traj));
-  }
+    public void resetGyro() {
+        _gyro.reset();
+    }
 
-  // autonomous ramp climbing commands
+    private double getDegrees() {
+        return Math.IEEEremainder(_gyro.getAngle(), 360);
+    }
 
-  public Command driveToRampCommand(boolean forward) {
-    final double speed = forward ? 0.45 : -0.45;
-    return driveSwerveCommand(() -> speed, () -> 0, () -> 0, () -> true)
-          .until(robotBalancedTrigger.negate())
-          .andThen(new InstantCommand(this::stopModules));
-  }
+    public Rotation2d getGyroRotation() {
+        return Rotation2d.fromDegrees(getDegrees());
+    }
 
-  public Command balanceRampCommand() {
-    return driveSwerveCommand(
-          () -> rampController.calculate(getRampAngle(), 0),
-          () -> 0,
-          () -> 0,
-          () -> false);
+    public Rotation2d getOdometryRotation() {
+        return odometry.getEstimatedPosition().getRotation();
+    }
+
+    // return the pitch of the robot
+    public double getRampAngle() {
+        return _gyro.getRoll() - 0.46;
+    }
+
+    public void setModulesStates(SwerveModuleState[] states) {
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, kPhysicalMaxSpeedMetersPerSecond);
+        swerveModules[FRONT_LEFT].setDesiredState(states[FRONT_LEFT]);
+        swerveModules[FRONT_RIGHT].setDesiredState(states[FRONT_RIGHT]);
+        swerveModules[BACK_LEFT].setDesiredState(states[BACK_LEFT]);
+        swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
+    }
+
+    public void setPose2d(Pose2d pose) {
+        odometry.resetPosition(getGyroRotation(), getModulesPositions(), pose);
+    }
+
+    public Pose2d getPose2d() {
+        return odometry.getEstimatedPosition();
+    }
+
+    public SwerveModulePosition[] getModulesPositions() {
+        return new SwerveModulePosition[]{
+                swerveModules[0].getPosition(),
+                swerveModules[1].getPosition(),
+                swerveModules[2].getPosition(),
+                swerveModules[3].getPosition(),
+        };
+    }
+
+    public Command resetModulesCommand() {
+        return new FunctionalCommand(
+                () -> {
+                },
+                () -> {
+                    swerveModules[FRONT_LEFT].spinTo(0);
+                    swerveModules[FRONT_RIGHT].spinTo(0);
+                    swerveModules[BACK_LEFT].spinTo(0);
+                    swerveModules[BACK_RIGHT].spinTo(0);
+                },
+                (__) -> {
+                    stopModules();
+                    resetEncoders();
+                    new PrintCommand("modules are reset").schedule();
+                },
+                () -> swerveModules[FRONT_LEFT].isReset
+                        .and(swerveModules[FRONT_RIGHT].isReset)
+                        .and(swerveModules[BACK_LEFT].isReset)
+                        .and(swerveModules[BACK_RIGHT].isReset)
+                        .getAsBoolean(),
+                this);
+    }
+
+    public Command driveSwerveCommand(
+            DoubleSupplier xSpeedSupplier,
+            DoubleSupplier ySpeedSupplier,
+            DoubleSupplier spinningSpeedSupplier,
+            BooleanSupplier fieldOriented) {
+
+        final SlewRateLimiter
+                xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
+                yLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
+                spinningLimiter = new SlewRateLimiter(kTeleDriveMaxAngularAccelerationUnitsPerSecond);
+
+        return resetModulesCommand().andThen(
+                new FunctionalCommand(
+                        () -> {
+                        }, //resetModulesCommand().schedule(),
+                        () -> {
+                            //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
+                            double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
+                                    ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
+                                    spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxTurningSpeed;
+
+                            // create a CassisSpeeds object and apply it the speeds
+                            ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
+                                    ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getOdometryRotation()) :
+                                    new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
+
+                            //use the ChassisSpeedsObject to create an array of SwerveModuleStates
+                            SwerveModuleState[] moduleStates = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
+
+                            //apply the array to the swerve modules of the robot
+                            setModulesStates(moduleStates);
+                        },
+                        (__) -> {
+                            stopModules();
+                            resetEncoders();
+                        },
+                        () -> false,
+                        this));
+    }
+
+    public Command driveSwerveWithAngleCommand(
+            DoubleSupplier xSpeed,
+            DoubleSupplier ySpeed,
+            DoubleSupplier angle,
+            DoubleSupplier xAngle,
+            DoubleSupplier yAngle,
+            BooleanSupplier fieldOriented) {
+//    return new InstantCommand(() -> lastJoystickAngle.set((int) getRotation().getDegrees()))
+        return new ParallelCommandGroup(
+//                new RunCommand(() -> updateJoystickAngle(xAngle.getAsDouble(), yAngle.getAsDouble())),
+                driveSwerveCommand(xSpeed, ySpeed, () -> thetaTeleopController.calculate(getOdometryRotation().getDegrees(), angle.getAsDouble()), fieldOriented)
+        );
+    }
+
+    public Command turnToAngleCommand(double setpoint) {
+        return driveSwerveCommand(
+                () -> 0,
+                () -> 0,
+                () -> thetaTeleopController.calculate(getOdometryRotation().getDegrees(), setpoint), () -> false)
+                .until(new Trigger(thetaTeleopController::atSetpoint).debounce(0.15));
+    }
+
+    public Command resetGyroCommand(double angle) {
+        return new InstantCommand(() ->
+                odometry.resetPosition(
+                        getGyroRotation(),
+                        getModulesPositions(),
+                        new Pose2d(odometry.getEstimatedPosition().getTranslation(), Rotation2d.fromDegrees(angle))));
+    }
+
+    public Command resetGyroCommand() {
+        return resetGyroCommand(0);
+    }
+
+    public Command followTrajectoryCommand(PathPlannerTrajectory traj) {
+        return resetModulesCommand().andThen(swerveAutoBuilder.fullAuto(traj));
+    }
+
+    // autonomous ramp climbing commands
+
+    public Command driveToRampCommand(boolean forward) {
+        final double speed = forward ? 0.45 : -0.45;
+        return driveSwerveCommand(() -> speed, () -> 0, () -> 0, () -> true)
+                .until(robotBalancedTrigger.negate())
+                .andThen(new InstantCommand(this::stopModules));
+    }
+
+    public Command balanceRampCommand() {
+        return driveSwerveCommand(
+                () -> rampController.calculate(getRampAngle(), 0),
+                () -> 0,
+                () -> 0,
+                () -> false);
 //          .until(robotBalancedTrigger.debounce(0.2));
-  }
+    }
 
-  public Command climbCommand(boolean isForward) {
-    return driveToRampCommand(isForward)
-            .andThen(
-                    driveSwerveCommand(()-> 0.375, ()-> 0, ()-> 0, ()-> true).withTimeout(1.315),
-                    new WaitCommand(0.15),
-                    balanceRampCommand());
-  }
+    public Command climbCommand(boolean isForward) {
+        return driveToRampCommand(isForward)
+                .andThen(
+                        driveSwerveCommand(() -> 0.375, () -> 0, () -> 0, () -> true).withTimeout(1.315),
+                        new WaitCommand(0.15),
+                        balanceRampCommand());
+    }
 
 //
 //  // returns the joystick angle in 0 to 360 (right is 0, up is 90)
@@ -327,33 +327,34 @@ public class Swerve extends SubsystemBase {
 //    return new InstantCommand(() -> lastJoystickAngle.set(0));
 //  }
 
-  @Override
-  public void periodic() {
-    odometry.update(
-            getGyroRotation(),
-            new SwerveModulePosition[]{
-                    swerveModules[FRONT_LEFT].getPosition(),
-                    swerveModules[FRONT_RIGHT].getPosition(),
-                    swerveModules[BACK_LEFT].getPosition(),
-                    swerveModules[BACK_RIGHT].getPosition()
-            });
+    @Override
+    public void periodic() {
+        odometry.update(
+                getGyroRotation(),
+                new SwerveModulePosition[]{
+                        swerveModules[FRONT_LEFT].getPosition(),
+                        swerveModules[FRONT_RIGHT].getPosition(),
+                        swerveModules[BACK_LEFT].getPosition(),
+                        swerveModules[BACK_RIGHT].getPosition()
+                });
 
 //        limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
 
-    field.setRobotPose(odometry.getEstimatedPosition());
-    SmartDashboard.putData(field);
-  }
-  private void resetEncoders() {
-    swerveModules[FRONT_LEFT].resetEncoders();
-    swerveModules[FRONT_RIGHT].resetEncoders();
-    swerveModules[BACK_LEFT].resetEncoders();
-    swerveModules[BACK_RIGHT].resetEncoders();
-  }
+        field.setRobotPose(odometry.getEstimatedPosition());
+        SmartDashboard.putData(field);
+    }
 
-  private void stopModules() {
-    swerveModules[FRONT_LEFT].stop();
-    swerveModules[FRONT_RIGHT].stop();
-    swerveModules[BACK_LEFT].stop();
-    swerveModules[BACK_RIGHT].stop();
-  }
+    private void resetEncoders() {
+        swerveModules[FRONT_LEFT].resetEncoders();
+        swerveModules[FRONT_RIGHT].resetEncoders();
+        swerveModules[BACK_LEFT].resetEncoders();
+        swerveModules[BACK_RIGHT].resetEncoders();
+    }
+
+    private void stopModules() {
+        swerveModules[FRONT_LEFT].stopModule();
+        swerveModules[FRONT_RIGHT].stopModule();
+        swerveModules[BACK_LEFT].stopModule();
+        swerveModules[BACK_RIGHT].stopModule();
+    }
 }

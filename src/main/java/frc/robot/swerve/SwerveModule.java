@@ -1,6 +1,7 @@
 package frc.robot.swerve;
 
-import com.revrobotics.*;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -121,7 +122,7 @@ public class SwerveModule implements Sendable {
 
   public void setDesiredState(SwerveModuleState state) {
     if (Math.abs(state.speedMetersPerSecond) < 0.01) {
-      stop();
+      stopModule();
       return;
     }
 
@@ -144,7 +145,7 @@ public class SwerveModule implements Sendable {
     return _absEncoder.getAbsolutePosition();
   }
 
-  public void stop() {
+  public void stopModule() {
     _driveMotor.set(0);
     _spinningMotor.set(0);
   }

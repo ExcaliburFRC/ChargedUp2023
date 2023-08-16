@@ -221,6 +221,7 @@ public final class Constants {
         }
 
         public static double middleAxisXValue = 8.3;
+        public static double FIELD_HEIGHT = 8;
     }
 
     public static class LedsConstants {
