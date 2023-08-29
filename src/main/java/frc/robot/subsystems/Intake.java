@@ -4,11 +4,9 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
@@ -71,7 +69,7 @@ public class Intake extends SubsystemBase {
             intakePiston.set(DoubleSolenoid.Value.kReverse);
 //            ejectPiston.set(DoubleSolenoid.Value.kReverse);
             intakeMotor.stopMotor();
-            Shuffleboard.selectTab(RobotContainer.driveTab.getTitle());
+            RobotContainer.selectDriveTabCommand().schedule();
           }, this);
   }
 

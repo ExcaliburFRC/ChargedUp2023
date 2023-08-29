@@ -75,7 +75,7 @@ public class RobotContainer {
                 () -> Calculation.deadband(driveJoystick.getLeftX()),
                 () -> Calculation.deadband(driveJoystick.getRightX()),
                 driveJoystick.R1().negate(),
-                driveJoystick.L1()));
+                driveJoystick::getL2Axis));
 
     intake.setDefaultCommand(
           intake.setIntakeSpeedCommand(0.05).withTimeout(1.25)
