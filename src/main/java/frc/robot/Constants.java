@@ -216,7 +216,6 @@ public final class Constants {
         public static final double VEL_THRESHOLD = 50;
         public static final double POS_THRESHOLD = 1;
 
-
         public enum SERVO_ANGLE {
             RETRACTED(0),
             EXTENDED(90);

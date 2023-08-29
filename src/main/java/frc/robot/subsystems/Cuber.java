@@ -36,19 +36,19 @@ public class Cuber extends SubsystemBase {
     private final ArmFeedforward angleFF = new ArmFeedforward(0, 0, 0, 0);
 
     public int targetVel = 0;
-    public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel) < VEL_THRESHOLD);
+    public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.1);
 
     public int targetPos = 0;
-    public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(getCuberAngle() - targetPos) < POS_THRESHOLD);
+    public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(getCuberAngle() - targetPos) < POS_THRESHOLD).debounce(0.2);
 
     public Cuber() {
-        angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         angleMotor.restoreFactoryDefaults();
+        angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         angleMotor.clearFaults();
         angleMotor.setInverted(false);
 
-        shooterMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         shooterMotor.restoreFactoryDefaults();
+        shooterMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         shooterMotor.clearFaults();
         shooterMotor.setInverted(false);
 

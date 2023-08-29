@@ -60,6 +60,13 @@ public class Superstructure {
         return arm.lockArmCommand(rollergripper.beambreakTrigger);
     }
 
+    // this command is used when the robot shoots a cube to the high shelf, it moves the Arm, so
+    // it doesn't interfere with the shooter
+    public Command leanBackCommand() {
+        return arm.holdSetpointCommand(CLOSED.setpoint)
+                .finallyDo((__)-> arm.lockArmCommand(rollergripper.beambreakTrigger).schedule());
+    }
+
     public Command placeOnHeightCommand(double height) {
         return new SelectCommand(
                 Map.of(
