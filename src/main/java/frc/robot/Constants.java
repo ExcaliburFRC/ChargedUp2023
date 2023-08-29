@@ -97,11 +97,11 @@ public final class Constants {
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics =
-              new SwerveDriveKinematics(
-                    new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-                    new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-                    new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-                    new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
+          new SwerveDriveKinematics(
+            new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+            new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+            new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+            new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = 3.6576; //TODO find
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
@@ -150,7 +150,7 @@ public final class Constants {
 
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
 
-            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(90))),
+            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS - 0.01, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(86)));
 
             public final Translation2d setpoint;
@@ -177,7 +177,7 @@ public final class Constants {
 
         // Angle control
         public static final double kS_ANGLE = -0.048742;
-        public static final double kV_ANGLE = 0.020229;
+        public static final double kV_ANGLE = 0.020229; //    distance / time
         public static final double kA_ANGLE = 0.0024233;
         public static final double kG_ANGLE = -0.53;
 
@@ -199,6 +199,14 @@ public final class Constants {
         public static final double kMaxLinearAcceleration = 0.75;
     }
 
+
+public static final class CuberConstants {
+    public static final int ANGLE_MOTOR_ID = 0;
+    public static final int ROLLERS_MOTOR_ID = 0;
+    public static final int SERVO_CHANNEL = 0;
+    }
+
+
     public static class Coordinates {
         public enum RampLocations {
             LEFT(new Translation2d(4, 3.481), new Translation2d(12.75, 3.481)),
@@ -213,6 +221,7 @@ public final class Constants {
                 this.red = red;
             }
         }
+
         public enum GamePiece {
             EMPTY,
             CUBE,
@@ -226,10 +235,10 @@ public final class Constants {
         public static final int LEDS_PORT = 0;
     }
 }
-    // DIO:
-    // swerve: 0 - 3
-    // claw bb: unknown
-    // intake bb: unknown
-    // arm:
-    //      closed: 6
-    //      encoder: 8
+// DIO:
+// swerve: 0 - 3
+// claw bb: unknown
+// intake bb: unknown
+// arm:
+//      closed: 6
+//      encoder: 8
