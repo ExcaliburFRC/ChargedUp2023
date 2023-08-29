@@ -3,9 +3,8 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Rollergripper;
-import frc.robot.swerve.Swerve;
+import frc.robot.subsystems.swerve.Swerve;
 
-import static frc.robot.Constants.IntakeConstants.HIGH_RPM;
 import static frc.robot.Constants.IntakeConstants.LOW_RPM;
 
 public class SystemTester extends SequentialCommandGroup {
