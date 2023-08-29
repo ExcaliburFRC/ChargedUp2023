@@ -8,6 +8,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import frc.robot.utility.Color;
+
+import java.util.HashMap;
 
 import static java.lang.Math.PI;
 
@@ -39,14 +42,6 @@ public final class Constants {
         public static final double HIGH_RPM = -3100;
 
         public static final double PID_TOLERANCE = 150;
-    }
-
-    public static final class SpindexerConstants {
-        public static final int BEAMBREAK_CHANNEL = 0;
-        public static final int BUTTON_CHANNEL = 0;
-
-        public static final int SPINDEXER_MOTOR_ID = 0;
-        public static final int SPINDEXER_CURRENT_LIMIT = 0; // TODO: calculate
     }
 
     public static final class RollerGripperConstants {
@@ -222,14 +217,44 @@ public final class Constants {
         public static double middleAxisXValue = 8.3;
     }
 
+
     public static class LedsConstants {
         public static final int LEDS_PORT = 0;
+        public static final int LENGTH = 150;
+
+        public enum Colors{
+            OFF(new Color(0, 0, 0)),
+            TEAM_YELLOW(new Color(255, 175, 0)),
+            TEAM_BLUE(new Color(0, 0, 255)),
+            GREEN(new Color(0, 255, 0)),
+            RED(new Color(255, 0, 0)),
+            WHITE(new Color(255, 255, 255)),
+            ORANGE(new Color(255, 165, 0)), // TODO: find values
+            CYAN(new Color(0, 0, 0)), // TODO: find values
+            YELLOW(new Color(0, 0, 0)), // TODO: find values
+            PINK(new Color(0, 0, 0)), // TODO: find values
+            PURPLE(new Color(160, 32, 240)); // TODO: find values
+
+            // TODO: add more colors
+
+            public final Color color;
+
+            Colors(Color color){
+                this.color = color;
+            }
+        }
+
+        // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println/5762502#5762502
+        public static final HashMap<Color, String> consoleColor = new HashMap<>();
+        static {
+            consoleColor.put(Colors.TEAM_BLUE.color, "\u001B[34m");
+            consoleColor.put(Colors.TEAM_YELLOW.color, "\u001B[33m");
+            consoleColor.put(Colors.OFF.color, "\\u001B[30m");
+            consoleColor.put(Colors.RED.color, "\u001B[31m");
+            consoleColor.put(Colors.GREEN.color, "\u001B[32m");
+            consoleColor.put(Colors.PURPLE.color, "\u001B[35m");
+            consoleColor.put(Colors.CYAN.color, "\u001B[36m");
+            consoleColor.put(Colors.WHITE.color, "\u001B[37m");
+        }
     }
 }
-    // DIO:
-    // swerve: 0 - 3
-    // claw bb: unknown
-    // intake bb: unknown
-    // arm:
-    //      closed: 6
-    //      encoder: 8
