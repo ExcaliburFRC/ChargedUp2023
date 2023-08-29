@@ -6,16 +6,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Coordinates.GamePiece;
-import frc.robot.commands.autonomous.ClimbOverRampCommand;
 import frc.robot.commands.autonomous.LeaveCommunityCommand;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Superstructure;
-import frc.robot.swerve.Swerve;
-
-import javax.print.attribute.standard.PrinterURI;
+import frc.robot.subsystems.swerve.Swerve;
 
 import static frc.robot.Constants.IntakeConstants.*;
-import static frc.robot.Constants.ArmConstants.Setpoints.*;
 
 public class AutoBuilder {
     public static final SendableChooser<Command> autoChooser = new SendableChooser<>();

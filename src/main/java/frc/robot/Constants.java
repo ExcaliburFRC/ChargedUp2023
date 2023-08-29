@@ -98,7 +98,7 @@ public final class Constants {
                     new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
                     new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
-        public static final double kPhysicalMaxSpeedMetersPerSecond = 3.6576; //TODO find
+        public static final double kPhysicalMaxSpeedMetersPerSecond = Units.feetToMeters(12); //TODO find
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 

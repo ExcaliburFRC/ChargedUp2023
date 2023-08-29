@@ -1,4 +1,4 @@
-package frc.robot.swerve;
+package frc.robot.subsystems.swerve;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.controller.PIDController;
@@ -118,7 +118,6 @@ public class Swerve extends SubsystemBase {
                 swerveModules[FRONT_RIGHT].getPosition(),
                 swerveModules[BACK_LEFT].getPosition(),
                 swerveModules[BACK_RIGHT].getPosition()},
-//          new Pose2d(8.28, 4, new Rotation2d())
           new Pose2d(0, 0, new Rotation2d())
     );
 
@@ -173,13 +172,12 @@ public class Swerve extends SubsystemBase {
           this);
   }
 
-  // turning speed based swerve drive
   public Command driveSwerveCommand(
         DoubleSupplier xSpeedSupplier,
         DoubleSupplier ySpeedSupplier,
         DoubleSupplier spinningSpeedSupplier,
         BooleanSupplier fieldOriented,
-        BooleanSupplier slowMode) {
+        DoubleSupplier decelerator) {
 
     final SlewRateLimiter
           xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
@@ -189,12 +187,14 @@ public class Swerve extends SubsystemBase {
     return resetModulesCommand().andThen(
           new FunctionalCommand(
                 () -> {
-                }, //resetModulesCommand().schedule(),
+                },
                 () -> {
-                  //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
-                  double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
-                        ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
-                        spinningSpeed = spinningLimiter.calculate(slowMode.getAsBoolean() ? spinningSpeedSupplier.getAsDouble() / 5 : spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed;
+                  //create the speeds for x,y and spin
+                  double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed * (1.0 - decelerator.getAsDouble()),
+                        ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed * (1.0 - decelerator.getAsDouble()),
+                        spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed * (1.0 - decelerator.getAsDouble());
+
+                  // **all credit to the decelerator idea is for Ofir from Trigon #5990 (ohfear_ on discord)**
 
                   // create a CassisSpeeds object and apply it the speeds
                   ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
@@ -220,7 +220,7 @@ public class Swerve extends SubsystemBase {
         DoubleSupplier ySpeedSupplier,
         DoubleSupplier spinningSpeedSupplier,
         BooleanSupplier fieldOriented){
-    return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, ()-> false);
+    return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, ()-> 0);
   }
 
   public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fieldOriented) {
@@ -294,40 +294,6 @@ public class Swerve extends SubsystemBase {
 
   public Command resetGyroCommand() {
     return resetGyroCommand(0);
-  }
-
-
-  public Command autoMotionCommand(boolean fieldOriented, Pose2d... poses) {
-    AtomicInteger currentPoseIndex = new AtomicInteger();
-    return Commands.repeatingSequence(
-          driveSwerveCommand(
-                () -> xController.calculate(
-                      odometry.getEstimatedPosition().getX(),
-                      poses[currentPoseIndex.get()].getX()),
-
-                () -> yController.calculate(
-                      odometry.getEstimatedPosition().getY(),
-                      poses[currentPoseIndex.get()].getY()),
-
-                () -> thetaTeleopController.calculate(
-                      odometry.getEstimatedPosition().getRotation().getDegrees(),
-                      poses[currentPoseIndex.get()].getRotation().getDegrees()),
-
-                () -> fieldOriented)
-                .until(() -> poseInTolerance(odometry.getEstimatedPosition(), poses[currentPoseIndex.get()])),
-          new InstantCommand(currentPoseIndex::getAndIncrement)
-    );
-  }
-
-  private boolean poseInTolerance(Pose2d measurement, Pose2d setPoint) {
-    double xTolerance = 0.05, yTolerance = 0.05, thetaTolerance = 1,
-          xAbsError = Math.abs(setPoint.getX() - measurement.getX()),
-          yAbsError = Math.abs(setPoint.getY() - measurement.getY()),
-          setPointDegrees = setPoint.getRotation().getDegrees(),
-          measuredDegrees = measurement.getRotation().getDegrees(),
-          thetaAbsError = Math.abs(setPointDegrees - measuredDegrees);
-    thetaAbsError = thetaAbsError <= 180 ? thetaAbsError : 360 - thetaAbsError;
-    return xAbsError < xTolerance && yAbsError < yTolerance && thetaAbsError < thetaTolerance;
   }
 
   public Command turnToAngleCommand(double setpoint) {
