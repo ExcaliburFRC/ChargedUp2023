@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.RobotContainer;
-import frc.robot.utility.AutoBuilder;
 
 import java.util.Map;
 import java.util.function.BooleanSupplier;
@@ -11,7 +10,7 @@ import java.util.function.BooleanSupplier;
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 import static frc.robot.Constants.IntakeConstants.*;
 
-public class Superstructure extends SubsystemBase {
+public class Superstructure {
     public final Arm arm = new Arm();
     public final Rollergripper rollergripper = new Rollergripper();
 

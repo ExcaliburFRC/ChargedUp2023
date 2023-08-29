@@ -97,11 +97,11 @@ public final class Constants {
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics =
-          new SwerveDriveKinematics(
-            new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-            new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-            new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-            new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
+                new SwerveDriveKinematics(
+                        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+                        new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+                        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+                        new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = 3.6576; //TODO find
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
@@ -200,10 +200,61 @@ public final class Constants {
     }
 
 
-public static final class CuberConstants {
-    public static final int ANGLE_MOTOR_ID = 0;
-    public static final int ROLLERS_MOTOR_ID = 0;
-    public static final int SERVO_CHANNEL = 0;
+    public static final class CuberConstants {
+        public static final int ANGLE_MOTOR_ID = 0;
+        public static final int ROLLERS_MOTOR_ID = 0;
+
+        public static final double ABS_ENCODER_OFFSET = 0; // dutyCycle
+
+        public static final int SERVO_CHANNEL = 0;
+        public static final int ENCODER_CHANNEL = 0;
+
+        public static final int ULTRASONIC_PING_CHANNEL = 0;
+        public static final int ULTRASONIC_ECHO_CHANNEL = 0;
+        public static final double ULTRASONIC_THRESHOLD = 10;
+
+        public static final double VEL_THRESHOLD = 50;
+        public static final double POS_THRESHOLD = 1;
+
+
+        public enum SERVO_ANGLE {
+            RETRACTED(0),
+            EXTENDED(90);
+
+            public final double angle;
+
+            SERVO_ANGLE(double angle) {
+                this.angle = angle;
+            }
+        }
+
+        public enum CUBER_ANGLE {
+            HIGH(165),
+            MIDDLE(160),
+            LOW(75),
+            CLOSED(80),
+            INTAKE_GROUND(10),
+            INTAKE_SLIDE(120);
+
+            public final int angle;
+
+            CUBER_ANGLE(int angle) {
+                this.angle = angle;
+            }
+        }
+
+        public enum SHOOTER_VELOCITIY {
+            HIGH(4000),
+            MIDDLE(2000),
+            LOW(750),
+            INTAKE(-1000);
+
+            public final int velocity;
+
+            SHOOTER_VELOCITIY(int angle) {
+                this.velocity = angle;
+            }
+        }
     }
 
 
