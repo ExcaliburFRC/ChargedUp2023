@@ -17,19 +17,24 @@ import static com.revrobotics.CANSparkMax.SoftLimitDirection.kForward;
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kReverse;
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.CuberConstants.*;
+import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
+import static frc.robot.utility.Colors.GREEN;
+import static frc.robot.utility.Colors.RED;
 
 public class Cuber extends SubsystemBase {
     private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, kBrushless);
     private final CANSparkMax shooterMotor = new CANSparkMax(ROLLERS_MOTOR_ID, kBrushless);
-    private final RelativeEncoder shooterEncoder = shooterMotor.getEncoder();
-    private final RelativeEncoder angleRelativeEncoder = angleMotor.getEncoder();
 
     private final Servo servo = new Servo(SERVO_CHANNEL);
 
-    private final DutyCycleEncoder angleEncoder = new DutyCycleEncoder(ENCODER_CHANNEL);
+    private final RelativeEncoder shooterEncoder = shooterMotor.getEncoder();
+    private final RelativeEncoder angleRelativeEncoder = angleMotor.getEncoder();
 
+    private final DutyCycleEncoder angleEncoder = new DutyCycleEncoder(ENCODER_CHANNEL);
     private final Ultrasonic ultrasonic = new Ultrasonic(ULTRASONIC_PING_CHANNEL, ULTRASONIC_ECHO_CHANNEL);
-    public final Trigger hasCubeTrigger = new Trigger(() -> ultrasonic.getRangeMM() <= ULTRASONIC_THRESHOLD);
+
+    private final LEDs leds = LEDs.getInstance();
+
     public static final ShuffleboardTab cuberTab = Shuffleboard.getTab("Cuber");
 
     private final PIDController shooterPID = new PIDController(0, 0, 0);
@@ -38,8 +43,12 @@ public class Cuber extends SubsystemBase {
     private final PIDController anglePID = new PIDController(0, 0, 0);
     private final ArmFeedforward angleFF = new ArmFeedforward(0, 0, 0, 0);
 
+    public final Trigger hasCubeTrigger = new Trigger(() -> ultrasonic.getRangeMM() <= ULTRASONIC_THRESHOLD)
+            .onTrue(leds.applyPatternCommand(SOLID, GREEN.color).withTimeout(0.25))
+            .onFalse(leds.applyPatternCommand(SOLID, RED.color).withTimeout(0.25));
+
     public int targetVel = 0;
-    public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.1);
+    public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.2);
 
     public int targetPos = 0;
     public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(getCuberAngle() - targetPos) < POS_THRESHOLD).debounce(0.2);

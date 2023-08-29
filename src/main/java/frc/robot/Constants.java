@@ -9,8 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utility.Color;
-
-import java.util.HashMap;
+import frc.robot.utility.Colors;
 
 import static java.lang.Math.PI;
 
@@ -23,27 +22,6 @@ import static java.lang.Math.PI;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static class IntakeConstants {
-        public static final int INTAKE_MOTOR_ID = 41;
-
-        public static final int INTAKE_FWD_CHANNEL = 1;
-        public static final int INTAKE_REV_CHANNEL = 0;
-
-        public static final int EJECT_FWD_CHANNEL = 4;
-        public static final int EJECT_REV_CHANNEL = 3;
-
-        public static double kS = 0.16564;
-        public static double kV = 0.12836 / 60;
-
-        public static double kP = 0.00025;
-
-        public static final double LOW_RPM = 0;
-        public static final double MID_RPM = -1800;
-        public static final double HIGH_RPM = -3100;
-
-        public static final double PID_TOLERANCE = 150;
-    }
-
     public static final class RollerGripperConstants {
         public static final int INTAKE_BEAMBREAK = 7;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
@@ -258,68 +236,19 @@ public final class Constants {
         }
     }
 
-
-    public static class Coordinates {
-        public enum RampLocations {
-            LEFT(new Translation2d(4, 3.481), new Translation2d(12.75, 3.481)),
-            MIDDLE(new Translation2d(4, 2.707), new Translation2d(12.75, 2.707)),
-            RIGHT(new Translation2d(4, 1.9), new Translation2d(12.75, 1.9));
-
-            public Translation2d blue;
-            public Translation2d red;
-
-            RampLocations(Translation2d blue, Translation2d red) {
-                this.blue = blue;
-                this.red = red;
-            }
-        }
-
-        public enum GamePiece {
-            EMPTY,
-            CUBE,
-            CONE;
-        }
-
-        public static double middleAxisXValue = 8.3;
-    }
-
     public static class LedsConstants {
         public static final int LEDS_PORT = 0;
         public static final int LENGTH = 150;
 
-        public enum Colors{
-            OFF(new Color(0, 0, 0)),
-            TEAM_YELLOW(new Color(255, 175, 0)),
-            TEAM_BLUE(new Color(0, 0, 255)),
-            GREEN(new Color(0, 255, 0)),
-            RED(new Color(255, 0, 0)),
-            WHITE(new Color(255, 255, 255)),
-            ORANGE(new Color(255, 165, 0)), // TODO: find values
-            CYAN(new Color(0, 0, 0)), // TODO: find values
-            YELLOW(new Color(0, 0, 0)), // TODO: find values
-            PINK(new Color(0, 0, 0)), // TODO: find values
-            PURPLE(new Color(160, 32, 240)); // TODO: find values
+        public enum GamePiece {
+            Cone(Colors.PURPLE),
+            Cube(Colors.ORANGE);
 
-            // TODO: add more colors
+            public Color color;
 
-            public final Color color;
-
-            Colors(Color color){
-                this.color = color;
+            GamePiece(Colors color){
+                this.color = color.color;
             }
-        }
-
-        // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println/5762502#5762502
-        public static final HashMap<Color, String> consoleColor = new HashMap<>();
-        static {
-            consoleColor.put(Colors.TEAM_BLUE.color, "\u001B[34m");
-            consoleColor.put(Colors.TEAM_YELLOW.color, "\u001B[33m");
-            consoleColor.put(Colors.OFF.color, "\\u001B[30m");
-            consoleColor.put(Colors.RED.color, "\u001B[31m");
-            consoleColor.put(Colors.GREEN.color, "\u001B[32m");
-            consoleColor.put(Colors.PURPLE.color, "\u001B[35m");
-            consoleColor.put(Colors.CYAN.color, "\u001B[36m");
-            consoleColor.put(Colors.WHITE.color, "\u001B[37m");
         }
     }
 }

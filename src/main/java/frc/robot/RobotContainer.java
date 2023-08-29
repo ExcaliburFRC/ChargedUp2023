@@ -14,9 +14,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.LedsConstants.GamePiece;
 import frc.robot.subsystems.Cuber;
+import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
-import frc.robot.swerve.Swerve;
+import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.utility.Calculation;
 
 import java.util.Map;
@@ -71,8 +73,8 @@ public class RobotContainer {
                 () -> Calculation.deadband(-driver.getLeftY()),
                 () -> Calculation.deadband(driver.getLeftX()),
                 () -> Calculation.deadband(driver.getRightX()),
-                driver.R1().negate(),
-                driver.L1()));
+                driver.R2().negate(),
+                driver::getL2Axis));
 
     // intake commands
     operator.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
@@ -95,6 +97,9 @@ public class RobotContainer {
 
     operator.L1().toggleOnTrue(superstructure.lockArmCommand());
     driver.square().whileTrue(swerve.balanceRampCommand());
+
+    driver.L1().onTrue(askForGamepieceCommand(GamePiece.Cone));
+    driver.R1().onTrue(askForGamepieceCommand(GamePiece.Cube));
   }
 
   public Command toggleCompressorCommand() {
@@ -102,6 +107,10 @@ public class RobotContainer {
           compressor::disable,
           compressor::enableDigital
     );
+  }
+
+  public Command askForGamepieceCommand(GamePiece gamePiece){
+    return LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, gamePiece.color).withTimeout(2);
   }
 
   public static Command selectDriveTabCommand(){
