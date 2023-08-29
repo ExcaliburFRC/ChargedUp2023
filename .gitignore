@@ -163,3 +163,6 @@ bin/
 
 # Editor Specific setting. do not delete
 .idea/
+
+# wpilib simulation logs
+/*.wpilog

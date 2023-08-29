@@ -68,6 +68,7 @@ public class Swerve extends SubsystemBase {
 
   private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
   private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
+  private final Trigger rampStreightTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 3);
 
   private final SlewRateLimiter angleRateLimiter = new SlewRateLimiter(0.15);
 

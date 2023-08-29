@@ -34,7 +34,6 @@ public class Intake extends SubsystemBase {
     intakeMotor.restoreFactoryDefaults();
     intakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     intakeMotor.clearFaults();
-//        intakeMotor.getFault()
   }
 
   public Command openPistonCommand() {
@@ -119,8 +118,8 @@ public class Intake extends SubsystemBase {
                   intakeMotor.setVoltage(pid + ff);
                   SmartDashboard.putNumber("rpm", intakeEncoder.getVelocity());
                   SmartDashboard.putNumber("intake setpoint", rpm);
-                }).alongWith(new WaitCommand(0.03).andThen(
-                      new WaitUntilCommand(isAtTargetVelocity), pushCubeCommand()))
+                }).alongWith(
+                        new WaitCommand(0.03).andThen(new WaitUntilCommand(isAtTargetVelocity), pushCubeCommand()))
                 .finallyDo((__) -> {
                   intakeMotor.stopMotor();
                   ejectPiston.set(DoubleSolenoid.Value.kReverse);
