@@ -201,6 +201,8 @@ public final class Constants {
 
 
     public static final class CuberConstants {
+        // TODO: update with real values
+
         public static final int ANGLE_MOTOR_ID = 0;
         public static final int ROLLERS_MOTOR_ID = 0;
 
@@ -212,6 +214,11 @@ public final class Constants {
         public static final int ULTRASONIC_PING_CHANNEL = 0;
         public static final int ULTRASONIC_ECHO_CHANNEL = 0;
         public static final double ULTRASONIC_THRESHOLD = 10;
+
+        public static final float FWD_SOFT_LIMIT = 170f;
+        public static final float REV_SOFT_LIMIT = 5f;
+
+        public static final double ANGLE_CONVERSION_FACTOR = 1.0 / 50.0;
 
         public static final double VEL_THRESHOLD = 50;
         public static final double POS_THRESHOLD = 1;

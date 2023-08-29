@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import static com.revrobotics.CANSparkMax.SoftLimitDirection.kForward;
+import static com.revrobotics.CANSparkMax.SoftLimitDirection.kReverse;
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.CuberConstants.*;
 
@@ -20,6 +22,7 @@ public class Cuber extends SubsystemBase {
     private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, kBrushless);
     private final CANSparkMax shooterMotor = new CANSparkMax(ROLLERS_MOTOR_ID, kBrushless);
     private final RelativeEncoder shooterEncoder = shooterMotor.getEncoder();
+    private final RelativeEncoder angleRelativeEncoder = angleMotor.getEncoder();
 
     private final Servo servo = new Servo(SERVO_CHANNEL);
 
@@ -43,8 +46,12 @@ public class Cuber extends SubsystemBase {
 
     public Cuber() {
         angleMotor.restoreFactoryDefaults();
-        angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         angleMotor.clearFaults();
+        angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        angleMotor.setSoftLimit(kForward, FWD_SOFT_LIMIT);
+        angleMotor.enableSoftLimit(kForward, true);
+        angleMotor.setSoftLimit(kReverse, REV_SOFT_LIMIT);
+        angleMotor.enableSoftLimit(kReverse, true);
         angleMotor.setInverted(false);
 
         shooterMotor.restoreFactoryDefaults();
@@ -54,7 +61,8 @@ public class Cuber extends SubsystemBase {
 
         angleEncoder.setPositionOffset(ABS_ENCODER_OFFSET);
 
-        // TODO: add fwd & rev soft limits
+        angleRelativeEncoder.setPositionConversionFactor(ANGLE_CONVERSION_FACTOR);
+        angleRelativeEncoder.setPosition(angleEncoder.getDistance());
 
         ultrasonic.setEnabled(true);
         Ultrasonic.setAutomaticMode(true);
@@ -125,7 +133,6 @@ public class Cuber extends SubsystemBase {
     }
 
     // mainCommands
-
     private Command requirement() {
         return new RunCommand(() -> {
         }, this);
@@ -155,5 +162,4 @@ public class Cuber extends SubsystemBase {
                 requirement())
                 .until(hasCubeTrigger.negate().debounce(0.2));
     }
-
 }
