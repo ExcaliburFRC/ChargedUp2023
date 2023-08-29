@@ -5,6 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
@@ -19,11 +23,10 @@ import frc.robot.utility.FaultReporter;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-//  private RobotContainer m_robotContainer;
+  private RobotContainer m_robotContainer;
 
   public static Timer startUpTimer = new Timer();
-  private final Servo servo = new Servo(8);
-  private final CommandPS4Controller controller = new CommandPS4Controller(0);
+  public static final boolean isRobotReal = isReal();
 
   public Robot(){
     addPeriodic(new FaultReporter()::check, 1);
@@ -37,6 +40,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
+    m_robotContainer = new RobotContainer();
 
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog(), true);
@@ -69,8 +73,10 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {}
 
+  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
@@ -102,14 +108,17 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testInit() {
+    // Cancels all running commands at the start of test mode.
+    CommandScheduler.getInstance().cancelAll();
+    CommandScheduler.getInstance().enable();
+
+//    m_robotContainer.SystemTester().schedule();
+//    m_robotContainer.manual().schedule();
   }
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {
-    servo.set((controller.getLeftY() + 1) / 2);
-    System.out.println((controller.getLeftY() + 1) / 2);
-  }
+  public void testPeriodic() {}
 
   /** This function is called once when the robot is first started up. */
   @Override

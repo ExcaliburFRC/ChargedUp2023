@@ -1,7 +1,7 @@
 package frc.robot.commands.autonomous;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.swerve.Swerve;
+import frc.robot.subsystems.swerve.Swerve;
 
 public class ClimbOverRampCommand extends SequentialCommandGroup {
   public ClimbOverRampCommand(Swerve swerve, boolean isForward){
