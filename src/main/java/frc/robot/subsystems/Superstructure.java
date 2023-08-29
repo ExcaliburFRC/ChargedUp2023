@@ -3,15 +3,13 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.RobotContainer;
-import frc.robot.utility.AutoBuilder;
 
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 import static frc.robot.Constants.IntakeConstants.*;
-import static frc.robot.Constants.LedsConstants.Colors.GREEN;
-import static frc.robot.Constants.LedsConstants.Colors.OFF;
+import static frc.robot.Constants.LedsConstants.Colors.*;
 
 public class Superstructure extends SubsystemBase {
     public final Arm arm = new Arm();
@@ -24,21 +22,25 @@ public class Superstructure extends SubsystemBase {
     }
 
     public Command intakeFromShelfCommand() {
-        return arm.moveToLengthCommand(MIDDLE.setpoint).andThen(
+        return new SequentialCommandGroup(
+                arm.moveToLengthCommand(MIDDLE.setpoint),
                 new InstantCommand(() -> Shuffleboard.selectTab("armCamera")),
-                rollergripper.intakeCommand().alongWith(
+                new ParallelCommandGroup(
+                        rollergripper.intakeCommand(),
                         arm.holdSetpointCommand(SHELF_EXTENDED.setpoint),
-                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, GREEN.color, OFF.color))
-                        .until(rollergripper.beambreakTrigger.debounce(0.3)),
+                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, RED.color, OFF.color))
+                        .until(rollergripper.beambreakTrigger.debounce(0.15)),
                 RobotContainer.selectDriveTabCommand(),
-                arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).withTimeout(0.5));
+                arm.holdSetpointCommand(SHELF_RETRACTED.setpoint)
+                        .alongWith(LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.SOLID, GREEN.color, OFF.color))
+                        .withTimeout(0.5));
     }
 
     public Command placeOnHighCommand(BooleanSupplier release) {
         return new SequentialCommandGroup(
-                arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.5),
+                arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.25),
                 arm.holdSetpointCommand(HIGH.setpoint).until(release),
-                arm.fadeArmCommand().alongWith(rollergripper.ejectCommand(0.035))
+                arm.fadeArmCommand().alongWith(rollergripper.ejectCommand(0.03))
                         .until(rollergripper.beambreakTrigger.negate().debounce(0.1)),
                 arm.resetLengthCommand());
     }
@@ -49,10 +51,10 @@ public class Superstructure extends SubsystemBase {
                 .until(rollergripper.beambreakTrigger.negate().debounce(0.1));
     }
 
-    public Command placeOnMidSequentially(){
+    public Command placeOnMidSequentially() {
         return arm.moveToAngleCommand(MID.setpoint)
                 .alongWith(new WaitCommand(1).andThen(arm.moveToLengthCommand(MID.setpoint)))
-                .until(()-> arm.armAtSetpoint(MID.setpoint)).andThen(placeOnMidCommand(()-> true));
+                .until(() -> arm.armAtSetpoint(MID.setpoint)).andThen(placeOnMidCommand(() -> true));
     }
 
     public Command placeOnLowCommand() {
@@ -70,7 +72,8 @@ public class Superstructure extends SubsystemBase {
                 Map.of(
                         LOW_RPM, placeOnLowCommand(),
                         MID_RPM, placeOnMidSequentially(),
-                        HIGH_RPM, new InstantCommand(()-> {})), // arm mechanics doesn't allow high cone placement in autonomous
+                        HIGH_RPM, new InstantCommand(() -> {
+                        })), // arm mechanics doesn't allow high cone placement in autonomous
                 () -> height);
     }
 }

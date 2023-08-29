@@ -220,7 +220,6 @@ public final class Constants {
 
     public static class LedsConstants {
         public static final int LEDS_PORT = 0;
-        //        public static final int LENGTH = 60 * 5;
         public static final int LENGTH = 150;
 
         public enum Colors{
@@ -245,7 +244,7 @@ public final class Constants {
             }
         }
 
-        //https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println/5762502#5762502
+        // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println/5762502#5762502
         public static final HashMap<Color, String> consoleColor = new HashMap<>();
         static {
             consoleColor.put(Colors.TEAM_BLUE.color, "\u001B[34m");

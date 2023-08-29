@@ -180,10 +180,10 @@ public class LEDs extends SubsystemBase {
 
             case RAINBOW:
                 AtomicInteger h = new AtomicInteger();
-                int s = 100, v = 100;
+                int s = 250, v = 255;
                 command = this.runOnce(()-> {
                     Arrays.fill(colors, Color.fromHSV(h.get(), s, v));
-                    if (h.get() != 360) h.incrementAndGet();
+                    if (h.get() != 180) h.incrementAndGet();
                     else h.set(0);
                 }).repeatedly().withName("RAINBOW");
 
