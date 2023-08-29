@@ -4,27 +4,24 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Compressor;
+import  edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SystemTester;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.*;
 import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
+import frc.robot.utility.Calculation;
 
 import java.util.Map;
 
-import static frc.robot.Constants.LedsConstants.Colors.*;
+import static frc.robot.Constants.IntakeConstants.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -36,7 +33,6 @@ public class RobotContainer {
   private final Intake intake = new Intake();
   public final Swerve swerve = new Swerve();
   private final Superstructure superstructure = new Superstructure();
-  LEDs leds = LEDs.getInstance();
 
   private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
@@ -69,52 +65,46 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-//    swerve.setDefaultCommand(
-//          swerve.driveSwerveCommand(
-//                () -> Calculation.deadband(-driveJoystick.getLeftY()),
-//                () -> Calculation.deadband(driveJoystick.getLeftX()),
-//                () -> Calculation.deadband(driveJoystick.getRightX()),
-//                driveJoystick.R1().negate(),
-//                driveJoystick.L1()));
-//
-//    intake.setDefaultCommand(
-//          intake.setIntakeSpeedCommand(0.05).withTimeout(1.25)
-//                .andThen(new RunCommand(()-> {}, intake)));
-//
+    swerve.setDefaultCommand(
+          swerve.driveSwerveCommand(
+                () -> Calculation.deadband(-driveJoystick.getLeftY()),
+                () -> Calculation.deadband(driveJoystick.getLeftX()),
+                () -> Calculation.deadband(driveJoystick.getRightX()),
+                driveJoystick.R1().negate(),
+                driveJoystick.L1()));
 
-    leds.setDefaultCommand(
-            leds.applyPatternCommand(LEDs.LEDPattern.TRAIN_CIRCLE, TEAM_BLUE.color, RED.color)
-    );
+    intake.setDefaultCommand(
+          intake.setIntakeSpeedCommand(0.05).withTimeout(1.25)
+                .andThen(new RunCommand(()-> {}, intake)));
 
-//
-// //     intake commands
-//    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.45));
-//    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
-//
-//    armJoystick.PS().toggleOnTrue(intake.togglePistonCommand());
-//
-// //    place commands
-//    armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
-//    armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
-//    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand());
-//
-//    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
-//    armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
-//    armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
-//
-//    armJoystick.L2().whileTrue(intake.collectCommand());
-//    armJoystick.R2().whileTrue(intake.letoutCommand());
-//
-// //    other
-//    driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
-//    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
-//    armJoystick.touchpad().whileTrue(intake.intakeFromSlideCommand());
-//
-//    armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
-//    driveJoystick.square().whileTrue(swerve.balanceRampCommand());
-//
-//    armJoystick.share().onTrue(LEDs.getInstance().applyPatternCommand(LEDPattern.BLINKING, ORANGE.color, OFF.color).withTimeout(3));
-//    armJoystick.options().onTrue(LEDs.getInstance().applyPatternCommand(LEDPattern.BLINKING, PURPLE.color, OFF.color).withTimeout(3));
+    // intake commands
+    armJoystick.povRight().toggleOnTrue(intake.intakeCommand(0.45));
+    armJoystick.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
+
+    armJoystick.PS().toggleOnTrue(intake.togglePistonCommand());
+
+    // place commands
+    armJoystick.triangle().toggleOnTrue(superstructure.placeOnHighCommand(armJoystick.R1()));
+    armJoystick.circle().toggleOnTrue(superstructure.placeOnMidCommand(armJoystick.R1()));
+    armJoystick.cross().toggleOnTrue(superstructure.placeOnLowCommand());
+
+    armJoystick.povUp().toggleOnTrue(intake.shootCubeCommand(HIGH_RPM));
+    armJoystick.povLeft().toggleOnTrue(intake.shootCubeCommand(MID_RPM));
+    armJoystick.povDown().toggleOnTrue(intake.shootCubeToLowCommand());
+
+    armJoystick.L2().whileTrue(intake.collectCommand());
+    armJoystick.R2().whileTrue(intake.letoutCommand());
+
+    // other
+    driveJoystick.touchpad().toggleOnTrue(toggleCompressorCommand());
+    driveJoystick.PS().onTrue(swerve.resetGyroCommand());
+    armJoystick.touchpad().whileTrue(intake.intakeFromSlideCommand());
+
+    armJoystick.L1().toggleOnTrue(superstructure.lockArmCommand());
+    driveJoystick.square().whileTrue(swerve.balanceRampCommand());
+
+//    driveJoystick.button(15).onTrue(swerve.resetModulesCommand());
+//    armJoystick.button(15).whileTrue(superstructure.arm.blindCloseArmCommand());
   }
 
   public Command toggleCompressorCommand() {
@@ -124,18 +114,9 @@ public class RobotContainer {
     );
   }
 
-  Command SystemTester() {
-    return new SystemTester(swerve, intake, superstructure.rollergripper);
-  }
-
   public static Command selectDriveTabCommand(){
     return new InstantCommand(()-> Shuffleboard.selectTab(driveTab.getTitle()));
   }
-
-//  Command manualArm(){
-//    return superstructure.arm.joystickManualCommand(armJoystick::getLeftY, armJoystick::getRightY)
-//          .alongWith(superstructure.rollergripper.manualCommand(armJoystick.square(), armJoystick.circle()));
-//  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -144,6 +125,8 @@ public class RobotContainer {
    * d to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return AutoBuilder.getAutonomousCommand(superstructure, intake, swerve);
+//    return AutoBuilder.getAutonomousCommand(superstructure, intake, swerve);
+    return null;
+//    return swerve.turnToAngleCommand(180);
   }
 }

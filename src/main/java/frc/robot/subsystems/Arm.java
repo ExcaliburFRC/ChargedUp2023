@@ -1,9 +1,6 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -15,8 +12,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.LedsConstants.Colors;
-import frc.robot.Robot;
 
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -78,7 +73,7 @@ public class Arm extends SubsystemBase {
 
     armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(10, 0).withSize(4, 4)
            .withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
-    armTab.addDouble("Arm degrees", angleEncoder::getDistance).withPosition(6, 0).withSize(4, 4)
+    armTab.addDouble("Arm degrees", () -> -angleEncoder.getDistance()).withPosition(6, 0).withSize(4, 4)
           .withWidget("Simple Dial").withProperties(Map.of("min", 90, "max", 190));
     armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(6, 4)
           .withSize(4, 2);
@@ -88,13 +83,10 @@ public class Arm extends SubsystemBase {
     lengthMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 1.03f);
     lengthMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 
-    angleMotor.setOpenLoopRampRate(1.5);
+//    angleMotor.setOpenLoopRampRate(1.5);
+    angleMotor.setOpenLoopRampRate(0.5);
 
     if (lengthEncoder.getPosition() < 0.1) lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
-
-    angleRelativeEncoder.setPositionConversionFactor(ARM_GEAR_RATIO);
-//    angleRelativeEncoder.setPosition(90);
-
   }
 
   /**
@@ -136,13 +128,25 @@ public class Arm extends SubsystemBase {
     }, this);
   }
 
-  public double getArmAngle() {
-    if ((angleEncoder.getDistance() > 220 || angleEncoder.getDistance() < 80) && Robot.isReal())
-      DriverStation.reportError("arm encoder bugged!!", false);
-    return MathUtil.clamp(angleEncoder.getDistance(), 80, 220);
+  /**
+   * moves the arm's length in a given speed
+   *
+   * @param lengthSpeed the speed to move the length motor in
+   * @return the command
+   */
+  public Command manualLengthCommand(DoubleSupplier lengthSpeed) {
+    return new RunCommand(() -> lengthMotor.set(lengthSpeed.getAsDouble() / 2));
   }
 
-  public Command blindLockArmCommand(){
+  public double getArmAngle() {
+    double angle = -angleEncoder.getDistance();
+
+    if (angle > 220 || angle < 80)
+      DriverStation.reportError("arm encoder bugged!!", true);
+    return MathUtil.clamp(angle, 80, 220);
+  }
+
+  public Command blindCloseArmCommand(){
     return resetLengthCommand().andThen(new RunCommand(()-> angleMotor.set(-0.2))
             .finallyDo((__)-> moveToLengthCommand(LOCKED.setpoint).schedule()));
   }
@@ -214,11 +218,9 @@ public class Arm extends SubsystemBase {
   }
 
   public Command lockArmCommand(Trigger bbTrigger) {
-    return new ParallelCommandGroup(
-            resetLengthCommand().andThen(
-            moveToAngleCommand(LOCKED.setpoint)
-            .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger))),
-          LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.RED.color)).unless(bbTrigger)
+    return resetLengthCommand()
+          .andThen(moveToAngleCommand(LOCKED.setpoint)
+          .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
           .until(armLockedTrigger);
   }
 
@@ -231,10 +233,8 @@ public class Arm extends SubsystemBase {
     return new InstantCommand(lengthMotor::stopMotor);
   }
 
-
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
-
   }
 }

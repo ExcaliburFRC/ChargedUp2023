@@ -104,11 +104,9 @@ public final class Constants {
 
         public static final double RAMP_BALANCE_KP = 0.006;
         public static final double RAMP_BALANCE_KD = 0.002;
-        // yehuda ha-gever
 
         // intentional limitations
-
-        public static final double kSpeedPercantageLimit = 100; // %
+        public static final double kSpeedPercantageLimit = 25; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -163,29 +161,28 @@ public final class Constants {
 
         public static final int CLOSED_LIMIT_SWITCH_ID = 6;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
+        public static final int ABS_ANGLE_ENCODER_CHANNEL = 5;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
 
-        public static final double ARM_GEAR_RATIO = 6.1;
-
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.951 - 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.25167 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
 
         // Angle control
-        public static final double kS_ANGLE = 0.10622;
-        public static final double kV_ANGLE = 0.016479;
-        public static final double kA_ANGLE = 0.0023683;
-        public static final double kG_ANGLE = -0.52;
+        public static final double kS_ANGLE = -0.048742;
+        public static final double kV_ANGLE = 0.020229;
+        public static final double kA_ANGLE = 0.0024233;
+        public static final double kG_ANGLE = -0.53;
 
 //        static {
 //            kG_ANGLE.put(MINIMAL_LENGTH_METERS, 0.50333);
 //            kG_ANGLE.put(MAXIMAL_LENGTH_METERS, 0.69438);
 //        }
 
-        public static final double kP_ANGLE = 0.06;
+        public static final double kP_ANGLE = 0.061938;
+        public static final double kD_ANGLE = 0.015837;
 
         // Length control
         public static final double kS_LENGTH = 0.070742;
