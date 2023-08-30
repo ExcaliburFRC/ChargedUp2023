@@ -51,7 +51,7 @@ public class Cuber extends SubsystemBase {
     public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.2);
 
     public int targetPos = 0;
-    public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(getCuberAngle() - targetPos) < POS_THRESHOLD).debounce(0.2);
+    public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(angleEncoder.getDistance() - targetPos) < POS_THRESHOLD).debounce(0.2);
 
     public Cuber() {
         angleMotor.restoreFactoryDefaults();
@@ -69,6 +69,7 @@ public class Cuber extends SubsystemBase {
         shooterMotor.setInverted(false);
 
         angleEncoder.setPositionOffset(ABS_ENCODER_OFFSET);
+        angleEncoder.setDistancePerRotation(2 * Math.PI);
 
         angleRelativeEncoder.setPositionConversionFactor(ANGLE_CONVERSION_FACTOR);
         angleRelativeEncoder.setPosition(angleEncoder.getDistance());
@@ -89,10 +90,6 @@ public class Cuber extends SubsystemBase {
 
     public double getServoAngle() {
         return servo.getAngle();
-    }
-
-    public double getCuberAngle(){
-        return angleEncoder.getDistance() * 2 * Math.PI;
     }
 
     private Command retractServoCommand() {
@@ -130,7 +127,7 @@ public class Cuber extends SubsystemBase {
         return new FunctionalCommand(
                 () -> targetPos = angle.angle,
                 () -> {
-                    double pid = anglePID.calculate(getCuberAngle(), angle.angle);
+                    double pid = anglePID.calculate(angleEncoder.getDistance(), angle.angle);
                     double ff = angleFF.calculate(angle.angle, 0);
 
                     angleMotor.set(pid + ff);
