@@ -4,14 +4,13 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.utility.FaultReporter;
 
 /**
@@ -23,10 +22,9 @@ import frc.robot.utility.FaultReporter;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  private RobotContainer m_robotContainer;
-
-  public static Timer startUpTimer = new Timer();
-  public static final boolean isRobotReal = isReal();
+  private static final double ADC_RESOLUTION = 4096; // 12 bits
+  private AnalogInput _gamePieceDetector = new AnalogInput(1);
+  private LinearFilter _gamePieceDetectorFilter = LinearFilter.movingAverage(10);
 
   public Robot(){
     addPeriodic(new FaultReporter()::check, 1);
@@ -40,14 +38,11 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer();
-
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog(), true);
 
     enableLiveWindowInTest(false);
 
-    startUpTimer.start();
   }
 
   /**
@@ -64,6 +59,9 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    System.out.println("IR sensor: " +
+            this._gamePieceDetectorFilter.calculate(this._gamePieceDetector.getValue() / ADC_RESOLUTION));
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -76,12 +74,6 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-    // schedule the autonomous command (example)
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
-    }
   }
 
   /** This function is called periodically during autonomous. */
