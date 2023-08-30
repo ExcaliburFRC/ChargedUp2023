@@ -1,15 +1,11 @@
 package frc.robot.swerve;
 
 import com.kauailabs.navx.frc.AHRS;
-import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.auto.PIDConstants;
-import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -24,8 +20,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -68,39 +62,18 @@ public class Swerve extends SubsystemBase {
     private final PIDController rampController = new PIDController(Constants.SwerveConstants.RAMP_BALANCE_KP, 0, RAMP_BALANCE_KD);
     private final PIDController thetaTeleopController = new PIDController(kp_Theta, 0, kd_Theta);
 
-    private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
     private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
 
-    //    private final Limelight limelight = new Limelight();
     private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
             kSwerveKinematics,
             getGyroRotation(),
-            new SwerveModulePosition[]{
-                    swerveModules[FRONT_LEFT].getPosition(),
-                    swerveModules[FRONT_RIGHT].getPosition(),
-                    swerveModules[BACK_LEFT].getPosition(),
-                    swerveModules[BACK_RIGHT].getPosition()},
-            new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
-
-    private final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
-            this::getPose2d,
-            this::setPose2d,
-            kSwerveKinematics,
-            new PIDConstants(0, 0, 0),
-            new PIDConstants(0, 0, 0),
-            states -> setModulesStates(states),
-            new HashMap<>(),
-            true,
-            this
-    );
+            getModulesPositions(),
+            new Pose2d());
 
     private final Field2d field = new Field2d();
 
     public Swerve() {
         resetGyro();
-
-        thetaTeleopController.enableContinuousInput(-180, 180);
-        thetaTeleopController.setTolerance(1.5);
 
         var swerveTab = Shuffleboard.getTab("Swerve");
         swerveTab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro)
@@ -111,23 +84,15 @@ public class Swerve extends SubsystemBase {
                 .withPosition(4, 4).withSize(4, 4);
         swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(8, 4).withSize(4, 4);
-        swerveTab.addDouble("SwerveAngle", () -> getDegrees()).withWidget(BuiltInWidgets.kGyro)
+        swerveTab.addDouble("SwerveAngle", this::getDegrees).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
-
-        swerveTab.addDouble("rampAngle", () -> getRampAngle()).withSize(2, 2);
-        swerveTab.addDouble("pid ramp", () -> rampController.calculate(getRampAngle(), 0)).withSize(2, 2);
-        swerveTab.addBoolean("robot balanced", robotBalancedTrigger::getAsBoolean);
 
         RobotContainer.driveTab.addDouble("SwerveAngle", () -> getOdometryRotation().getDegrees())
                 .withWidget(BuiltInWidgets.kGyro).withPosition(0, 0).withSize(4, 2);
 
-        odometry.resetPosition(
-                getGyroRotation(),
-                getModulesPositions(),
-                new Pose2d(0, 0, new Rotation2d()));
-
-        thetaTeleopController.setTolerance(1);
+        thetaTeleopController.enableContinuousInput(-180, 180);
+        thetaTeleopController.setTolerance(1.5);
     }
 
     public void resetGyro() {
@@ -188,14 +153,12 @@ public class Swerve extends SubsystemBase {
                 },
                 (__) -> {
                     stopModules();
-                    resetEncoders();
-                    new PrintCommand("modules are reset").schedule();
+                    resetAngleEncoders();
                 },
-                () -> swerveModules[FRONT_LEFT].isReset
+                swerveModules[FRONT_LEFT].isReset
                         .and(swerveModules[FRONT_RIGHT].isReset)
                         .and(swerveModules[BACK_LEFT].isReset)
-                        .and(swerveModules[BACK_RIGHT].isReset)
-                        .getAsBoolean(),
+                        .and(swerveModules[BACK_RIGHT].isReset),
                 this);
     }
 
@@ -213,7 +176,7 @@ public class Swerve extends SubsystemBase {
         return resetModulesCommand().andThen(
                 new FunctionalCommand(
                         () -> {
-                        }, //resetModulesCommand().schedule(),
+                        },
                         () -> {
                             //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
                             double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
@@ -231,34 +194,9 @@ public class Swerve extends SubsystemBase {
                             //apply the array to the swerve modules of the robot
                             setModulesStates(moduleStates);
                         },
-                        (__) -> {
-                            stopModules();
-                            resetEncoders();
-                        },
+                        (__) -> stopModules(),
                         () -> false,
                         this));
-    }
-
-    public Command driveSwerveWithAngleCommand(
-            DoubleSupplier xSpeed,
-            DoubleSupplier ySpeed,
-            DoubleSupplier angle,
-            DoubleSupplier xAngle,
-            DoubleSupplier yAngle,
-            BooleanSupplier fieldOriented) {
-//    return new InstantCommand(() -> lastJoystickAngle.set((int) getRotation().getDegrees()))
-        return new ParallelCommandGroup(
-//                new RunCommand(() -> updateJoystickAngle(xAngle.getAsDouble(), yAngle.getAsDouble())),
-                driveSwerveCommand(xSpeed, ySpeed, () -> thetaTeleopController.calculate(getOdometryRotation().getDegrees(), angle.getAsDouble()), fieldOriented)
-        );
-    }
-
-    public Command turnToAngleCommand(double setpoint) {
-        return driveSwerveCommand(
-                () -> 0,
-                () -> 0,
-                () -> thetaTeleopController.calculate(getOdometryRotation().getDegrees(), setpoint), () -> false)
-                .until(new Trigger(thetaTeleopController::atSetpoint).debounce(0.15));
     }
 
     public Command resetGyroCommand(double angle) {
@@ -271,10 +209,6 @@ public class Swerve extends SubsystemBase {
 
     public Command resetGyroCommand() {
         return resetGyroCommand(0);
-    }
-
-    public Command followTrajectoryCommand(PathPlannerTrajectory traj) {
-        return resetModulesCommand().andThen(swerveAutoBuilder.fullAuto(traj));
     }
 
     // autonomous ramp climbing commands
@@ -303,40 +237,9 @@ public class Swerve extends SubsystemBase {
                         balanceRampCommand());
     }
 
-//
-//  // returns the joystick angle in 0 to 360 (right is 0, up is 90)
-//  //TODO: fix and make simple
-//
-//  private double calculateJoystickAngle(double x, double y) {
-//    double a = -Math.toDegrees(Math.atan(y / x));
-//    if (x < 0) a += 180;
-//    if (a < 0) a += 360;
-//    a -= 90;
-//    if (a < 0) a += 360;
-//    if (a > 180) a -= 360;
-//    return -a;
-//  }
-//  // update the angle of the joystick
-//
-//  private void updateJoystickAngle(double x, double y) {
-//    if (Math.abs(x) + Math.abs(y) > 0.5) {
-//      lastJoystickAngle.set((int) calculateJoystickAngle(x, y));
-//    }
-//  }
-//  public Command resetJoystickAngle() {
-//    return new InstantCommand(() -> lastJoystickAngle.set(0));
-//  }
-
     @Override
     public void periodic() {
-        odometry.update(
-                getGyroRotation(),
-                new SwerveModulePosition[]{
-                        swerveModules[FRONT_LEFT].getPosition(),
-                        swerveModules[FRONT_RIGHT].getPosition(),
-                        swerveModules[BACK_LEFT].getPosition(),
-                        swerveModules[BACK_RIGHT].getPosition()
-                });
+        odometry.update(getGyroRotation(), getModulesPositions());
 
 //        limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
 
@@ -344,7 +247,7 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putData(field);
     }
 
-    private void resetEncoders() {
+    private void resetAngleEncoders() {
         swerveModules[FRONT_LEFT].resetEncoders();
         swerveModules[FRONT_RIGHT].resetEncoders();
         swerveModules[BACK_LEFT].resetEncoders();

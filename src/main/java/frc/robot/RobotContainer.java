@@ -7,7 +7,6 @@ package frc.robot;
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Compressor;
@@ -21,6 +20,8 @@ import frc.robot.swerve.Swerve;
 import frc.robot.utility.AutoBuilder;
 import frc.robot.utility.Calculation;
 
+import static frc.robot.utility.AutoBuilder.getPathpoint;
+
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -29,6 +30,7 @@ import frc.robot.utility.Calculation;
  */
 public class RobotContainer {
   public final Swerve swerve = new Swerve();
+  public final AutoBuilder autoBuilder = new AutoBuilder(swerve);
 
   public final CommandPS4Controller driveJoystick = new CommandPS4Controller(0);
   public final CommandPS4Controller armJoystick = new CommandPS4Controller(1);
@@ -66,27 +68,19 @@ public class RobotContainer {
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
-   * @return the comman
-   * d to run in autonomous
+   * @return the command to run in autonomous
    */
-//  public Command getAutonomousCommand() {
-//    PathPlannerTrajectory trajectory = PathPlanner.loadPath("firstPath",new PathConstraints(1,1));
-//
-//    return new SequentialCommandGroup(
-//          new InstantCommand(()-> swerve.setPose2d(trajectory.getInitialHolonomicPose())),
-//          swerve.followTrajectoryCommand(trajectory));
-//  }
 
   public Command getAutonomousCommand() {
-    // Simple path with holonomic rotation. Stationary start/end. Max velocity of 4 m/s and max accel of 3 m/s^2
     PathPlannerTrajectory traj = PathPlanner.generatePath(
             new PathConstraints(1, 1),
-            AutoBuilder.getPathpoint(new PathPoint(new Translation2d(7.54, 3.14), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0))), // position, heading(direction of travel), holonomic rotation
-            AutoBuilder.getPathpoint(new PathPoint(new Translation2d(8.51, 3.17), Rotation2d.fromDegrees(90), Rotation2d.fromDegrees(90))), // position, heading(direction of travel), holonomic rotation
-            AutoBuilder.getPathpoint(new PathPoint(new Translation2d(7.6, 4), Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(180))), // position, heading(direction of travel), holonomic rotation
-            AutoBuilder.getPathpoint(new PathPoint(new Translation2d(6.5, 3.26), Rotation2d.fromDegrees(-90), Rotation2d.fromDegrees(-90))) // position, heading(direction of travel), holonomic rotation
+
+            getPathpoint(new Translation2d(7.54, 3.14), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0)),
+            getPathpoint(new Translation2d(8.51, 3.17), Rotation2d.fromDegrees(90), Rotation2d.fromDegrees(90)),
+            getPathpoint(new Translation2d(7.6, 4), Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(180)),
+            getPathpoint(new Translation2d(6.5, 3.26), Rotation2d.fromDegrees(-90), Rotation2d.fromDegrees(-90))
             );
 
-    return swerve.followTrajectoryCommand(traj);
+    return autoBuilder.followTrajectoryCommand(traj);
   }
 }

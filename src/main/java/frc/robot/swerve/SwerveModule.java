@@ -108,7 +108,7 @@ public class SwerveModule implements Sendable {
   }
 
   public void resetEncoders() {
-    _driveEncoder.setPosition(0);
+//    _driveEncoder.setPosition(0);
     _spinningEncoder.setPosition(getAbsEncoderRad());
   }
 
