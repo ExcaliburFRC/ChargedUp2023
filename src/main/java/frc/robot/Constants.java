@@ -9,8 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utility.Color;
-
-import java.util.HashMap;
+import frc.robot.utility.Colors;
 
 import static java.lang.Math.PI;
 
@@ -23,27 +22,6 @@ import static java.lang.Math.PI;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static class IntakeConstants {
-        public static final int INTAKE_MOTOR_ID = 41;
-
-        public static final int INTAKE_FWD_CHANNEL = 1;
-        public static final int INTAKE_REV_CHANNEL = 0;
-
-        public static final int EJECT_FWD_CHANNEL = 4;
-        public static final int EJECT_REV_CHANNEL = 3;
-
-        public static double kS = 0.16564;
-        public static double kV = 0.12836 / 60;
-
-        public static double kP = 0.00025;
-
-        public static final double LOW_RPM = 0;
-        public static final double MID_RPM = -1800;
-        public static final double HIGH_RPM = -3100;
-
-        public static final double PID_TOLERANCE = 150;
-    }
-
     public static final class RollerGripperConstants {
         public static final int INTAKE_BEAMBREAK = 7;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
@@ -92,11 +70,11 @@ public final class Constants {
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics =
-              new SwerveDriveKinematics(
-                    new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-                    new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-                    new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-                    new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
+                new SwerveDriveKinematics(
+                        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+                        new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+                        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+                        new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = Units.feetToMeters(12); //TODO find
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
@@ -145,7 +123,7 @@ public final class Constants {
 
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
 
-            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(90))),
+            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS - 0.01, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(86)));
 
             public final Translation2d setpoint;
@@ -194,67 +172,101 @@ public final class Constants {
         public static final double kMaxLinearAcceleration = 0.75;
     }
 
-    public static class Coordinates {
-        public enum RampLocations {
-            LEFT(new Translation2d(4, 3.481), new Translation2d(12.75, 3.481)),
-            MIDDLE(new Translation2d(4, 2.707), new Translation2d(12.75, 2.707)),
-            RIGHT(new Translation2d(4, 1.9), new Translation2d(12.75, 1.9));
 
-            public Translation2d blue;
-            public Translation2d red;
+    public static final class CuberConstants {
+        // TODO: update with real values
 
-            RampLocations(Translation2d blue, Translation2d red) {
-                this.blue = blue;
-                this.red = red;
+        public static final int ANGLE_MOTOR_ID = 0;
+        public static final int ROLLERS_MOTOR_ID = 0;
+
+        public static final double ABS_ENCODER_OFFSET = 0; // dutyCycle
+
+        public static final int SERVO_CHANNEL = 0;
+        public static final int ENCODER_CHANNEL = 0;
+
+        public static final int ULTRASONIC_PING_CHANNEL = 0;
+        public static final int ULTRASONIC_ECHO_CHANNEL = 0;
+        public static final double ULTRASONIC_THRESHOLD = 10;
+
+        public static final float FWD_SOFT_LIMIT = 170f;
+        public static final float REV_SOFT_LIMIT = 5f;
+
+        public static final double ANGLE_CONVERSION_FACTOR = 1.0 / 50.0;
+
+        public static final double VEL_THRESHOLD = 50;
+        public static final double POS_THRESHOLD = 1;
+
+        // angle control constants
+        public static final double Ks_ANGLE = 0;
+        public static final double Kv_ANGLE = 0;
+        public static final double Kg_ANGLE = 0;
+        public static final double Ka_ANGLE = 0;
+
+        public static final double Kp_ANGLE = 0;
+        public static final double Kd_ANGLE = 0;
+
+        // shooter control constants
+        public static final double Ks_SHOOTER = 0;
+        public static final double Kv_SHOOTER = 0;
+        public static final double Ka_SHOOTER = 0;
+
+        public static final double Kp_SHOOTER = 0;
+        public static final double Kd_SHOOTER = 0;
+
+
+        public enum SERVO_ANGLE {
+            RETRACTED(0),
+            EXTENDED(90);
+
+            public final double angle;
+
+            SERVO_ANGLE(double angle) {
+                this.angle = angle;
             }
         }
-        public enum GamePiece {
-            EMPTY,
-            CUBE,
-            CONE;
+
+        public enum CUBER_ANGLE {
+            HIGH(165),
+            MIDDLE(160),
+            LOW(75),
+            CLOSED(80),
+            INTAKE_GROUND(10),
+            INTAKE_SLIDE(120);
+
+            public final int angle;
+
+            CUBER_ANGLE(int angle) {
+                this.angle = angle;
+            }
         }
 
-        public static double middleAxisXValue = 8.3;
-    }
+        public enum SHOOTER_VELOCITIY {
+            HIGH(4000),
+            MIDDLE(2000),
+            LOW(750),
+            INTAKE(-1000);
 
+            public final int velocity;
+
+            SHOOTER_VELOCITIY(int angle) {
+                this.velocity = angle;
+            }
+        }
+    }
 
     public static class LedsConstants {
         public static final int LEDS_PORT = 0;
         public static final int LENGTH = 150;
 
-        public enum Colors{
-            OFF(new Color(0, 0, 0)),
-            TEAM_YELLOW(new Color(255, 175, 0)),
-            TEAM_BLUE(new Color(0, 0, 255)),
-            GREEN(new Color(0, 255, 0)),
-            RED(new Color(255, 0, 0)),
-            WHITE(new Color(255, 255, 255)),
-            ORANGE(new Color(255, 165, 0)), // TODO: find values
-            CYAN(new Color(0, 0, 0)), // TODO: find values
-            YELLOW(new Color(0, 0, 0)), // TODO: find values
-            PINK(new Color(0, 0, 0)), // TODO: find values
-            PURPLE(new Color(160, 32, 240)); // TODO: find values
+        public enum GamePiece {
+            Cone(Colors.PURPLE),
+            Cube(Colors.ORANGE);
 
-            // TODO: add more colors
+            public Color color;
 
-            public final Color color;
-
-            Colors(Color color){
-                this.color = color;
+            GamePiece(Colors color){
+                this.color = color.color;
             }
-        }
-
-        // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println/5762502#5762502
-        public static final HashMap<Color, String> consoleColor = new HashMap<>();
-        static {
-            consoleColor.put(Colors.TEAM_BLUE.color, "\u001B[34m");
-            consoleColor.put(Colors.TEAM_YELLOW.color, "\u001B[33m");
-            consoleColor.put(Colors.OFF.color, "\\u001B[30m");
-            consoleColor.put(Colors.RED.color, "\u001B[31m");
-            consoleColor.put(Colors.GREEN.color, "\u001B[32m");
-            consoleColor.put(Colors.PURPLE.color, "\u001B[35m");
-            consoleColor.put(Colors.CYAN.color, "\u001B[36m");
-            consoleColor.put(Colors.WHITE.color, "\u001B[37m");
         }
     }
 }
