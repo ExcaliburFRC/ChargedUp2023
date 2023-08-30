@@ -196,6 +196,24 @@ public final class Constants {
         public static final double VEL_THRESHOLD = 50;
         public static final double POS_THRESHOLD = 1;
 
+        // angle control constants
+        public static final double Ks_ANGLE = 0;
+        public static final double Kv_ANGLE = 0;
+        public static final double Kg_ANGLE = 0;
+        public static final double Ka_ANGLE = 0;
+
+        public static final double Kp_ANGLE = 0;
+        public static final double Kd_ANGLE = 0;
+
+        // shooter control constants
+        public static final double Ks_SHOOTER = 0;
+        public static final double Kv_SHOOTER = 0;
+        public static final double Ka_SHOOTER = 0;
+
+        public static final double Kp_SHOOTER = 0;
+        public static final double Kd_SHOOTER = 0;
+
+
         public enum SERVO_ANGLE {
             RETRACTED(0),
             EXTENDED(90);

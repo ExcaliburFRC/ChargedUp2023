@@ -37,13 +37,13 @@ public class Cuber extends SubsystemBase {
 
     public static final ShuffleboardTab cuberTab = Shuffleboard.getTab("Cuber");
 
-    private final PIDController shooterPID = new PIDController(0, 0, 0);
-    private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(0, 0, 0);
+    private final PIDController shooterPID = new PIDController(Kp_SHOOTER, 0, Kd_SHOOTER);
+    private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(Ks_SHOOTER, Kv_SHOOTER, Ka_SHOOTER);
 
-    private final PIDController anglePID = new PIDController(0, 0, 0);
-    private final ArmFeedforward angleFF = new ArmFeedforward(0, 0, 0, 0);
+    private final PIDController anglePID = new PIDController(Kp_ANGLE, 0, Kd_ANGLE);
+    private final ArmFeedforward angleFF = new ArmFeedforward(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
 
-    public final Trigger hasCubeTrigger = new Trigger(() -> ultrasonic.getRangeMM() <= ULTRASONIC_THRESHOLD)
+    public final Trigger hasCubeTrigger = new Trigger(() -> ultrasonic.getRangeMM() <= ULTRASONIC_THRESHOLD).debounce(0.2)
             .onTrue(leds.applyPatternCommand(SOLID, GREEN.color).withTimeout(0.25))
             .onFalse(leds.applyPatternCommand(SOLID, RED.color).withTimeout(0.25));
 
