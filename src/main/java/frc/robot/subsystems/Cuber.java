@@ -17,9 +17,9 @@ import static com.revrobotics.CANSparkMax.SoftLimitDirection.kForward;
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kReverse;
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.CuberConstants.*;
+import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
-import static frc.robot.utility.Colors.GREEN;
-import static frc.robot.utility.Colors.RED;
+import static frc.robot.utility.Colors.*;
 
 public class Cuber extends SubsystemBase {
     private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, kBrushless);
@@ -156,8 +156,9 @@ public class Cuber extends SubsystemBase {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(cuberAngle),
                 setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
+                leds.applyPatternCommand(BLINKING, PURPLE.color),
                 requirement())
-                .until(hasCubeTrigger.debounce(0.2));
+                .until(hasCubeTrigger);
     }
 
     public Command shootCubeCommand(SHOOTER_VELOCITIY vel, CUBER_ANGLE angle) {
@@ -165,7 +166,8 @@ public class Cuber extends SubsystemBase {
                 setCuberAngleCommand(angle),
                 setShooterVelocityCommand(vel),
                 new WaitUntilCommand(isAtTargetVelTrigger.and(isAtTargetPosTrigger)).andThen(pushCubeCommand()),
+                leds.applyPatternCommand(BLINKING, PURPLE.color),
                 requirement())
-                .until(hasCubeTrigger.negate().debounce(0.2));
+                .until(hasCubeTrigger.negate());
     }
 }

@@ -1,6 +1,9 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.*;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -18,6 +21,8 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
 import static frc.robot.Constants.ArmConstants.Setpoints.LOCKED;
+import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
+import static frc.robot.utility.Colors.ORANGE;
 
 public class Arm extends SubsystemBase {
   private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -37,16 +42,13 @@ public class Arm extends SubsystemBase {
 
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
-//  public final Trigger armStuckTrigger =
-//        new Trigger(() -> armFullyOpenedTrigger.getAsBoolean() && getArmAngle() > 100);
-
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
   public static double floatDutyCycle = 0;
 
   public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
 
-  private final RelativeEncoder angleRelativeEncoder = angleFollowerMotor.getEncoder();
+  LEDs leds = LEDs.getInstance();
 
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
@@ -159,7 +161,11 @@ public class Arm extends SubsystemBase {
   }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
-    return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
+    return new ParallelCommandGroup(
+            moveToLengthCommand(setpoint),
+            moveToAngleCommand(setpoint),
+            leds.applyPatternCommand(BLINKING, ORANGE.color)
+    );
   }
 
   public Command setAngleSpeed(double speed) {
