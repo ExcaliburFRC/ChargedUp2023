@@ -35,6 +35,9 @@ public class LEDs extends SubsystemBase {
         LedStripA.setLength(LENGTH);
         LedStripA.start();
 
+        LedStripB.setLength(LENGTH);
+        LedStripB.start();
+
         setDefaultCommand(applyPatternCommand(LEDPattern.TRAIN, getAllianceColor(), TEAM_GOLD.color));
     }
 
