@@ -255,8 +255,9 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-        public static final int LEDS_PORT = 0;
-        public static final int LENGTH = 150;
+        public static final int LEDS_PORT_A = 0;
+        public static final int LEDS_PORT_B = 1;
+        public static final int LENGTH = 133;
 
         public enum GamePiece {
             Cone(Colors.PURPLE),

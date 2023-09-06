@@ -15,25 +15,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.Constants.LedsConstants.LEDS_PORT;
-import static frc.robot.Constants.LedsConstants.LENGTH;
+import static frc.robot.Constants.LedsConstants.*;
 import static frc.robot.utility.Colors.OFF;
 import static frc.robot.utility.Colors.TEAM_GOLD;
 
 public class LEDs extends SubsystemBase {
-    private final AddressableLED leds = new AddressableLED(LEDS_PORT);
+    private final AddressableLED LedStripA = new AddressableLED(LEDS_PORT_A);
+    private final AddressableLED LedStripB = new AddressableLED(LEDS_PORT_B);
+
     private final AddressableLEDBuffer buffer = new AddressableLEDBuffer(LENGTH);
+
     private static LEDs instance = null;
     private Random rnd = new Random();
-
-    private Color[] currentColors = new Color[LENGTH];
 
     private int tailIndex = 0;
     private double offset = 0;
 
     private LEDs() {
-        leds.setLength(LENGTH);
-        leds.start();
+        LedStripA.setLength(LENGTH);
+        LedStripA.start();
+
+        LedStripB.setLength(LENGTH);
+        LedStripB.start();
 
         setDefaultCommand(applyPatternCommand(LEDPattern.TRAIN, getAllianceColor(), TEAM_GOLD.color));
     }
@@ -203,12 +206,12 @@ public class LEDs extends SubsystemBase {
     }
 
     private void setLedStrip(Color[] colors) {
-        this.currentColors = colors;
         for (int i = 0; i < colors.length; i++) {
             buffer.setLED(i, Color.balance(colors[i]));
         }
 
-        leds.setData(buffer);
+        LedStripA.setData(buffer);
+        LedStripB.setData(buffer);
     }
 
     private void shiftTrain(Color[] colors, Color mainColor, Color trainColor, int trainLength, int offset){
