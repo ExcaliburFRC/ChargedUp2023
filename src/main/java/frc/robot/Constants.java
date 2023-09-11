@@ -8,6 +8,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import frc.robot.utility.Color;
+import frc.robot.utility.Colors;
 
 import static java.lang.Math.PI;
 
@@ -20,49 +22,20 @@ import static java.lang.Math.PI;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static class IntakeConstants {
-        public static final int INTAKE_MOTOR_ID = 41;
-
-        public static final int INTAKE_FWD_CHANNEL = 1;
-        public static final int INTAKE_REV_CHANNEL = 0;
-
-        public static final int EJECT_FWD_CHANNEL = 4;
-        public static final int EJECT_REV_CHANNEL = 3;
-
-        public static double kS = 0.16564;
-        public static double kV = 0.12836 / 60;
-
-        public static double kP = 0.00025;
-
-        public static final double LOW_RPM = 0;
-        public static final double MID_RPM = -1800;
-        public static final double HIGH_RPM = -3100;
-
-        public static final double PID_TOLERANCE = 150;
-    }
-
-    public static final class SpindexerConstants {
-        public static final int BEAMBREAK_CHANNEL = 0;
-        public static final int BUTTON_CHANNEL = 0;
-
-        public static final int SPINDEXER_MOTOR_ID = 0;
-        public static final int SPINDEXER_CURRENT_LIMIT = 0; // TODO: calculate
-    }
-
     public static final class RollerGripperConstants {
         public static final int INTAKE_BEAMBREAK = 7;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
-        public static final int LEFT_ROLLER_MOTOR_ID = 32;
+        public static final int LEFT_ROLLER_MOTOR_PORT = 32;
 
     }
 
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
-            FL(18, 17, 1, 0.093 + 0.25, false, false),
-            FR(12, 11, 0, 0.372 + 0.25, false, false),
-            BL(16, 15, 2, 0.05, false, false),
-            BR(14, 13, 3, 0.834, false, false);
+            FL(18, 17, 5, 0.093 + 0.25, false, false),
+            FR(12, 11, 9, 0.372 + 0.25, false, false),
+            BL(16, 15, 4, 0.05, false, false),
+            BR(14, 13, 8, 0.834, false, false);
 
             public int DRIVE_MOTOR_ID;
             public int SPIN_MOTOR_ID;
@@ -97,13 +70,13 @@ public final class Constants {
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics =
-              new SwerveDriveKinematics(
-                    new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-                    new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-                    new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-                    new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
+                new SwerveDriveKinematics(
+                        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+                        new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+                        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+                        new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
-        public static final double kPhysicalMaxSpeedMetersPerSecond = 3.6576; //TODO find
+        public static final double kPhysicalMaxSpeedMetersPerSecond = Units.feetToMeters(12); //TODO find
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
@@ -113,7 +86,7 @@ public final class Constants {
         // intentional limitations
         public static final double kSpeedPercantageLimit = 25; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
-        public static final double kMaxTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
+        public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
 
         //unclear values
@@ -150,7 +123,7 @@ public final class Constants {
 
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
 
-            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS -0.01, Rotation2d.fromDegrees(90))),
+            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS - 0.01, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(86)));
 
             public final Translation2d setpoint;
@@ -166,29 +139,28 @@ public final class Constants {
 
         public static final int CLOSED_LIMIT_SWITCH_ID = 6;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 8;
+        public static final int ABS_ANGLE_ENCODER_CHANNEL = 7;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
 
-        public static final double ARM_GEAR_RATIO = 6.1;
-
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.951 - 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.25167 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
 
         // Angle control
-        public static final double kS_ANGLE = 0.10622;
-        public static final double kV_ANGLE = 0.016479;
-        public static final double kA_ANGLE = 0.0023683;
-        public static final double kG_ANGLE = -0.52;
+        public static final double kS_ANGLE = -0.048742;
+        public static final double kV_ANGLE = 0.020229;
+        public static final double kA_ANGLE = 0.0024233;
+        public static final double kG_ANGLE = -0.53;
 
 //        static {
 //            kG_ANGLE.put(MINIMAL_LENGTH_METERS, 0.50333);
 //            kG_ANGLE.put(MAXIMAL_LENGTH_METERS, 0.69438);
 //        }
 
-        public static final double kP_ANGLE = 0.06;
+        public static final double kP_ANGLE = 0.061938;
+        public static final double kD_ANGLE = 0.015837;
 
         // Length control
         public static final double kS_LENGTH = 0.070742;
@@ -200,38 +172,99 @@ public final class Constants {
         public static final double kMaxLinearAcceleration = 0.75;
     }
 
-    public static class Coordinates {
-        public enum RampLocations {
-            LEFT(new Translation2d(4, 3.481), new Translation2d(12.75, 3.481)),
-            MIDDLE(new Translation2d(4, 2.707), new Translation2d(12.75, 2.707)),
-            RIGHT(new Translation2d(4, 1.9), new Translation2d(12.75, 1.9));
 
-            public Translation2d blue;
-            public Translation2d red;
+    public static final class CuberConstants {
+        // TODO: update with real values
 
-            RampLocations(Translation2d blue, Translation2d red) {
-                this.blue = blue;
-                this.red = red;
+        public static final int ANGLE_MOTOR_ID = 0;
+        public static final int ROLLERS_MOTOR_ID = 0;
+
+        public static final double ABS_ENCODER_OFFSET = 0; // dutyCycle
+
+        public static final int SERVO_CHANNEL = 9;
+        public static final int ENCODER_CHANNEL = 6;
+
+        public static final double COLOR_DISTANCE_THRESHOLD = 75;
+
+        public static final float FWD_SOFT_LIMIT = 170f;
+        public static final float REV_SOFT_LIMIT = 5f;
+
+        public static final double ANGLE_CONVERSION_FACTOR = 1.0 / 50.0;
+
+        public static final double VEL_THRESHOLD = 50;
+        public static final double POS_THRESHOLD = 1;
+
+        // angle control constants
+        public static final double Ks_ANGLE = 0;
+        public static final double Kv_ANGLE = 0;
+        public static final double Kg_ANGLE = 0;
+        public static final double Ka_ANGLE = 0;
+
+        public static final double Kp_ANGLE = 0;
+        public static final double Kd_ANGLE = 0;
+
+        // shooter control constants
+        public static final double Ks_SHOOTER = 0;
+        public static final double Kv_SHOOTER = 0;
+        public static final double Ka_SHOOTER = 0;
+
+        public static final double Kp_SHOOTER = 0;
+        public static final double Kd_SHOOTER = 0;
+
+
+        public enum SERVO_ANGLE {
+            RETRACTED(0),
+            EXTENDED(90);
+
+            public final double angle;
+
+            SERVO_ANGLE(double angle) {
+                this.angle = angle;
             }
         }
-        public enum GamePiece {
-            EMPTY,
-            CUBE,
-            CONE;
+
+        public enum CUBER_ANGLE {
+            HIGH(165),
+            MIDDLE(160),
+            LOW(75),
+            CLOSED(80),
+            INTAKE_GROUND(10),
+            INTAKE_SLIDE(120);
+
+            public final int angle;
+
+            CUBER_ANGLE(int angle) {
+                this.angle = angle;
+            }
         }
 
-        public static double middleAxisXValue = 8.3;
-        public static double FIELD_HEIGHT = 8;
+        public enum SHOOTER_VELOCITIY {
+            HIGH(4000),
+            MIDDLE(2000),
+            LOW(750),
+            INTAKE(-1000);
+
+            public final int velocity;
+
+            SHOOTER_VELOCITIY(int angle) {
+                this.velocity = angle;
+            }
+        }
     }
 
     public static class LedsConstants {
         public static final int LEDS_PORT = 0;
+        public static final int LENGTH = 133;
+
+        public enum GamePiece {
+            Cone(Colors.PURPLE),
+            Cube(Colors.ORANGE);
+
+            public Color color;
+
+            GamePiece(Colors color){
+                this.color = color.color;
+            }
+        }
     }
 }
-    // DIO:
-    // swerve: 0 - 3
-    // claw bb: unknown
-    // intake bb: unknown
-    // arm:
-    //      closed: 6
-    //      encoder: 8

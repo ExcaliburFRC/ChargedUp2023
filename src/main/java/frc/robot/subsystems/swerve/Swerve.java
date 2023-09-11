@@ -1,4 +1,4 @@
-package frc.robot.swerve;
+package frc.robot.subsystems.swerve;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.controller.PIDController;
@@ -91,9 +91,18 @@ public class Swerve extends SubsystemBase {
         RobotContainer.driveTab.addDouble("SwerveAngle", () -> getOdometryRotation().getDegrees())
                 .withWidget(BuiltInWidgets.kGyro).withPosition(0, 0).withSize(4, 2);
 
-        thetaTeleopController.enableContinuousInput(-180, 180);
-        thetaTeleopController.setTolerance(1.5);
-    }
+    odometry.resetPosition(
+          getGyroRotation(),
+          new SwerveModulePosition[]{
+                swerveModules[FRONT_LEFT].getPosition(),
+                swerveModules[FRONT_RIGHT].getPosition(),
+                swerveModules[BACK_LEFT].getPosition(),
+                swerveModules[BACK_RIGHT].getPosition()},
+          new Pose2d(0, 0, new Rotation2d())
+    );
+
+    thetaTeleopController.setTolerance(1);
+  }
 
     public void resetGyro() {
         _gyro.reset();
@@ -162,26 +171,29 @@ public class Swerve extends SubsystemBase {
                 this);
     }
 
-    public Command driveSwerveCommand(
-            DoubleSupplier xSpeedSupplier,
-            DoubleSupplier ySpeedSupplier,
-            DoubleSupplier spinningSpeedSupplier,
-            BooleanSupplier fieldOriented) {
+  public Command driveSwerveCommand(
+        DoubleSupplier xSpeedSupplier,
+        DoubleSupplier ySpeedSupplier,
+        DoubleSupplier spinningSpeedSupplier,
+        BooleanSupplier fieldOriented,
+        DoubleSupplier decelerator) {
 
         final SlewRateLimiter
                 xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
                 yLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
                 spinningLimiter = new SlewRateLimiter(kTeleDriveMaxAngularAccelerationUnitsPerSecond);
 
-        return resetModulesCommand().andThen(
-                new FunctionalCommand(
-                        () -> {
-                        },
-                        () -> {
-                            //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
-                            double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
-                                    ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed,
-                                    spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxTurningSpeed;
+    return resetModulesCommand().andThen(
+          new FunctionalCommand(
+                () -> {
+                },
+                () -> {
+                  //create the speeds for x,y and spin
+                  double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed * (1.0 - decelerator.getAsDouble()),
+                        ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed * (1.0 - decelerator.getAsDouble()),
+                        spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed * (1.0 - decelerator.getAsDouble());
+
+                  // **all credit to the decelerator idea is for Ofir from Trigon #5990 (ohfear_ on discord)**
 
                             // create a CassisSpeeds object and apply it the speeds
                             ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
@@ -198,6 +210,71 @@ public class Swerve extends SubsystemBase {
                         () -> false,
                         this));
     }
+
+  public Command driveSwerveCommand(
+        DoubleSupplier xSpeedSupplier,
+        DoubleSupplier ySpeedSupplier,
+        DoubleSupplier spinningSpeedSupplier,
+        BooleanSupplier fieldOriented){
+    return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, ()-> 0);
+  }
+
+  public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fieldOriented) {
+    return driveSwerveCommand(speed, () -> 0, turn, () -> fieldOriented);
+  }
+
+  // angle based swerve drive
+  public Command driveSwerveWithAngleCommand(
+        DoubleSupplier xSpeed,
+        DoubleSupplier ySpeed,
+        DoubleSupplier angle,
+//        DoubleSupplier xAngle,
+//        DoubleSupplier yAngle,
+        BooleanSupplier fieldOriented) {
+//    return new InstantCommand(() -> lastJoystickAngle.set((int) getRotation().getDegrees()))
+          return new ParallelCommandGroup(
+//                new RunCommand(() -> updateJoystickAngle(xAngle.getAsDouble(), yAngle.getAsDouble())),
+                driveSwerveCommand(xSpeed, ySpeed, () -> thetaTeleopController.calculate(getRotation().getDegrees(), angle.getAsDouble()), fieldOriented)
+          );
+  }
+
+
+
+  // returns the joystick angle in 0 to 360 (right is 0, up is 90)
+  //TODO: fix and make simple
+  private double calculateJoystickAngle(double x, double y) {
+    double a = -Math.toDegrees(Math.atan(y / x));
+    if (x < 0) a += 180;
+    if (a < 0) a += 360;
+    a -= 90;
+    if (a < 0) a += 360;
+    if (a > 180) a -= 360;
+    return -a;
+  }
+
+  //update the angle of the joystick
+  private void updateJoystickAngle(double x, double y) {
+    if (Math.abs(x) + Math.abs(y) > 0.5) {
+      lastJoystickAngle.set((int) calculateJoystickAngle(x, y));
+    }
+  }
+
+  public Command resetJoystickAngle() {
+    return new InstantCommand(() -> lastJoystickAngle.set(0));
+  }
+
+  public Command resetOdometryCommand(Pose2d newPose) {
+    return new InstantCommand(() -> odometry.resetPosition(
+          getGyroRotation(),
+          new SwerveModulePosition[]{
+                swerveModules[FRONT_LEFT].getPosition(),
+                swerveModules[FRONT_RIGHT].getPosition(),
+                swerveModules[BACK_LEFT].getPosition(),
+                swerveModules[BACK_RIGHT].getPosition()
+          },
+          newPose)
+    );
+  }
 
     public Command resetGyroCommand(double angle) {
         return new InstantCommand(() ->

@@ -1,4 +1,4 @@
-package frc.robot.swerve;
+package frc.robot.subsystems.swerve;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;

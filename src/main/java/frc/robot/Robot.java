@@ -5,10 +5,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.utility.FaultReporter;
 
 /**
@@ -23,9 +26,10 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
 
   public static Timer startUpTimer = new Timer();
+  public static final boolean isRobotReal = isReal();
 
   public Robot(){
-//    addPeriodic(new FaultReporter()::check, 1);
+    addPeriodic(new FaultReporter()::check, 1);
   }
 
   /**
@@ -93,6 +97,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+//    Shuffleboard.selectTab("driveTab");
   }
 
   /** This function is called periodically during operator control. */
@@ -107,6 +113,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().enable();
 
 //    m_robotContainer.SystemTester().schedule();
+//    m_robotContainer.manual().schedule();
   }
 
   /** This function is called periodically during test mode. */
