@@ -9,7 +9,7 @@
  import edu.wpi.first.math.geometry.Translation2d;
  import edu.wpi.first.wpilibj2.command.Command;
  import edu.wpi.first.wpilibj2.command.button.Trigger;
- import frc.robot.swerve.Swerve;
+ import frc.robot.subsystems.swerve.Swerve;
 
  import java.util.HashMap;
 
@@ -19,13 +19,13 @@
      private Swerve swerve;
 
      private final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
-             swerve::getPose2d, swerve::setPose2d,
+             swerve::getPose2d, (__)->{},
              kSwerveKinematics,
-             new PIDConstants(0, 0, 0),
-             new PIDConstants(kp_Theta, 0, kd_Theta),
+             new PIDConstants(kp_TRANSLATION, 0, kd_TRANSLATION),
+             new PIDConstants(kp_ANGLE, 0, kd_ANGLE),
              swerve::setModulesStates,
              new HashMap<>(),
-             true,
+             true, // WTFFF
              swerve
      );
 
@@ -34,18 +34,18 @@
      }
 
      public Command followTrajectoryCommand(PathPlannerTrajectory traj) {
-         return swerve.resetModulesCommand().andThen(swerveAutoBuilder.fullAuto(traj));
+         return swerve.straightenModulesCommand().andThen(swerveAutoBuilder.fullAuto(traj));
      }
 
      public Command turnToAngleCommand(double setpoint) {
-         return swerve.driveSwerveCommand(
-                 () -> 0, () -> 0,
-                 () -> new PIDController(kp_Theta, 0, kd_Theta).calculate(swerve.getOdometryRotation().getDegrees(), setpoint),
-                 () -> false)
-                 .until(new Trigger(()-> Math.abs(swerve.getOdometryRotation().getDegrees() - setpoint) < 1.5).debounce(0.15));
+         return swerve.tankDriveCommand(
+                 () -> 0,
+                 () -> new PIDController(kp_ANGLE, 0, kd_ANGLE).calculate(swerve.getOdometryRotation2d().getDegrees(), setpoint),
+                 false)
+                 .until(new Trigger(()-> Math.abs(swerve.getOdometryRotation2d().getDegrees() - setpoint) < 1.5).debounce(0.15));
      }
 
-    public static PathPoint getPathpoint(PathPoint point){
+    private static PathPoint getPathpoint(PathPoint point){
         return new PathPoint(new Translation2d(point.position.getX(), -point.position.getY()), point.heading.times(-1), Rotation2d.fromDegrees(360).minus(point.holonomicRotation));
     }
 
