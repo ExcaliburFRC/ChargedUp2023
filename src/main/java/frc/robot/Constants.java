@@ -25,7 +25,7 @@ public final class Constants {
     public static final class RollerGripperConstants {
         public static final int INTAKE_BEAMBREAK = 7;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
-        public static final int LEFT_ROLLER_MOTOR_ID = 32;
+        public static final int LEFT_ROLLER_MOTOR_PORT = 32;
 
     }
 
@@ -255,8 +255,9 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-        public static final int LEDS_PORT = 0;
-        public static final int LENGTH = 150;
+        public static final int LEDS_PORT_A = 0;
+        public static final int LEDS_PORT_B = 1;
+        public static final int LENGTH = 133;
 
         public enum GamePiece {
             Cone(Colors.PURPLE),
