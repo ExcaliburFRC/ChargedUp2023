@@ -2,9 +2,6 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Ultrasonic;
@@ -12,6 +9,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.utility.PIDFFController;
 
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kForward;
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kReverse;
@@ -37,11 +35,8 @@ public class Cuber extends SubsystemBase {
 
     public static final ShuffleboardTab cuberTab = Shuffleboard.getTab("Cuber");
 
-    private final PIDController shooterPID = new PIDController(Kp_SHOOTER, 0, Kd_SHOOTER);
-    private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(Ks_SHOOTER, Kv_SHOOTER, Ka_SHOOTER);
-
-    private final PIDController anglePID = new PIDController(Kp_ANGLE, 0, Kd_ANGLE);
-    private final ArmFeedforward angleFF = new ArmFeedforward(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
+    private final PIDFFController shooterPIDFFcontroller = new PIDFFController(Kp_SHOOTER, 0, Kd_SHOOTER);
+    private final PIDFFController anglePIDFFController = new PIDFFController(Kp_ANGLE, 0, Kd_ANGLE);
 
     public final Trigger hasCubeTrigger = new Trigger(() -> ultrasonic.getRangeMM() <= ULTRASONIC_THRESHOLD).debounce(0.2)
             .onTrue(leds.applyPatternCommand(SOLID, GREEN.color).withTimeout(0.25))
@@ -80,6 +75,9 @@ public class Cuber extends SubsystemBase {
         cuberTab.addDouble("ultrasonicMM", ultrasonic::getRangeMM);
         cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger);
 
+        anglePIDFFController.setArmFFconstants(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
+        shooterPIDFFcontroller.setMotorFFconstants(Ks_SHOOTER, Kv_SHOOTER, Ka_SHOOTER);
+
         setDefaultCommand(closeCuberCommand());
     }
 
@@ -104,12 +102,7 @@ public class Cuber extends SubsystemBase {
     private Command setShooterVelocityCommand(SHOOTER_VELOCITIY vel) {
         return new FunctionalCommand(
                 () -> this.targetVel = vel.velocity,
-                () -> {
-                    double pid = shooterPID.calculate(shooterEncoder.getVelocity(), vel.velocity);
-                    double ff = shooterFF.calculate(vel.velocity);
-
-                    shooterMotor.set(pid + ff);
-                },
+                () -> shooterMotor.set(shooterPIDFFcontroller.calculate(shooterEncoder.getVelocity(), vel.velocity)),
                 (__) -> {
                     shooterMotor.stopMotor();
                     targetVel = 0;
@@ -126,12 +119,7 @@ public class Cuber extends SubsystemBase {
     private Command setCuberAngleCommand(CUBER_ANGLE angle) {
         return new FunctionalCommand(
                 () -> targetPos = angle.angle,
-                () -> {
-                    double pid = anglePID.calculate(angleEncoder.getDistance(), angle.angle);
-                    double ff = angleFF.calculate(angle.angle, 0);
-
-                    angleMotor.set(pid + ff);
-                },
+                () -> angleMotor.set(anglePIDFFController.calculate(angleEncoder.getDistance(), angle.angle)),
                 (__) -> {
                 },
                 () -> false
