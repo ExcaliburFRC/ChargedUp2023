@@ -32,10 +32,10 @@ public final class Constants {
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
-            FL(18, 17, 1, 0.093 + 0.25, false, false),
-            FR(12, 11, 0, 0.372 + 0.25, false, false),
-            BL(16, 15, 2, 0.05, false, false),
-            BR(14, 13, 3, 0.834, false, false);
+            FL(18, 17, 5, 0.093 + 0.25, false, false),
+            FR(12, 11, 9, 0.372 + 0.25, false, false),
+            BL(16, 15, 4, 0.05, false, false),
+            BR(14, 13, 8, 0.834, false, false);
 
             public int DRIVE_MOTOR_ID;
             public int SPIN_MOTOR_ID;
@@ -139,7 +139,7 @@ public final class Constants {
 
         public static final int CLOSED_LIMIT_SWITCH_ID = 6;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 5;
+        public static final int ABS_ANGLE_ENCODER_CHANNEL = 7;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
@@ -181,8 +181,8 @@ public final class Constants {
 
         public static final double ABS_ENCODER_OFFSET = 0; // dutyCycle
 
-        public static final int SERVO_CHANNEL = 0;
-        public static final int ENCODER_CHANNEL = 0;
+        public static final int SERVO_CHANNEL = 9;
+        public static final int ENCODER_CHANNEL = 6;
 
         public static final int ULTRASONIC_PING_CHANNEL = 0;
         public static final int ULTRASONIC_ECHO_CHANNEL = 0;
