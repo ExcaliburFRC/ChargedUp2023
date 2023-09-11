@@ -20,9 +20,7 @@ import static frc.robot.utility.Colors.OFF;
 import static frc.robot.utility.Colors.TEAM_GOLD;
 
 public class LEDs extends SubsystemBase {
-    private final AddressableLED LedStripA = new AddressableLED(LEDS_PORT_A);
-    private final AddressableLED LedStripB = new AddressableLED(LEDS_PORT_B);
-
+    private final AddressableLED LedStrip = new AddressableLED(LEDS_PORT);
     private final AddressableLEDBuffer buffer = new AddressableLEDBuffer(LENGTH);
 
     private static LEDs instance = null;
@@ -32,11 +30,8 @@ public class LEDs extends SubsystemBase {
     private double offset = 0;
 
     private LEDs() {
-        LedStripA.setLength(LENGTH);
-        LedStripA.start();
-
-        LedStripB.setLength(LENGTH);
-        LedStripB.start();
+        LedStrip.setLength(LENGTH);
+        LedStrip.start();
 
         setDefaultCommand(applyPatternCommand(LEDPattern.TRAIN, getAllianceColor(), TEAM_GOLD.color));
     }
@@ -210,8 +205,7 @@ public class LEDs extends SubsystemBase {
             buffer.setLED(i, Color.balance(colors[i]));
         }
 
-        LedStripA.setData(buffer);
-        LedStripB.setData(buffer);
+        LedStrip.setData(buffer);
     }
 
     private void shiftTrain(Color[] colors, Color mainColor, Color trainColor, int trainLength, int offset){

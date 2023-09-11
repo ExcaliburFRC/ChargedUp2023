@@ -1,10 +1,11 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.ColorSensorV3;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
@@ -19,6 +20,7 @@ import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 import static frc.robot.utility.Colors.*;
 
+
 public class Cuber extends SubsystemBase {
     private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, kBrushless);
     private final CANSparkMax shooterMotor = new CANSparkMax(ROLLERS_MOTOR_ID, kBrushless);
@@ -29,7 +31,7 @@ public class Cuber extends SubsystemBase {
     private final RelativeEncoder angleRelativeEncoder = angleMotor.getEncoder();
 
     private final DutyCycleEncoder angleEncoder = new DutyCycleEncoder(ENCODER_CHANNEL);
-    private final Ultrasonic ultrasonic = new Ultrasonic(ULTRASONIC_PING_CHANNEL, ULTRASONIC_ECHO_CHANNEL);
+    private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 
     private final LEDs leds = LEDs.getInstance();
 
@@ -38,7 +40,7 @@ public class Cuber extends SubsystemBase {
     private final PIDFFController shooterPIDFFcontroller = new PIDFFController(Kp_SHOOTER, 0, Kd_SHOOTER);
     private final PIDFFController anglePIDFFController = new PIDFFController(Kp_ANGLE, 0, Kd_ANGLE);
 
-    public final Trigger hasCubeTrigger = new Trigger(() -> ultrasonic.getRangeMM() <= ULTRASONIC_THRESHOLD).debounce(0.2)
+    public final Trigger hasCubeTrigger = new Trigger(() -> colorSensor.getIR() <= COLOR_DISTANCE_THRESHOLD).debounce(0.2)
             .onTrue(leds.applyPatternCommand(SOLID, GREEN.color).withTimeout(0.25))
             .onFalse(leds.applyPatternCommand(SOLID, RED.color).withTimeout(0.25));
 
@@ -64,16 +66,15 @@ public class Cuber extends SubsystemBase {
         shooterMotor.setInverted(false);
 
         angleEncoder.setPositionOffset(ABS_ENCODER_OFFSET);
-        angleEncoder.setDistancePerRotation(2 * Math.PI);
+        angleEncoder.setDistancePerRotation(360);
 
         angleRelativeEncoder.setPositionConversionFactor(ANGLE_CONVERSION_FACTOR);
         angleRelativeEncoder.setPosition(angleEncoder.getDistance());
 
-        ultrasonic.setEnabled(true);
-        Ultrasonic.setAutomaticMode(true);
-
-        cuberTab.addDouble("ultrasonicMM", ultrasonic::getRangeMM);
+        // TODO: organize and add widgets
+        cuberTab.addDouble("colorMM", colorSensor::getProximity);
         cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger);
+        cuberTab.addDouble("cuber angle", angleEncoder::getDistance);
 
         anglePIDFFController.setArmFFconstants(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
         shooterPIDFFcontroller.setMotorFFconstants(Ks_SHOOTER, Kv_SHOOTER, Ka_SHOOTER);

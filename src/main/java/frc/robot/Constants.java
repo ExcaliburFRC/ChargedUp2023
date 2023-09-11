@@ -184,9 +184,7 @@ public final class Constants {
         public static final int SERVO_CHANNEL = 9;
         public static final int ENCODER_CHANNEL = 6;
 
-        public static final int ULTRASONIC_PING_CHANNEL = 0;
-        public static final int ULTRASONIC_ECHO_CHANNEL = 0;
-        public static final double ULTRASONIC_THRESHOLD = 10;
+        public static final double COLOR_DISTANCE_THRESHOLD = 75;
 
         public static final float FWD_SOFT_LIMIT = 170f;
         public static final float REV_SOFT_LIMIT = 5f;
@@ -255,8 +253,7 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-        public static final int LEDS_PORT_A = 0;
-        public static final int LEDS_PORT_B = 1;
+        public static final int LEDS_PORT = 0;
         public static final int LENGTH = 133;
 
         public enum GamePiece {

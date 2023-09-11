@@ -33,11 +33,9 @@ import static frc.robot.Constants.CuberConstants.SHOOTER_VELOCITIY;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  private final Cuber cuber = new Cuber();
   private final Swerve swerve = new Swerve();
+  private final Cuber cuber = new Cuber();
   private final Superstructure superstructure = new Superstructure();
-
-  private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
 
   public final CommandPS4Controller driver = new CommandPS4Controller(0);
   public final CommandPS4Controller operator = new CommandPS4Controller(1);
@@ -50,7 +48,7 @@ public class RobotContainer {
   public RobotContainer() {
     configureBindings();
 
-    // TODO: update AutoBuilder
+//     TODO: update AutoBuilder
 //    AutoBuilder.loadAutoChoosers(swerve, intake);
 
     driveTab.addDouble("Remaining Time", DriverStation::getMatchTime)
@@ -92,21 +90,13 @@ public class RobotContainer {
     operator.povDown().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW));
 
     // other
-    driver.touchpad().toggleOnTrue(toggleCompressorCommand());
     driver.PS().onTrue(swerve.resetGyroCommand());
+    driver.square().whileTrue(swerve.balanceRampCommand());
 
     operator.L1().toggleOnTrue(superstructure.lockArmCommand());
-    driver.square().whileTrue(swerve.balanceRampCommand());
 
     driver.L1().onTrue(askForGamepieceCommand(GamePiece.Cone));
     driver.R1().onTrue(askForGamepieceCommand(GamePiece.Cube));
-  }
-
-  public Command toggleCompressorCommand() {
-    return new StartEndCommand(
-          compressor::disable,
-          compressor::enableDigital
-    );
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){
