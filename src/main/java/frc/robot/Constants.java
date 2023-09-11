@@ -25,7 +25,7 @@ public final class Constants {
     public static final class RollerGripperConstants {
         public static final int INTAKE_BEAMBREAK = 7;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
-        public static final int LEFT_ROLLER_MOTOR_ID = 32;
+        public static final int LEFT_ROLLER_MOTOR_PORT = 32;
 
     }
 

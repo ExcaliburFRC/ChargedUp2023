@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
@@ -14,24 +15,23 @@ import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.RollerGripperConstants.*;
 
 public class Rollergripper extends SubsystemBase {
-    private final CANSparkMax follower = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
-    private final CANSparkMax rollers = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
+    private final CANSparkMax rightRoller = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
+
+    // This is very embarrassing and not at all ideal, please don't laugh at us,
+    // we don't have enough budget for a new SparkMax, and we had those lying around.
+    private final Spark leftRoller = new Spark(LEFT_ROLLER_MOTOR_PORT);
 
     private final DigitalInput beambreak = new DigitalInput(INTAKE_BEAMBREAK);
 
     public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 
     public Rollergripper() {
-        follower.restoreFactoryDefaults();
-        follower.clearFaults();
-        follower.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        follower.follow(rollers, true);
-        rollers.restoreFactoryDefaults();
-        rollers.clearFaults();
-        rollers.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        rightRoller.restoreFactoryDefaults();
+        rightRoller.clearFaults();
+        rightRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
-        rollers.setInverted(false);
-        follower.setInverted(true);
+        leftRoller.setInverted(false);
+        rightRoller.setInverted(true);
 
         Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
                 .withPosition(10, 4).withSize(4, 2);
@@ -46,7 +46,10 @@ public class Rollergripper extends SubsystemBase {
      * @return the command
      */
     private Command setRollerGripperMotor(double speed) {
-        return new RunCommand(() -> rollers.set(speed), this);
+        return new RunCommand(() -> {
+            rightRoller.set(speed);
+            leftRoller.set(speed);
+        }, this);
     }
 
     /**
@@ -60,11 +63,13 @@ public class Rollergripper extends SubsystemBase {
     public Command intakeCommand() {
         return Commands.runEnd(
                         () -> {
-                            rollers.set(0.75);
+                            rightRoller.set(0.75);
+                            leftRoller.set(0.75);
                             Shuffleboard.selectTab("armCamera");
                         },
                         () -> {
-                            rollers.stopMotor();
+                            rightRoller.stopMotor();
+                            leftRoller.stopMotor();
                             Shuffleboard.selectTab("driveTab");
                         },
                         this)
@@ -75,15 +80,21 @@ public class Rollergripper extends SubsystemBase {
      * ejectCommand
      * <p><b> noInit </b>starts spinning the motors outwards<br>
      * <b>noEnd </b>stops the motors</p>
-     * ends when the button senses that a cone is not longer in the roller gripper
+     * ends when the button senses that a cone is no longer in the roller gripper
      *
      * @return the command
      */
     public Command ejectCommand(double offset) {
         return Commands.runEnd(
-                        () -> rollers.set(-0.025 - offset),
-                        rollers::stopMotor,
-                        this) //runEnd ends here
+                        () -> {
+                            rightRoller.set(-0.025 - offset);
+                            leftRoller.set(-0.025 - offset);
+                        },
+                        () -> {
+                            rightRoller.stopMotor();
+                            leftRoller.stopMotor();
+                        },
+                        this)
                 .until(beambreakTrigger.negate().debounce(0.2));
     }
 
@@ -98,8 +109,8 @@ public class Rollergripper extends SubsystemBase {
      * @return the eject command after the button was pressed
      */
     public Command releaseCommand(BooleanSupplier release) {
-        return new WaitUntilCommand(release)
-                .andThen(ejectCommand());
+        return new RunCommand(() -> {
+        }).until(release).andThen(ejectCommand());
     }
 
     /**
@@ -109,8 +120,8 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command holdConeCommand() {
         return new ConditionalCommand(
-                setRollerGripperMotor(0.05).withTimeout(0.25),
-                setRollerGripperMotor(0).withTimeout(0.25),
+                setRollerGripperMotor(0.05).until(() -> true),
+                setRollerGripperMotor(0).until(() -> true),
                 beambreakTrigger)
                 .repeatedly().withName("HoldCone");
     }
@@ -126,18 +137,25 @@ public class Rollergripper extends SubsystemBase {
         return Commands.runEnd(
                 () -> {
                     if (intake.getAsBoolean() || outtake.getAsBoolean()) {
-                        if (intake.getAsBoolean())
-                            rollers.set(0.6);
-
-                        if (outtake.getAsBoolean())
-                            rollers.set(-0.1);
-
-                    } else
-                        rollers.stopMotor();
-
+                        if (intake.getAsBoolean()) {
+                            rightRoller.set(0.6);
+                            leftRoller.set(0.6);
+                        }
+                        if (outtake.getAsBoolean()) {
+                            rightRoller.set(-0.1);
+                            leftRoller.set(-0.1);
+                        }
+                    } else {
+                        rightRoller.set(0);
+                        leftRoller.set(0);
+                    }
                 },
-                rollers::stopMotor,
-                this);
+                () -> {
+                    rightRoller.set(0);
+                    leftRoller.set(0);
+                },
+                this
+        );
     }
 
     @Override
