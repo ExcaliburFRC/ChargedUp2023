@@ -10,7 +10,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utility.Color;
 import frc.robot.utility.Colors;
-
 import static java.lang.Math.PI;
 
 /**
@@ -25,7 +24,7 @@ public final class Constants {
     public static final class RollerGripperConstants {
         public static final int BEAMBREAK_PORT = 2;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
-        public static final int LEFT_ROLLER_MOTOR_PORT = 6; // pwm
+        public static final int LEFT_ROLLER_MOTOR_PORT = 8; // pwm
     }
 
     public static final class SwerveConstants {
@@ -180,7 +179,7 @@ public final class Constants {
 
         public static final double ABS_ENCODER_OFFSET = 0; // dutyCycle
 
-        public static final int SERVO_CHANNEL = 8;
+        public static final int SERVO_CHANNEL = 9;
         public static final int ENCODER_CHANNEL = 3;
 
         public static final double COLOR_DISTANCE_THRESHOLD = 75;
@@ -203,11 +202,11 @@ public final class Constants {
         public static final double Kd_ANGLE = 0;
 
         // shooter control constants
-        public static final double Ks_SHOOTER = 0;
-        public static final double Kv_SHOOTER = 0;
-        public static final double Ka_SHOOTER = 0;
+        public static final double Ks_SHOOTER = 0.36726;
+        public static final double Kv_SHOOTER = 0.13801;
+        public static final double Ka_SHOOTER = 0.012755;
 
-        public static final double Kp_SHOOTER = 0;
+        public static final double Kp_SHOOTER = 0.058924;
         public static final double Kd_SHOOTER = 0;
 
 
@@ -238,10 +237,10 @@ public final class Constants {
         }
 
         public enum SHOOTER_VELOCITIY {
-            HIGH(4000),
-            MIDDLE(2000),
-            LOW(750),
-            INTAKE(-1000);
+            HIGH(200),
+            MIDDLE(50),
+            LOW(50),
+            INTAKE(-70);
 
             public final int velocity;
 

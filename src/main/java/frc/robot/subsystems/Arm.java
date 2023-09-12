@@ -161,11 +161,7 @@ public class Arm extends SubsystemBase {
   }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
-    return new ParallelCommandGroup(
-            moveToLengthCommand(setpoint),
-            moveToAngleCommand(setpoint),
-            leds.applyPatternCommand(BLINKING, ORANGE.color)
-    );
+    return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
   }
 
   public Command setAngleSpeed(double speed) {

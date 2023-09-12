@@ -3,14 +3,17 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.utility.PIDFFController;
 
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kForward;
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kReverse;
@@ -37,8 +40,11 @@ public class Cuber extends SubsystemBase {
 
     public static final ShuffleboardTab cuberTab = Shuffleboard.getTab("Cuber");
 
-    private final PIDFFController shooterPIDFFcontroller = new PIDFFController(Kp_SHOOTER, 0, Kd_SHOOTER);
-    private final PIDFFController anglePIDFFController = new PIDFFController(Kp_ANGLE, 0, Kd_ANGLE);
+    private final PIDController shooterPIDcontroller = new PIDController(Kp_SHOOTER, 0, Kd_SHOOTER);
+    private final SimpleMotorFeedforward shooterFFcontroller = new SimpleMotorFeedforward(Ks_SHOOTER, Kv_SHOOTER, Ka_SHOOTER);
+
+    private final PIDController anglePIDcontrller = new PIDController(Kp_ANGLE, 0, Kd_ANGLE);
+    private final ArmFeedforward angleFFcontrller = new ArmFeedforward(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
 
     public final Trigger hasCubeTrigger = new Trigger(() -> colorSensor.getIR() <= COLOR_DISTANCE_THRESHOLD).debounce(0.2)
             .onTrue(leds.applyPatternCommand(SOLID, GREEN.color).withTimeout(0.25))
@@ -76,9 +82,6 @@ public class Cuber extends SubsystemBase {
         cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger);
         cuberTab.addDouble("cuber angle", angleEncoder::getDistance);
 
-        anglePIDFFController.setArmFFconstants(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
-        shooterPIDFFcontroller.setMotorFFconstants(Ks_SHOOTER, Kv_SHOOTER, Ka_SHOOTER);
-
         setDefaultCommand(closeCuberCommand());
     }
 
@@ -100,15 +103,24 @@ public class Cuber extends SubsystemBase {
     }
 
     // Shooter Commands
-    private Command setShooterVelocityCommand(SHOOTER_VELOCITIY vel) {
+    public Command setShooterVelocityCommand(SHOOTER_VELOCITIY vel) {
         return new FunctionalCommand(
                 () -> this.targetVel = vel.velocity,
-                () -> shooterMotor.set(shooterPIDFFcontroller.calculate(shooterEncoder.getVelocity(), vel.velocity)),
+                () -> {
+                    double pid = shooterPIDcontroller.calculate(shooterEncoder.getVelocity(), vel.velocity);
+                    double ff = shooterFFcontroller.calculate(vel.velocity, 0);
+
+                    shooterMotor.setVoltage(pid + ff);
+
+                    SmartDashboard.putNumber("setpoint", vel.velocity);
+                    SmartDashboard.putNumber("velocity", shooterEncoder.getVelocity());
+                },
                 (__) -> {
                     shooterMotor.stopMotor();
+                    SmartDashboard.putNumber("setpoint", 0);
                     targetVel = 0;
                 },
-                () -> false
+                () -> false, this
         );
     }
 
@@ -120,7 +132,12 @@ public class Cuber extends SubsystemBase {
     private Command setCuberAngleCommand(CUBER_ANGLE angle) {
         return new FunctionalCommand(
                 () -> targetPos = angle.angle,
-                () -> angleMotor.set(anglePIDFFController.calculate(angleEncoder.getDistance(), angle.angle)),
+                () -> {
+                    double pid = anglePIDcontrller.calculate(angleEncoder.getDistance(), angle.angle);
+                    double ff = angleFFcontrller.calculate(Math.toRadians(angle.angle), 0);
+
+                    angleMotor.setVoltage(pid + ff);
+                },
                 (__) -> {
                 },
                 () -> false
