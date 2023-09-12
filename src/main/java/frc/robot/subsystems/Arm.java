@@ -31,7 +31,7 @@ public class Arm extends SubsystemBase {
 
   private final RelativeEncoder lengthEncoder = lengthMotor.getEncoder();
 
-  private final DutyCycleEncoder angleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_CHANNEL);
+  private final DutyCycleEncoder angleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_PORT);
 
   private final DigitalInput lowerLimitSwitch = new DigitalInput(CLOSED_LIMIT_SWITCH_ID);
 

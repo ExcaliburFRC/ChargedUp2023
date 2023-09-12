@@ -21,7 +21,7 @@ public class Rollergripper extends SubsystemBase {
     // we don't have enough budget for a new SparkMax, and we had those lying around.
     private final Spark leftRoller = new Spark(LEFT_ROLLER_MOTOR_PORT);
 
-    private final DigitalInput beambreak = new DigitalInput(INTAKE_BEAMBREAK);
+    private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
 
     public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 

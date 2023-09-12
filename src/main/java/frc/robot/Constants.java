@@ -23,10 +23,9 @@ import static java.lang.Math.PI;
  */
 public final class Constants {
     public static final class RollerGripperConstants {
-        public static final int INTAKE_BEAMBREAK = 7;
+        public static final int BEAMBREAK_PORT = 2;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
-        public static final int LEFT_ROLLER_MOTOR_PORT = 32;
-
+        public static final int LEFT_ROLLER_MOTOR_PORT = 6; // pwm
     }
 
     public static final class SwerveConstants {
@@ -139,12 +138,12 @@ public final class Constants {
 
         public static final int CLOSED_LIMIT_SWITCH_ID = 6;
 
-        public static final int ABS_ANGLE_ENCODER_CHANNEL = 7;
+        public static final int ABS_ANGLE_ENCODER_PORT = 7;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
-        public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //link: https://brainly.in/question/3238411
+        public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //https://brainly.in/question/3238411
 
         public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.25167 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
 
@@ -176,20 +175,20 @@ public final class Constants {
     public static final class CuberConstants {
         // TODO: update with real values
 
-        public static final int ANGLE_MOTOR_ID = 0;
-        public static final int ROLLERS_MOTOR_ID = 0;
+        public static final int ANGLE_MOTOR_ID = 41;
+        public static final int ROLLERS_MOTOR_ID = 42;
 
         public static final double ABS_ENCODER_OFFSET = 0; // dutyCycle
 
-        public static final int SERVO_CHANNEL = 9;
-        public static final int ENCODER_CHANNEL = 6;
+        public static final int SERVO_CHANNEL = 8;
+        public static final int ENCODER_CHANNEL = 3;
 
         public static final double COLOR_DISTANCE_THRESHOLD = 75;
 
         public static final float FWD_SOFT_LIMIT = 170f;
         public static final float REV_SOFT_LIMIT = 5f;
 
-        public static final double ANGLE_CONVERSION_FACTOR = 1.0 / 50.0;
+        public static final double ANGLE_CONVERSION_FACTOR = 1.0 / 90.0;
 
         public static final double VEL_THRESHOLD = 50;
         public static final double POS_THRESHOLD = 1;
@@ -253,7 +252,7 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-        public static final int LEDS_PORT = 0;
+        public static final int LEDS_PORT = 0; // pwm
         public static final int LENGTH = 133;
 
         public enum GamePiece {
