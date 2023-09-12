@@ -21,8 +21,6 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
 import static frc.robot.Constants.ArmConstants.Setpoints.LOCKED;
-import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
-import static frc.robot.utility.Colors.ORANGE;
 
 public class Arm extends SubsystemBase {
   private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -89,6 +87,8 @@ public class Arm extends SubsystemBase {
     angleMotor.setOpenLoopRampRate(0.5);
 
     if (lengthEncoder.getPosition() < 0.1) lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
+
+    setDefaultCommand(fadeArmCommand().alongWith(stopTelescopeMotors()));
   }
 
   /**

@@ -14,11 +14,7 @@ public class Superstructure {
     public final Arm arm = new Arm();
     public final Rollergripper rollergripper = new Rollergripper();
 
-    public Superstructure() {
-        rollergripper.setDefaultCommand(rollergripper.holdConeCommand());
-
-        arm.setDefaultCommand(arm.fadeArmCommand().alongWith(arm.stopTelescopeMotors()));
-    }
+    public Superstructure() {}
 
     public Command intakeFromShelfCommand() {
         return new SequentialCommandGroup(

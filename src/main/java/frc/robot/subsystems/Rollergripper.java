@@ -23,33 +23,20 @@ public class Rollergripper extends SubsystemBase {
 
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
 
-    public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
+    public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get()).whileTrue(holdConeCommand());
 
     public Rollergripper() {
         rightRoller.restoreFactoryDefaults();
         rightRoller.clearFaults();
         rightRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
-        leftRoller.setInverted(false);
+        leftRoller.setInverted(true);
         rightRoller.setInverted(true);
 
         Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
                 .withPosition(10, 4).withSize(4, 2);
         Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
                 .withSize(2, 8);
-    }
-
-    /**
-     * sets the roller gripper motors speeds
-     *
-     * @param speed the speed the motors spin at
-     * @return the command
-     */
-    private Command setRollerGripperMotor(double speed) {
-        return new RunCommand(() -> {
-            rightRoller.set(speed);
-            leftRoller.set(speed);
-        }, this);
     }
 
     /**
@@ -63,8 +50,8 @@ public class Rollergripper extends SubsystemBase {
     public Command intakeCommand() {
         return Commands.runEnd(
                         () -> {
-                            rightRoller.set(0.75);
-                            leftRoller.set(0.75);
+                            rightRoller.set(0.45);
+                            leftRoller.set(0.45);
                             Shuffleboard.selectTab("armCamera");
                         },
                         () -> {
@@ -114,19 +101,6 @@ public class Rollergripper extends SubsystemBase {
     }
 
     /**
-     * applies a small force to the roller gripper in order to hold it in place
-     *
-     * @return the command
-     */
-    public Command holdConeCommand() {
-        return new ConditionalCommand(
-                setRollerGripperMotor(0.05).until(() -> true),
-                setRollerGripperMotor(0).until(() -> true),
-                beambreakTrigger)
-                .repeatedly().withName("HoldCone");
-    }
-
-    /**
      * manual command the allows full manual control of the system
      *
      * @param intake  whether the system should currently intake
@@ -156,6 +130,18 @@ public class Rollergripper extends SubsystemBase {
                 },
                 this
         );
+    }
+
+    /**
+     * applies a small force to the roller gripper in order to hold it in place
+     *
+     * @return the command
+     */
+    private Command holdConeCommand(){
+        return new StartEndCommand(
+                ()-> rightRoller.set(0.05),
+                rightRoller::stopMotor,
+                this);
     }
 
     @Override

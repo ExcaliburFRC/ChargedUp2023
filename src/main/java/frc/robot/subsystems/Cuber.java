@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import java.util.Map;
+
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kForward;
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kReverse;
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
@@ -46,7 +48,7 @@ public class Cuber extends SubsystemBase {
     private final PIDController anglePIDcontrller = new PIDController(Kp_ANGLE, 0, Kd_ANGLE);
     private final ArmFeedforward angleFFcontrller = new ArmFeedforward(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
 
-    public final Trigger hasCubeTrigger = new Trigger(() -> colorSensor.getIR() <= COLOR_DISTANCE_THRESHOLD).debounce(0.2)
+    public final Trigger hasCubeTrigger = new Trigger(() -> colorSensor.getProximity() >= COLOR_DISTANCE_THRESHOLD).debounce(0.2)
             .onTrue(leds.applyPatternCommand(SOLID, GREEN.color).withTimeout(0.25))
             .onFalse(leds.applyPatternCommand(SOLID, RED.color).withTimeout(0.25));
 
@@ -77,10 +79,12 @@ public class Cuber extends SubsystemBase {
         angleRelativeEncoder.setPositionConversionFactor(ANGLE_CONVERSION_FACTOR);
         angleRelativeEncoder.setPosition(angleEncoder.getDistance());
 
-        // TODO: organize and add widgets
-        cuberTab.addDouble("colorMM", colorSensor::getProximity);
-        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger);
-        cuberTab.addDouble("cuber angle", angleEncoder::getDistance);
+        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger).withPosition(8, 0).withSize(4, 4);
+        cuberTab.addDouble("colorMM", colorSensor::getProximity).withPosition(10, 4).withSize(4, 2)
+                .withWidget("Number Slider").withProperties(Map.of("min", 75, "max", 120));
+        cuberTab.addDouble("cuber angle", angleEncoder::getDistance).withPosition(12, 0).withSize(4, 4)
+                .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 180));
+
 
         setDefaultCommand(closeCuberCommand());
     }
@@ -120,7 +124,7 @@ public class Cuber extends SubsystemBase {
                     SmartDashboard.putNumber("setpoint", 0);
                     targetVel = 0;
                 },
-                () -> false, this
+                () -> false
         );
     }
 

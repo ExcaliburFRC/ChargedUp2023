@@ -144,7 +144,7 @@ public final class Constants {
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //https://brainly.in/question/3238411
 
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.25167 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.4312 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
 
         // Angle control
         public static final double kS_ANGLE = -0.048742;
@@ -177,12 +177,12 @@ public final class Constants {
         public static final int ANGLE_MOTOR_ID = 41;
         public static final int ROLLERS_MOTOR_ID = 42;
 
-        public static final double ABS_ENCODER_OFFSET = 0; // dutyCycle
+        public static final double ABS_ENCODER_OFFSET = 0.501; // dutyCycle
 
         public static final int SERVO_CHANNEL = 9;
         public static final int ENCODER_CHANNEL = 3;
 
-        public static final double COLOR_DISTANCE_THRESHOLD = 75;
+        public static final double COLOR_DISTANCE_THRESHOLD = 90;
 
         public static final float FWD_SOFT_LIMIT = 170f;
         public static final float REV_SOFT_LIMIT = 5f;
