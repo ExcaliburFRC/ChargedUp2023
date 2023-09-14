@@ -212,7 +212,7 @@ public final class Constants {
 
         public enum SERVO_ANGLE {
             RETRACTED(0),
-            EXTENDED(90);
+            EXTENDED(30);
 
             public final double angle;
 

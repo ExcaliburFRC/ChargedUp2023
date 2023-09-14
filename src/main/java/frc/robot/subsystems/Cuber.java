@@ -6,6 +6,10 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Servo;
@@ -16,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.util.Map;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kForward;
 import static com.revrobotics.CANSparkMax.SoftLimitDirection.kReverse;
@@ -58,6 +64,11 @@ public class Cuber extends SubsystemBase {
     public int targetPos = 0;
     public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(angleEncoder.getDistance() - targetPos) < POS_THRESHOLD).debounce(0.2);
 
+    private GenericEntry shooterVel = cuberTab.add("shooterVel", 0).getEntry();
+
+    // high dc: 32
+    // mid dc: 23
+
     public Cuber() {
         angleMotor.restoreFactoryDefaults();
         angleMotor.clearFaults();
@@ -79,12 +90,13 @@ public class Cuber extends SubsystemBase {
         angleRelativeEncoder.setPositionConversionFactor(ANGLE_CONVERSION_FACTOR);
         angleRelativeEncoder.setPosition(angleEncoder.getDistance());
 
-        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger).withPosition(8, 0).withSize(4, 4);
-        cuberTab.addDouble("colorMM", colorSensor::getProximity).withPosition(10, 4).withSize(4, 2)
+        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger).withPosition(8, 4).withSize(4, 2);
+        cuberTab.addDouble("servo angle", this::getServoAngle).withPosition(8, 0).withSize(4, 4)
+                .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 90));;
+        cuberTab.addDouble("colorMM", colorSensor::getProximity).withPosition(12, 4).withSize(4, 2)
                 .withWidget("Number Slider").withProperties(Map.of("min", 75, "max", 120));
         cuberTab.addDouble("cuber angle", angleEncoder::getDistance).withPosition(12, 0).withSize(4, 4)
                 .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 180));
-
 
         setDefaultCommand(closeCuberCommand());
     }
@@ -186,5 +198,17 @@ public class Cuber extends SubsystemBase {
                 ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast),
                 ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake))
                 .ignoringDisable(true);
+    }
+
+    // raw commands
+    public Command shootFromShuffleboard(BooleanSupplier pushCube){
+        return new RunCommand(()-> shooterMotor.set(shooterVel.getDouble(0) / 100), this)
+                .alongWith(new WaitUntilCommand(pushCube).andThen(pushCubeCommand()))
+                .until(hasCubeTrigger.negate().debounce(0.5));
+    }
+
+    public Command rawIntake(){
+        return Commands.runEnd(()-> shooterMotor.set(-0.1), shooterMotor::stopMotor, this)
+                .until(hasCubeTrigger);
     }
 }

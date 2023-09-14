@@ -4,14 +4,15 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.LedsConstants.GamePiece;
@@ -20,10 +21,13 @@ import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.utility.Calculation;
+import frc.robot.utility.Colors;
 
 import java.util.Map;
 
 import static frc.robot.Constants.CuberConstants.CUBER_ANGLE;
+import static frc.robot.Constants.CuberConstants.SERVO_ANGLE.EXTENDED;
+import static frc.robot.Constants.CuberConstants.SERVO_ANGLE.RETRACTED;
 import static frc.robot.Constants.CuberConstants.SHOOTER_VELOCITIY;
 
 /**
@@ -42,6 +46,7 @@ public class RobotContainer {
 
   public final CommandPS4Controller driver = new CommandPS4Controller(0);
   public final CommandPS4Controller operator = new CommandPS4Controller(1);
+  public final CommandPS4Controller testController = new CommandPS4Controller(2);
 
   public static final ShuffleboardTab driveTab = Shuffleboard.getTab("driveTab");
 
@@ -102,7 +107,11 @@ public class RobotContainer {
     driver.R1().onTrue(askForGamepieceCommand(GamePiece.Cube));
 
     driver.share().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
-    driver.options().toggleOnTrue(toggleMotorsIdleMode());
+    testController.options().toggleOnTrue(toggleMotorsIdleMode());
+
+    testController.square().toggleOnTrue(cuber.shootFromShuffleboard(testController.circle()));
+    testController.triangle().toggleOnTrue(cuber.rawIntake());
+    testController.cross().toggleOnTrue(superstructure.rollergripper.intakeCommand());
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){

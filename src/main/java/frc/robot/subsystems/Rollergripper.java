@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -50,8 +51,8 @@ public class Rollergripper extends SubsystemBase {
     public Command intakeCommand() {
         return Commands.runEnd(
                         () -> {
-                            rightRoller.set(0.15);
-                            leftRoller.set(0.25);
+                            rightRoller.set(0.25);
+                            leftRoller.set(0.35);
                             Shuffleboard.selectTab("armCamera");
                         },
                         () -> {
