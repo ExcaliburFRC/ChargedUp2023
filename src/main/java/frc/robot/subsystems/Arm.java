@@ -235,6 +235,19 @@ public class Arm extends SubsystemBase {
     return new InstantCommand(lengthMotor::stopMotor);
   }
 
+  public Command toggleIdleModeCommand(){
+    return new StartEndCommand(
+            ()-> {
+              angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+              angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+            },
+            ()-> {
+              angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+              angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+            })
+            .ignoringDisable(true);
+  }
+
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);

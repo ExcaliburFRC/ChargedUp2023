@@ -50,8 +50,8 @@ public class Rollergripper extends SubsystemBase {
     public Command intakeCommand() {
         return Commands.runEnd(
                         () -> {
-                            rightRoller.set(0.45);
-                            leftRoller.set(0.45);
+                            rightRoller.set(0.15);
+                            leftRoller.set(0.25);
                             Shuffleboard.selectTab("armCamera");
                         },
                         () -> {

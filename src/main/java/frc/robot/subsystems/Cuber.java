@@ -180,4 +180,11 @@ public class Cuber extends SubsystemBase {
                 requirement())
                 .until(hasCubeTrigger.negate());
     }
+
+    public Command toggleIdleModeCommand(){
+        return new StartEndCommand(
+                ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast),
+                ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake))
+                .ignoringDisable(true);
+    }
 }

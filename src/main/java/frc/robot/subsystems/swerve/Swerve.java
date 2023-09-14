@@ -23,6 +23,7 @@ import frc.robot.RobotContainer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.SwerveConstants.*;
@@ -373,5 +374,18 @@ public class Swerve extends SubsystemBase {
     swerveModules[FRONT_RIGHT].stop();
     swerveModules[BACK_LEFT].stop();
     swerveModules[BACK_RIGHT].stop();
+  }
+
+  private void foreachModule(Consumer<SwerveModule> module){
+    for (int i = 0; i < swerveModules.length; i++) {
+      module.accept(swerveModules[i]);
+    }
+  }
+
+  public Command toggleIdleModeCommand(){
+    return new StartEndCommand(
+            ()-> foreachModule(SwerveModule::setIdleModeCoast),
+            ()-> foreachModule(SwerveModule::setIdleModebreak))
+            .ignoringDisable(true);
   }
 }

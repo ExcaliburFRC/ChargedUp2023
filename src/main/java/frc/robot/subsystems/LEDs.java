@@ -202,7 +202,8 @@ public class LEDs extends SubsystemBase {
 
     private void setLedStrip(Color[] colors) {
         for (int i = 0; i < colors.length; i++) {
-            buffer.setLED(i, Color.balance(colors[i]));
+//            buffer.setLED(i, Color.balance(colors[i]));
+            buffer.setLED(i, colors[i]);
         }
 
         LedStrip.setData(buffer);

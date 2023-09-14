@@ -35,7 +35,10 @@ import static frc.robot.Constants.CuberConstants.SHOOTER_VELOCITIY;
 public class RobotContainer {
   private final Swerve swerve = new Swerve();
   private final Cuber cuber = new Cuber();
+  private final LEDs lEDs = LEDs.getInstance();
   private final Superstructure superstructure = new Superstructure();
+
+  public final Trigger userButtonTrigger = new Trigger(RobotController::getUserButton);
 
   public final CommandPS4Controller driver = new CommandPS4Controller(0);
   public final CommandPS4Controller operator = new CommandPS4Controller(1);
@@ -93,10 +96,13 @@ public class RobotContainer {
     driver.PS().onTrue(swerve.resetGyroCommand());
     driver.square().whileTrue(swerve.balanceRampCommand());
 
-    operator.L1().toggleOnTrue(superstructure.lockArmCommand());
+    operator.L1().onTrue(superstructure.lockArmCommand());
 
     driver.L1().onTrue(askForGamepieceCommand(GamePiece.Cone));
     driver.R1().onTrue(askForGamepieceCommand(GamePiece.Cube));
+
+    driver.share().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
+    driver.options().toggleOnTrue(toggleMotorsIdleMode());
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){
@@ -105,6 +111,14 @@ public class RobotContainer {
 
   public static Command selectDriveTabCommand(){
     return new InstantCommand(()-> Shuffleboard.selectTab(driveTab.getTitle()));
+  }
+
+  public Command toggleMotorsIdleMode(){
+    return new ParallelCommandGroup(
+            swerve.toggleIdleModeCommand(),
+            cuber.toggleIdleModeCommand(),
+            superstructure.arm.toggleIdleModeCommand()
+    );
   }
 
   /**

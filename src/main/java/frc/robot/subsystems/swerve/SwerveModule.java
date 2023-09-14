@@ -150,6 +150,16 @@ public class SwerveModule implements Sendable {
     _spinningMotor.set(0);
   }
 
+  public void setIdleModeCoast(){
+    _driveMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+    _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+  }
+
+  public void setIdleModebreak(){
+    _driveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+  }
+
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Gyro");
