@@ -8,11 +8,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.LedsConstants.GamePiece;
@@ -26,8 +24,6 @@ import frc.robot.utility.Colors;
 import java.util.Map;
 
 import static frc.robot.Constants.CuberConstants.CUBER_ANGLE;
-import static frc.robot.Constants.CuberConstants.SERVO_ANGLE.EXTENDED;
-import static frc.robot.Constants.CuberConstants.SERVO_ANGLE.RETRACTED;
 import static frc.robot.Constants.CuberConstants.SHOOTER_VELOCITIY;
 
 /**
@@ -88,30 +84,28 @@ public class RobotContainer {
     operator.R2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
 
     // place commands
-    operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(operator.R1()));
-    operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(operator.R1()));
+    operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(driver.R1()));
+    operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(driver.R1()));
     operator.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
-    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH)
-                    .alongWith(superstructure.leanBackCommand()));
-    operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE));
-    operator.povDown().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW));
+    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.SHOOTER, driver.R1()));
+//                    .alongWith(superstructure.leanBackCommand()));
+    operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.SHOOTER, driver.R1()));
+//                    .alongWith(superstructure.leanBackCommand()));
+    operator.povDown().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, driver.R1()));
 
     // other
     driver.PS().onTrue(swerve.resetGyroCommand());
     driver.square().whileTrue(swerve.balanceRampCommand());
 
+    driver.button(10).onTrue(askForGamepieceCommand(GamePiece.Cone));
+    driver.button(11).onTrue(askForGamepieceCommand(GamePiece.Cube));
+
+    driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
+
     operator.L1().onTrue(superstructure.lockArmCommand());
 
-    driver.L1().onTrue(askForGamepieceCommand(GamePiece.Cone));
-    driver.R1().onTrue(askForGamepieceCommand(GamePiece.Cube));
-
-    driver.share().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
     testController.options().toggleOnTrue(toggleMotorsIdleMode());
-
-    testController.square().toggleOnTrue(cuber.shootFromShuffleboard(testController.circle()));
-    testController.triangle().toggleOnTrue(cuber.rawIntake());
-    testController.cross().toggleOnTrue(superstructure.rollergripper.intakeCommand());
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){
@@ -138,4 +132,31 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return null;
   }
+
+  /*
+  button layout:
+
+  driver:
+  joysticks - drive
+  joystick buttons - askForGamePiece
+
+  R1 - release / confirm
+  L1 - lock arm
+
+  L2 & R2 - swerve modifications
+
+  Playstation - resetGyro
+  Touchpad - LEDs
+
+  square - balanceRamp
+  ----------------------------------
+  operator:
+
+  square - intake cone (shelf)
+  triangle, circle, cross - raise arm to high, mid, low
+
+  L2 & R2 - intake cube from ground / slide
+
+  POV up, left, down - prepare shooter for high, mid, low
+   */
 }

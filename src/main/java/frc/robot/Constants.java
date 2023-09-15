@@ -10,6 +10,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utility.Color;
 import frc.robot.utility.Colors;
+
+import static frc.robot.Constants.CuberConstants.SHOOTER_VELOCITIY.HIGH;
 import static java.lang.Math.PI;
 
 /**
@@ -122,7 +124,9 @@ public final class Constants {
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
 
             CLOSED(new Translation2d(MINIMAL_LENGTH_METERS - 0.01, Rotation2d.fromDegrees(90))),
-            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(86)));
+            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(86))),
+
+            LEANED(new Translation2d(MINIMAL_LENGTH_METERS  + 0.3, Rotation2d.fromDegrees(110)));
 
             public final Translation2d setpoint;
 
@@ -189,7 +193,7 @@ public final class Constants {
 
         public static final double ANGLE_CONVERSION_FACTOR = 1.0 / 90.0;
 
-        public static final double VEL_THRESHOLD = 50;
+        public static final double VEL_THRESHOLD = HIGH.velocity * 0.05; // TODO
         public static final double POS_THRESHOLD = 1;
 
         // angle control constants
@@ -202,11 +206,11 @@ public final class Constants {
         public static final double Kd_ANGLE = 0;
 
         // shooter control constants
-        public static final double Ks_SHOOTER = 0.36726;
-        public static final double Kv_SHOOTER = 0.13801;
-        public static final double Ka_SHOOTER = 0.012755;
+        public static final double Ks_SHOOTER = 0.22;
+        public static final double Kv_SHOOTER = 0.137;
+        public static final double Ka_SHOOTER = 0;
 
-        public static final double Kp_SHOOTER = 0.058924;
+        public static final double Kp_SHOOTER = 0.00025;
         public static final double Kd_SHOOTER = 0;
 
 
@@ -222,12 +226,11 @@ public final class Constants {
         }
 
         public enum CUBER_ANGLE {
-            HIGH(165),
-            MIDDLE(160),
-            LOW(75),
-            CLOSED(80),
+            SHOOTER(138),
+            LOW_SHOOTER(100),
+            IDLE(80),
             INTAKE_GROUND(10),
-            INTAKE_SLIDE(120);
+            INTAKE_SLIDE(138);
 
             public final int angle;
 
@@ -237,9 +240,9 @@ public final class Constants {
         }
 
         public enum SHOOTER_VELOCITIY {
-            HIGH(200),
-            MIDDLE(50),
-            LOW(50),
+            HIGH(1500),
+            MIDDLE(1180),
+            LOW(750),
             INTAKE(-70);
 
             public final int velocity;
