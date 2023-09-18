@@ -138,15 +138,14 @@ public class RobotContainer {
 
   driver:
   joysticks - drive
-  joystick buttons - askForGamePiece
+  joystick buttons - askForGame LEDs
 
   R1 - release / confirm
-  L1 - lock arm
 
   L2 & R2 - swerve modifications
 
   Playstation - resetGyro
-  Touchpad - LEDs
+  Touchpad - Coast motors & whiteLEDs
 
   square - balanceRamp
   ----------------------------------
@@ -154,6 +153,8 @@ public class RobotContainer {
 
   square - intake cone (shelf)
   triangle, circle, cross - raise arm to high, mid, low
+
+  L1 - lock arm
 
   L2 & R2 - intake cube from ground / slide
 
