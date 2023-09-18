@@ -151,12 +151,12 @@ public class RobotContainer {
   ----------------------------------
   operator:
 
-  square - intake cone (shelf)
-  triangle, circle, cross - raise arm to high, mid, low
+  X - intake cone (shelf only)
+  Y, B, A - raise arm to high, mid, low
 
-  L1 - lock arm
+  LB - lock arm
 
-  L2 & R2 - intake cube from ground / slide
+  LT & RT - intake cube from ground / slide
 
   POV up, left, down - prepare shooter for high, mid, low
    */
