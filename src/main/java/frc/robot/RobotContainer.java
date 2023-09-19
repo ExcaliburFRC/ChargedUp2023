@@ -104,10 +104,11 @@ public class RobotContainer {
     driver.button(11).onTrue(askForGamepieceCommand(GamePiece.Cube));
 
     driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
+    driver.touchpad().whileTrue(toggleMotorsIdleMode());
 
     operator.L1().onTrue(superstructure.lockArmCommand());
 
-    testController.options().toggleOnTrue(toggleMotorsIdleMode());
+    testController.touchpad().toggleOnTrue(toggleMotorsIdleMode());
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){
