@@ -94,7 +94,7 @@ public class RobotContainer {
 //                    .alongWith(superstructure.leanBackCommand()));
     operator.povDown().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, new Trigger(()-> true)));
 
-    operator.povRight().whileTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
+    operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
     // other
     driver.PS().onTrue(swerve.resetGyroCommand());
@@ -161,6 +161,6 @@ public class RobotContainer {
   LT & RT - intake cube from ground / slide
 
   POV up, left, down - prepare shooter for high, mid, low
-  POV right - prepare for cannon
+  POV right - enable automatic cannon mode
    */
 }
