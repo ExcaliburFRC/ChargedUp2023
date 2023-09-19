@@ -18,9 +18,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.util.Map;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
-import static com.revrobotics.CANSparkMax.SoftLimitDirection.kForward;
-import static com.revrobotics.CANSparkMax.SoftLimitDirection.kReverse;
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.CuberConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
@@ -69,10 +68,13 @@ public class Cuber extends SubsystemBase {
         angleMotor.restoreFactoryDefaults();
         angleMotor.clearFaults();
         angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        angleMotor.setSoftLimit(kForward, FWD_SOFT_LIMIT);
-        angleMotor.enableSoftLimit(kForward, true);
-        angleMotor.setSoftLimit(kReverse, REV_SOFT_LIMIT);
-        angleMotor.enableSoftLimit(kReverse, true);
+
+//        angleMotor.setSoftLimit(kForward, FWD_SOFT_LIMIT);
+//        angleMotor.enableSoftLimit(kForward, true);
+//        angleMotor.setSoftLimit(kReverse, REV_SOFT_LIMIT);
+//        angleMotor.enableSoftLimit(kReverse, true);
+
+        angleMotor.setOpenLoopRampRate(3);
         angleMotor.setInverted(false);
 
         shooterMotor.restoreFactoryDefaults();
@@ -94,6 +96,7 @@ public class Cuber extends SubsystemBase {
         cuberTab.addDouble("cuber angle", angleEncoder::getDistance).withPosition(12, 0).withSize(4, 4)
                 .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 180));
         cuberTab.addBoolean("isAtTargetVel", isAtTargetVelTrigger);
+        cuberTab.addDouble("relEncoderPos", angleRelativeEncoder::getPosition);
 
         setDefaultCommand(closeCuberCommand());
     }
@@ -196,6 +199,13 @@ public class Cuber extends SubsystemBase {
                 ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast),
                 ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake))
                 .ignoringDisable(true);
+    }
+
+    public Command cannonShooterCommand(DoubleSupplier robotAngle, Trigger override){
+        return shootCubeCommand(
+                SHOOTER_VELOCITIY.CANNON, CUBER_ANGLE.CANNON,
+                new Trigger(()-> Math.abs(robotAngle.getAsDouble()) > ROBOT_ANGLE_THRESHOLD).or(override)
+        );
     }
 
     // raw commands

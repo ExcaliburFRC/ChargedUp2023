@@ -68,8 +68,8 @@ public class Swerve extends SubsystemBase {
   private final PIDController yController = new PIDController(kp_Y, 0, 0);
 
   private final AtomicInteger lastJoystickAngle = new AtomicInteger(0);
-  private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
-  private final Trigger rampStreightTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 3);
+  private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRobotPitch()) < 10).debounce(0.35);
+  private final Trigger rampStreightTrigger = new Trigger(() -> Math.abs(getRobotPitch()) < 3);
 
   private final SlewRateLimiter angleRateLimiter = new SlewRateLimiter(0.15);
 
@@ -105,8 +105,8 @@ public class Swerve extends SubsystemBase {
           .withPosition(0, 2).withSize(4, 4);
     swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
 
-    swerveTab.addDouble("rampAngle", () -> getRampAngle()).withSize(2, 2);
-    swerveTab.addDouble("pid ramp", () -> rampController.calculate(getRampAngle(), 0)).withSize(2, 2);
+    swerveTab.addDouble("rampAngle", () -> getRobotPitch()).withSize(2, 2);
+    swerveTab.addDouble("pid ramp", () -> rampController.calculate(getRobotPitch(), 0)).withSize(2, 2);
     swerveTab.addBoolean("robot balanced", robotBalancedTrigger::getAsBoolean);
 
     RobotContainer.driveTab.addDouble("SwerveAngle", () -> getRotation().getDegrees())
@@ -144,7 +144,7 @@ public class Swerve extends SubsystemBase {
 
   // return the pitch of the robot
   //TODO: check if works
-  public double getRampAngle() {
+  public double getRobotPitch() {
     double roll = _gyro.getRoll();
     roll -= 0.46;
     return roll;
@@ -353,7 +353,7 @@ public class Swerve extends SubsystemBase {
 
   public Command balanceRampCommand() {
     return driveSwerveCommand(
-          () -> rampController.calculate(getRampAngle(), 0),
+          () -> rampController.calculate(getRobotPitch(), 0),
           () -> 0,
           () -> 0,
           () -> false);

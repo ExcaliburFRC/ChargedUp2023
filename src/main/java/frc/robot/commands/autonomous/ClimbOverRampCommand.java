@@ -8,7 +8,7 @@ public class ClimbOverRampCommand extends SequentialCommandGroup {
     super(
           swerve.driveToRampCommand(isForward),
           swerve.tankDriveCommand(()-> isForward? 0.3 : -0.3, ()-> 0, true)
-                  .until(()-> swerve.getRampAngle() < 0));
+                  .until(()-> swerve.getRobotPitch() < 0));
           // TODO fix positive / negative gyro pitch
 //          swerve.tankDriveCommand(()-> isForward? 0.3 : -0.3, ()-> 0, true).withTimeout(3),
 //          swerve.climbCommand(!isForward)

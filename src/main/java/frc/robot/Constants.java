@@ -187,6 +187,7 @@ public final class Constants {
         public static final int ENCODER_CHANNEL = 3;
 
         public static final double COLOR_DISTANCE_THRESHOLD = 90;
+        public static final double ROBOT_ANGLE_THRESHOLD = 10; // degrees
 
         public static final float FWD_SOFT_LIMIT = 170f;
         public static final float REV_SOFT_LIMIT = 5f;
@@ -227,8 +228,9 @@ public final class Constants {
 
         public enum CUBER_ANGLE {
             SHOOTER(138),
-            LOW_SHOOTER(100),
-            IDLE(80),
+            LOW_SHOOTER(92),
+            CANNON(100),
+            IDLE(110),
             INTAKE_GROUND(10),
             INTAKE_SLIDE(138);
 
@@ -240,6 +242,7 @@ public final class Constants {
         }
 
         public enum SHOOTER_VELOCITIY {
+            CANNON(2500),
             HIGH(1500),
             MIDDLE(1180),
             LOW(750),

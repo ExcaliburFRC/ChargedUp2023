@@ -83,7 +83,7 @@ public class RobotContainer {
     operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
     operator.R2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
 
-    // place commands
+    // shoot / place commands
     operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(driver.R1()));
     operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(driver.R1()));
     operator.cross().toggleOnTrue(superstructure.placeOnLowCommand());
@@ -92,7 +92,9 @@ public class RobotContainer {
 //                    .alongWith(superstructure.leanBackCommand()));
     operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.SHOOTER, driver.R1()));
 //                    .alongWith(superstructure.leanBackCommand()));
-    operator.povDown().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, driver.R1()));
+    operator.povDown().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, new Trigger(()-> true)));
+
+    operator.povRight().whileTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
     // other
     driver.PS().onTrue(swerve.resetGyroCommand());
@@ -159,5 +161,6 @@ public class RobotContainer {
   LT & RT - intake cube from ground / slide
 
   POV up, left, down - prepare shooter for high, mid, low
+  POV right - prepare for cannon
    */
 }
