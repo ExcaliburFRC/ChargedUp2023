@@ -113,7 +113,6 @@ public final class Constants {
 
     public static final class ArmConstants {
         public enum Setpoints {
-            // cone, cube
             LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),//
             MID(new Translation2d(0.72, Rotation2d.fromDegrees(172))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
@@ -122,11 +121,9 @@ public final class Constants {
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(174))),
 
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
+            LOCKED(new Translation2d(1.02, Rotation2d.fromDegrees(88))),
 
-            CLOSED(new Translation2d(MINIMAL_LENGTH_METERS - 0.01, Rotation2d.fromDegrees(90))),
-            LOCKED(new Translation2d(MAXIMAL_LENGTH_METERS + 0.02, Rotation2d.fromDegrees(86))),
-
-            LEANED(new Translation2d(MINIMAL_LENGTH_METERS  + 0.3, Rotation2d.fromDegrees(110)));
+            LEANED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(90)));
 
             public final Translation2d setpoint;
 
@@ -144,11 +141,11 @@ public final class Constants {
         public static final int ABS_ANGLE_ENCODER_PORT = 7;
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
-        public static final double MAXIMAL_LENGTH_METERS = 1.01; // m
+        public static final double MAXIMAL_LENGTH_METERS = 1.08; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //https://brainly.in/question/3238411
 
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.4312 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.4234 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
 
         // Angle control
         public static final double kS_ANGLE = -0.048742;
