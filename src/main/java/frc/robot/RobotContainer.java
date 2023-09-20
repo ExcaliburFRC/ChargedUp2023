@@ -79,9 +79,9 @@ public class RobotContainer {
                 driver::getL2Axis));
 
     // intake commands
-    operator.square().toggleOnTrue(superstructure.intakeFromShelfCommand());
+    operator.R1().toggleOnTrue(superstructure.intakeFromShelfCommand());
+    operator.L1().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
     operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
-    operator.R2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
 
     // shoot / place commands
     operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(driver.R1()));
@@ -97,6 +97,8 @@ public class RobotContainer {
     operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
     // other
+    operator.square().onTrue(superstructure.lockArmCommand());
+
     driver.PS().onTrue(swerve.resetGyroCommand());
     driver.square().whileTrue(swerve.balanceRampCommand());
 
@@ -106,7 +108,6 @@ public class RobotContainer {
     driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
     driver.touchpad().whileTrue(toggleMotorsIdleMode());
 
-    operator.L1().onTrue(superstructure.lockArmCommand());
 
     testController.touchpad().toggleOnTrue(toggleMotorsIdleMode());
   }
@@ -141,7 +142,7 @@ public class RobotContainer {
 
   driver:
   joysticks - drive
-  joystick buttons - askForGame LEDs
+  joystick buttons - askForGamePiece LEDs
 
   R1 - release / confirm
 
@@ -154,12 +155,12 @@ public class RobotContainer {
   ----------------------------------
   operator:
 
-  X - intake cone (shelf only)
+  X - Lock Arm
   Y, B, A - raise arm to high, mid, low
 
-  LB - lock arm
+  RB - intake cone (shelf only)
 
-  LT & RT - intake cube from ground / slide
+  LT & LB - intake cube from ground / slide
 
   POV up, left, down - prepare shooter for high, mid, low
   POV right - enable automatic cannon mode
