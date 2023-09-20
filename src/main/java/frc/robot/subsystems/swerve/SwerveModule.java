@@ -108,7 +108,7 @@ public class SwerveModule implements Sendable {
   }
 
   public void resetEncoders() {
-    _driveEncoder.setPosition(0);
+//    _driveEncoder.setPosition(0);
     _spinningEncoder.setPosition(getAbsEncoderRad());
   }
 
@@ -122,7 +122,7 @@ public class SwerveModule implements Sendable {
 
   public void setDesiredState(SwerveModuleState state) {
     if (Math.abs(state.speedMetersPerSecond) < 0.01) {
-      stop();
+      stopModule();
       return;
     }
 
@@ -145,7 +145,7 @@ public class SwerveModule implements Sendable {
     return _absEncoder.getAbsolutePosition();
   }
 
-  public void stop() {
+  public void stopModule() {
     _driveMotor.set(0);
     _spinningMotor.set(0);
   }

@@ -94,10 +94,10 @@ public final class Constants {
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
 
         // autonomous constants
-        public static final double kp_Theta = 0.00585;
-        public static final double kd_Theta = 0;
-        public static final double kp_X = 0.2;
-        public static final double kp_Y = 0.2;
+        public static final double kp_ANGLE = 0.00585;
+        public static final double kd_ANGLE = 0;
+        public static final double kp_TRANSLATION = 0;
+        public static final double kd_TRANSLATION = 0;
     }
 
     public static final class ModuleConstants {

@@ -1,52 +1,55 @@
-package frc.robot.utility;
+ package frc.robot.utility;
 
-public class AutoBuilder {
-    // TODO: update to cuber
+ import com.pathplanner.lib.PathPlannerTrajectory;
+ import com.pathplanner.lib.PathPoint;
+ import com.pathplanner.lib.auto.PIDConstants;
+ import com.pathplanner.lib.auto.SwerveAutoBuilder;
+ import edu.wpi.first.math.controller.PIDController;
+ import edu.wpi.first.math.geometry.Rotation2d;
+ import edu.wpi.first.math.geometry.Translation2d;
+ import edu.wpi.first.wpilibj2.command.Command;
+ import edu.wpi.first.wpilibj2.command.button.Trigger;
+ import frc.robot.subsystems.swerve.Swerve;
 
-//    public static final SendableChooser<Command> autoChooser = new SendableChooser<>();
-//    public static final SendableChooser<Double> heightChooser = new SendableChooser<>();
-//    public static final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
-//
-//    public static final Timer autoTimer = new Timer();
-//
-//    public static void loadAutoChoosers(Swerve swerve, Intake intake) {
-//        initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
-//        initialGamePiece.addOption("cube", GamePiece.CUBE);
-//
-//        heightChooser.setDefaultOption("low", LOW_RPM);
-//        heightChooser.addOption("mid", MID_RPM);
-//        heightChooser.addOption("high", HIGH_RPM);
-//
-//        autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve, true));
-//        autoChooser.addOption("balance ramp", swerve.climbCommand(true));
-////        autoChooser.addOption("climb over & balance ramp", new ClimbOverRampCommand(swerve, true));
-//        autoChooser.addOption("collect cube", swerve.driveSwerveWithAngleCommand(()-> 0.4, ()-> 0, ()-> 0, ()-> true)
-//                .alongWith(intake.intakeCommand(0.4)).withTimeout(5.5));
-//        autoChooser.addOption("don't drive", new InstantCommand(() -> {}));
-//
-//        var tab = Shuffleboard.getTab("Autonomous builder");
-//        tab.add("initial game piece", initialGamePiece).withSize(4, 2).withPosition(8, 1);
-//        tab.add("height", heightChooser).withSize(4, 2).withPosition(8, 3);
-//        tab.add("auto", autoChooser).withSize(4, 2).withPosition(8, 5);
-//    }
-//
-//    public static Command getAutonomousCommand(Superstructure superstructure, Intake intake, Swerve swerve) {
-//        return new ProxyCommand(
-//                new SequentialCommandGroup(
-//                        new InstantCommand(autoTimer::start),
-//                        swerve.resetGyroCommand(initialGamePiece.getSelected().equals(GamePiece.CUBE) ? 180 : 0),
-//                        new InstantCommand(() -> CommandScheduler.getInstance().setDefaultCommand(
-//                                superstructure.rollergripper, superstructure.rollergripper.holdConeCommand())),
-//                        new ConditionalCommand(
-//                                superstructure.arm.resetLengthCommand().andThen(
-//                                        superstructure.placeOnHeightCommand(heightChooser.getSelected())),
-//                                intake.shootCubeCommand(heightChooser.getSelected()).withTimeout(2),
-//                                () -> initialGamePiece.getSelected().equals(GamePiece.CONE)),
-//                        autoChooser.getSelected()
-//                                .alongWith(new ConditionalCommand(
-//                                        new InstantCommand(),
-//                                        superstructure.arm.lockArmCommand(new Trigger(()-> false)),
-//                                        superstructure.arm.armLockedTrigger)))
-//                );
-//    }
-}
+ import java.util.HashMap;
+
+ import static frc.robot.Constants.SwerveConstants.*;
+
+ public class AutoBuilder {
+     private Swerve swerve;
+
+     private final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
+             swerve::getPose2d, (__)->{},
+             kSwerveKinematics,
+             new PIDConstants(kp_TRANSLATION, 0, kd_TRANSLATION),
+             new PIDConstants(kp_ANGLE, 0, kd_ANGLE),
+             swerve::setModulesStates,
+             new HashMap<>(),
+             true, // WTFFF
+             swerve
+     );
+
+     public AutoBuilder(Swerve swerve){
+         this.swerve = swerve;
+     }
+
+     public Command followTrajectoryCommand(PathPlannerTrajectory traj) {
+         return swerve.straightenModulesCommand().andThen(swerveAutoBuilder.fullAuto(traj));
+     }
+
+     public Command turnToAngleCommand(double setpoint) {
+         return swerve.tankDriveCommand(
+                 () -> 0,
+                 () -> new PIDController(kp_ANGLE, 0, kd_ANGLE).calculate(swerve.getOdometryRotation2d().getDegrees(), setpoint),
+                 false)
+                 .until(new Trigger(()-> Math.abs(swerve.getOdometryRotation2d().getDegrees() - setpoint) < 1.5).debounce(0.15));
+     }
+
+    private static PathPoint getPathpoint(PathPoint point){
+        return new PathPoint(new Translation2d(point.position.getX(), -point.position.getY()), point.heading.times(-1), Rotation2d.fromDegrees(360).minus(point.holonomicRotation));
+    }
+
+    public static PathPoint getPathpoint(Translation2d position, Rotation2d heading, Rotation2d holonomicRotation){
+        return getPathpoint(new PathPoint(position, heading, holonomicRotation));
+    }
+ }

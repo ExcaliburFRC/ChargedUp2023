@@ -99,7 +99,7 @@ public class RobotContainer {
     // other
     operator.square().onTrue(superstructure.lockArmCommand());
 
-    driver.PS().onTrue(swerve.resetGyroCommand());
+    driver.PS().onTrue(swerve.resetOdometryAngleCommand());
     driver.square().whileTrue(swerve.balanceRampCommand());
 
     driver.button(10).onTrue(askForGamepieceCommand(GamePiece.Cone));
