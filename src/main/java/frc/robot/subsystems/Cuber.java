@@ -56,7 +56,7 @@ public class Cuber extends SubsystemBase {
     public int targetVel = 0;
     public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.1);
 
-    public int targetPos = 0;
+    public int targetPos = 139;
     public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(angleEncoder.getDistance() - targetPos) < POS_THRESHOLD).debounce(0.2);
 
     private GenericEntry shooterVel = cuberTab.add("shooterVel", 0).getEntry();
@@ -82,21 +82,23 @@ public class Cuber extends SubsystemBase {
         shooterMotor.clearFaults();
         shooterMotor.setInverted(false);
 
+        angleEncoder.reset();
         angleEncoder.setPositionOffset(ABS_ENCODER_OFFSET);
         angleEncoder.setDistancePerRotation(360);
 
         angleRelativeEncoder.setPositionConversionFactor(ANGLE_CONVERSION_FACTOR);
         angleRelativeEncoder.setPosition(angleEncoder.getDistance());
 
-        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger).withPosition(8, 4).withSize(4, 2);
         cuberTab.addDouble("servo angle", this::getServoAngle).withPosition(8, 0).withSize(4, 4)
                 .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 90));;
         cuberTab.addDouble("colorMM", colorSensor::getProximity).withPosition(12, 4).withSize(4, 2)
                 .withWidget("Number Slider").withProperties(Map.of("min", 75, "max", 120));
         cuberTab.addDouble("cuber angle", angleEncoder::getDistance).withPosition(12, 0).withSize(4, 4)
                 .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 180));
-        cuberTab.addBoolean("isAtTargetVel", isAtTargetVelTrigger);
-        cuberTab.addDouble("relEncoderPos", angleRelativeEncoder::getPosition);
+
+        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger).withPosition(8, 4).withSize(4, 2);
+        cuberTab.addBoolean("isAtTargetVel", isAtTargetVelTrigger).withPosition(8, 6).withSize(4, 2);
+        cuberTab.addBoolean("isAtTargetPos", isAtTargetPosTrigger).withPosition(12, 6).withSize(4, 2);
 
         setDefaultCommand(closeCuberCommand());
     }

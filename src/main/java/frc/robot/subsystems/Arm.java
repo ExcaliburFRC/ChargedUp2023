@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -83,9 +84,9 @@ public class Arm extends SubsystemBase {
     lengthMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 1.03f);
     lengthMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 
-    angleMotor.setOpenLoopRampRate(0.5);
+    angleMotor.setOpenLoopRampRate(1.5);
 
-    if (lengthEncoder.getPosition() < 0.1) lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
+    if (lengthEncoder.getPosition() < 0.1) lengthEncoder.setPosition(LOCKED_LENGTH_METERS);
 
     setDefaultCommand(fadeArmCommand().alongWith(stopTelescopeMotors()));
   }
@@ -164,7 +165,7 @@ public class Arm extends SubsystemBase {
   }
 
   public Command setAngleSpeed(double speed) {
-    return new RunCommand(() -> angleMotor.set(speed / 100), this);
+    return new RunCommand(() -> angleMotor.set(speed / 100.0), this);
   }
 
   /**
@@ -207,6 +208,23 @@ public class Arm extends SubsystemBase {
       } else angleMotor.setVoltage(pid + feedforward);
 
     }, angleMotor::stopMotor, this);
+  }
+
+
+  /**
+   * yes, this is a real command, it's meant to oscillate the arm up and down slightly,
+   * to help the driver aim the arm better, and increase our success rate in cone placement to the high node
+   * @param baseAngle the angle to oscillate from
+   * @param magnitude the magnitude of the oscillations (degrees)
+   * @return
+   */
+  public Command osscilateArmCommand(Translation2d baseAngle, double magnitude) {
+    return Commands.repeatingSequence(
+    moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(-magnitude)))
+            .withTimeout(0.5),
+            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(magnitude)))
+            .withTimeout(0.5)
+    );
   }
 
   private boolean angleInRange(double angleA, double angleB) {

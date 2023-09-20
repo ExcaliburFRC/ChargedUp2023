@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 
 import java.util.function.BooleanSupplier;
@@ -35,12 +36,13 @@ public class Superstructure {
                         .withTimeout(0.5));
     }
 
-    public Command placeOnHighCommand(BooleanSupplier release) {
+    public Command placeOnHighCommand(Trigger release) {
         return new SequentialCommandGroup(
                 arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.25),
                 arm.holdSetpointCommand(HIGH.setpoint).until(release),
-                arm.fadeArmCommand().alongWith(rollergripper.ejectCommand(0.03))
-                        .until(rollergripper.beambreakTrigger.negate().debounce(0.1)),
+                arm.osscilateArmCommand(HIGH.setpoint, 3).until(release.negate()),
+                arm.setAngleSpeed(-5).alongWith(rollergripper.ejectCommand())
+                        .until(rollergripper.beambreakTrigger.negate()),
                 arm.resetLengthCommand());
     }
 

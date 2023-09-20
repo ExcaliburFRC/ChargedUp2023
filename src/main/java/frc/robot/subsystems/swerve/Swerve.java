@@ -21,6 +21,7 @@ import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.SwerveConstants.*;
@@ -64,7 +65,7 @@ public class Swerve extends SubsystemBase {
     private final PIDController angleTeleopController = new PIDController(kp_ANGLE, 0, kd_ANGLE);
     private final PIDController distanceTeleopController = new PIDController(kp_TRANSLATION, 0, kd_TRANSLATION);
 
-    private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRampAngle()) < 10).debounce(0.35);
+    private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRobotPitch()) < 10).debounce(0.35);
 
     private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
             kSwerveKinematics,
@@ -105,7 +106,7 @@ public class Swerve extends SubsystemBase {
         return Math.IEEEremainder(_gyro.getAngle(), 360);
     }
 
-    public double getRampAngle() {
+    public double getRobotPitch() {
         return _gyro.getRoll() - 0.46;
     }
 
@@ -159,9 +160,9 @@ public class Swerve extends SubsystemBase {
                         },
                         () -> {
                             //create the speeds for x,y and spin
-                            double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed * (1.0 - decelerator.getAsDouble()),
-                                    ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed * (1.0 - decelerator.getAsDouble()),
-                                    spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed * (1.0 - decelerator.getAsDouble());
+                            double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
+                                    ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
+                                    spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed * decelerator.getAsDouble();
 
                             // **all credits to the decelerator idea are for Ofir from Trigon #5990 (ohfear_ on discord)**
 
@@ -224,7 +225,7 @@ public class Swerve extends SubsystemBase {
 
     public Command balanceRampCommand() {
         return driveSwerveCommand(
-                () -> rampController.calculate(getRampAngle(), 0),
+                () -> rampController.calculate(getRobotPitch(), 0),
                 () -> 0,
                 () -> 0,
                 () -> false);
@@ -241,17 +242,11 @@ public class Swerve extends SubsystemBase {
 
     // other methods
     private void resetAngleEncoders() {
-        swerveModules[FRONT_LEFT].resetEncoders();
-        swerveModules[FRONT_RIGHT].resetEncoders();
-        swerveModules[BACK_LEFT].resetEncoders();
-        swerveModules[BACK_RIGHT].resetEncoders();
+        foreachModule(SwerveModule::resetEncoders);
     }
 
     private void stopModules() {
-        swerveModules[FRONT_LEFT].stopModule();
-        swerveModules[FRONT_RIGHT].stopModule();
-        swerveModules[BACK_LEFT].stopModule();
-        swerveModules[BACK_RIGHT].stopModule();
+        foreachModule(SwerveModule::stopModule);
     }
 
     public void setModulesStates(SwerveModuleState[] states) {
@@ -269,6 +264,19 @@ public class Swerve extends SubsystemBase {
                 swerveModules[2].getPosition(),
                 swerveModules[3].getPosition(),
         };
+    }
+
+    private void foreachModule(Consumer<SwerveModule> module){
+        for (int i = 0; i < swerveModules.length; i++) {
+            module.accept(swerveModules[i]);
+        }
+    }
+
+    public Command toggleIdleModeCommand(){
+        return new StartEndCommand(
+                ()-> foreachModule(SwerveModule::setIdleModeCoast),
+                ()-> foreachModule(SwerveModule::setIdleModebreak))
+                .ignoringDisable(true);
     }
 
     @Override

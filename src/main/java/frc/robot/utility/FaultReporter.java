@@ -13,7 +13,7 @@ public class FaultReporter {
 //  PneumaticHub ph = new PneumaticHub();
 
   // empty pdh ports - to ignore in pdh checks
-  String[] toIgnore = new String[]{"10", "11", "12", "13", "14"};
+  String[] toIgnore = new String[]{"1", "2", "3", "4", "5", "21"};
 
   public void check() {
     // pdh checks

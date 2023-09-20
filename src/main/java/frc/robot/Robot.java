@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -29,7 +31,7 @@ public class Robot extends TimedRobot {
   public static final boolean isRobotReal = isReal();
 
   public Robot(){
-    addPeriodic(new FaultReporter()::check, 1);
+    addPeriodic(new FaultReporter()::check, 60);
   }
 
   /**

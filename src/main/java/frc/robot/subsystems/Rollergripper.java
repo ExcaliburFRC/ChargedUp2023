@@ -19,12 +19,12 @@ public class Rollergripper extends SubsystemBase {
     private final CANSparkMax rightRoller = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
 
     // This is very embarrassing and not at all ideal, please don't laugh at us,
-    // we don't have enough budget for a new SparkMax, and we had those lying around.
+    // There is a world shortout for SparkMax's, and we had those lying around.
     private final Spark leftRoller = new Spark(LEFT_ROLLER_MOTOR_PORT);
 
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
 
-    public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get()).whileTrue(holdConeCommand());
+    public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get()).debounce(0.1);
 
     public Rollergripper() {
         rightRoller.restoreFactoryDefaults();
@@ -38,6 +38,8 @@ public class Rollergripper extends SubsystemBase {
                 .withPosition(10, 4).withSize(4, 2);
         Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
                 .withSize(2, 8);
+
+        setDefaultCommand(holdConeCommand().repeatedly());
     }
 
     /**
@@ -138,11 +140,26 @@ public class Rollergripper extends SubsystemBase {
      *
      * @return the command
      */
+//    private Command holdConeCommand(){
+//        return new ConditionalCommand(
+//                new InstantCommand(()-> {
+//                    rightRoller.set(0.1);
+//                    leftRoller.set(0.15);
+//                }, this),
+//                new InstantCommand(()-> {
+//                    rightRoller.stopMotor();
+//                    leftRoller.stopMotor();
+//                }, this),
+//                beambreakTrigger
+//        );
+//    }
+
     private Command holdConeCommand(){
-        return new StartEndCommand(
-                ()-> rightRoller.set(0.05),
-                rightRoller::stopMotor,
-                this);
+        return new ConditionalCommand(
+                new InstantCommand(()-> rightRoller.set(0.05), this),
+                new InstantCommand(rightRoller::stopMotor, this),
+                beambreakTrigger
+        );
     }
 
     @Override

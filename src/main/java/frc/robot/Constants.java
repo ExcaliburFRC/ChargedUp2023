@@ -84,7 +84,7 @@ public final class Constants {
         public static final double RAMP_BALANCE_KD = 0.002;
 
         // intentional limitations
-        public static final double kSpeedPercantageLimit = 25; // %
+        public static final double kSpeedPercantageLimit = 100; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -121,7 +121,7 @@ public final class Constants {
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(174))),
 
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
-            LOCKED(new Translation2d(1.02, Rotation2d.fromDegrees(88))),
+            LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(88))),
 
             LEANED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(90)));
 
@@ -142,6 +142,7 @@ public final class Constants {
 
         public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.08; // m
+        public static final double LOCKED_LENGTH_METERS = 1.01; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //https://brainly.in/question/3238411
 
@@ -151,7 +152,7 @@ public final class Constants {
         public static final double kS_ANGLE = -0.048742;
         public static final double kV_ANGLE = 0.020229;
         public static final double kA_ANGLE = 0.0024233;
-        public static final double kG_ANGLE = -0.53;
+        public static final double kG_ANGLE = -0.56;
 
 //        static {
 //            kG_ANGLE.put(MINIMAL_LENGTH_METERS, 0.50333);
@@ -173,8 +174,6 @@ public final class Constants {
 
 
     public static final class CuberConstants {
-        // TODO: update with real values
-
         public static final int ANGLE_MOTOR_ID = 41;
         public static final int ROLLERS_MOTOR_ID = 42;
 
@@ -191,7 +190,7 @@ public final class Constants {
 
         public static final double ANGLE_CONVERSION_FACTOR = 1.0 / 90.0;
 
-        public static final double VEL_THRESHOLD = HIGH.velocity * 0.05; // TODO
+        public static final double VEL_THRESHOLD = HIGH.velocity * 0.05;
         public static final double POS_THRESHOLD = 1;
 
         // angle control constants
@@ -224,12 +223,12 @@ public final class Constants {
         }
 
         public enum CUBER_ANGLE {
-            SHOOTER(138),
+            SHOOTER(140),
             LOW_SHOOTER(92),
             CANNON(100),
             IDLE(110),
             INTAKE_GROUND(10),
-            INTAKE_SLIDE(138);
+            INTAKE_SLIDE(SHOOTER.angle);
 
             public final int angle;
 
