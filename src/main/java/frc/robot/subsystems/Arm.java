@@ -216,7 +216,7 @@ public class Arm extends SubsystemBase {
    * to help the driver aim the arm better, and increase our success rate in cone placement to the high node
    * @param baseAngle the angle to oscillate from
    * @param magnitude the magnitude of the oscillations (degrees)
-   * @return
+   * @return the command
    */
   public Command osscilateArmCommand(Translation2d baseAngle, double magnitude) {
     return Commands.repeatingSequence(

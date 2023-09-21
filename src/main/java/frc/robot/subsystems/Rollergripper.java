@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -20,7 +19,7 @@ public class Rollergripper extends SubsystemBase {
 
     // This is very embarrassing and not at all ideal, please don't laugh at us,
     // There is a world shortout for SparkMax's, and we had those lying around.
-    private final Spark leftRoller = new Spark(LEFT_ROLLER_MOTOR_PORT);
+    private final Spark leftRoller = new Spark(LEFT_ROLLER_MOTOR_ID);
 
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
 

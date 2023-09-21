@@ -26,7 +26,7 @@ public final class Constants {
     public static final class RollerGripperConstants {
         public static final int BEAMBREAK_PORT = 2;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
-        public static final int LEFT_ROLLER_MOTOR_PORT = 8; // pwm
+        public static final int LEFT_ROLLER_MOTOR_ID = 32; // pwm
     }
 
     public static final class SwerveConstants {

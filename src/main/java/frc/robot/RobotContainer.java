@@ -89,11 +89,12 @@ public class RobotContainer {
     operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(driver.R1()));
     operator.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
-    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.SHOOTER, operator.R2()));
+    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.SHOOTER, driver.R1()));
 //                    .alongWith(superstructure.leanBackCommand()));
-    operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.SHOOTER, operator.R2()));
+    operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.SHOOTER, driver.R1()));
 //                    .alongWith(superstructure.leanBackCommand()));
-    operator.povDown().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, new Trigger(()-> true)));
+    operator.povDown().toggleOnTrue(
+            cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, new Trigger(()-> true)));
 
     operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
@@ -108,8 +109,6 @@ public class RobotContainer {
 
     driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
     driver.touchpad().whileTrue(toggleMotorsIdleMode());
-
-    testController.touchpad().toggleOnTrue(toggleMotorsIdleMode());
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){

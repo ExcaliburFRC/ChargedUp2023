@@ -217,6 +217,10 @@ public class Cuber extends SubsystemBase {
                 .until(hasCubeTrigger.negate().debounce(0.15));
     }
 
+    public Command angleControl(DoubleSupplier speed){
+        return new RunCommand(()-> angleMotor.set(speed.getAsDouble() / 5), this);
+    }
+
     public Command rawIntake(){
         return Commands.runEnd(()-> shooterMotor.set(-0.15), shooterMotor::stopMotor, this)
                 .until(hasCubeTrigger);
