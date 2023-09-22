@@ -56,7 +56,7 @@ public class Cuber extends SubsystemBase {
     public int targetVel = 0;
     public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.1);
 
-    public int targetPos = 139;
+    public int targetPos = 140;
     public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(angleEncoder.getDistance() - targetPos) < POS_THRESHOLD).debounce(0.2);
 
     private GenericEntry shooterVel = cuberTab.add("shooterVel", 0).getEntry();
@@ -91,16 +91,23 @@ public class Cuber extends SubsystemBase {
 
         cuberTab.addDouble("servo angle", this::getServoAngle).withPosition(8, 0).withSize(4, 4)
                 .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 90));;
-        cuberTab.addDouble("colorMM", colorSensor::getProximity).withPosition(12, 4).withSize(4, 2)
+        cuberTab.addDouble("colorProximity", colorSensor::getProximity).withPosition(12, 4).withSize(4, 2)
                 .withWidget("Number Slider").withProperties(Map.of("min", 75, "max", 120));
-        cuberTab.addDouble("cuber angle", angleEncoder::getDistance).withPosition(12, 0).withSize(4, 4)
-                .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 180));
+        cuberTab.addDouble("cuber angle", this::getCuberAngle).withPosition(12, 0).withSize(4, 4);
 
         cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger).withPosition(8, 4).withSize(4, 2);
         cuberTab.addBoolean("isAtTargetVel", isAtTargetVelTrigger).withPosition(8, 6).withSize(4, 2);
         cuberTab.addBoolean("isAtTargetPos", isAtTargetPosTrigger).withPosition(12, 6).withSize(4, 2);
 
+        cuberTab.addDouble("targetPos", ()-> targetPos);
+
         setDefaultCommand(closeCuberCommand());
+    }
+
+    public double getCuberAngle(){
+        double val = angleEncoder.getDistance();
+
+        return val < 0? 360 + val : val;
     }
 
     // Servo Commands
@@ -151,13 +158,12 @@ public class Cuber extends SubsystemBase {
         return new FunctionalCommand(
                 () -> targetPos = angle.angle,
                 () -> {
-                    double pid = anglePIDcontrller.calculate(angleEncoder.getDistance(), angle.angle);
+                    double pid = anglePIDcontrller.calculate(getCuberAngle(), angle.angle);
                     double ff = angleFFcontrller.calculate(Math.toRadians(angle.angle), 0);
 
                     angleMotor.setVoltage(pid + ff);
                 },
-                (__) -> {
-                },
+                (__) -> {},
                 () -> false
         );
     }
@@ -189,11 +195,12 @@ public class Cuber extends SubsystemBase {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(angle),
                 setShooterVelocityCommand(vel),
-                new WaitUntilCommand(isAtTargetVelTrigger.and(isAtTargetPosTrigger).and(confirm))
+//                new WaitUntilCommand(isAtTargetVelTrigger.and(isAtTargetPosTrigger).and(confirm))
+                new WaitUntilCommand(isAtTargetVelTrigger.and(confirm))
                         .andThen(pushCubeCommand()),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
                 requirement())
-                .until(hasCubeTrigger.negate().debounce(0.15));
+                .until(hasCubeTrigger.negate().debounce(0.5));
     }
 
     public Command toggleIdleModeCommand(){

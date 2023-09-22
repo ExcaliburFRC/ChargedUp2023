@@ -35,9 +35,9 @@ public class Arm extends SubsystemBase {
   private final DigitalInput lowerLimitSwitch = new DigitalInput(CLOSED_LIMIT_SWITCH_ID);
 
   public final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
-  public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 0.98);
+  public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= LOCKED_LENGTH_METERS - 0.02);
 
-  public final Trigger armAngleClosedTrigger = new Trigger(() -> getArmAngle() <= 100);
+  public final Trigger armAngleClosedTrigger = new Trigger(() -> getArmAngle() <= 95);
 
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
@@ -86,7 +86,7 @@ public class Arm extends SubsystemBase {
 
     angleMotor.setOpenLoopRampRate(1.5);
 
-    if (lengthEncoder.getPosition() < 0.1) lengthEncoder.setPosition(LOCKED_LENGTH_METERS);
+    lengthEncoder.setPosition(LOCKED_LENGTH_METERS);
 
     setDefaultCommand(fadeArmCommand().alongWith(stopTelescopeMotors()));
   }

@@ -11,7 +11,6 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.utility.Color;
 import frc.robot.utility.Colors;
 
-import static frc.robot.Constants.CuberConstants.SHOOTER_VELOCITIY.HIGH;
 import static java.lang.Math.PI;
 
 /**
@@ -190,8 +189,8 @@ public final class Constants {
 
         public static final double ANGLE_CONVERSION_FACTOR = 1.0 / 90.0;
 
-        public static final double VEL_THRESHOLD = HIGH.velocity * 0.05;
-        public static final double POS_THRESHOLD = 1;
+        public static final double VEL_THRESHOLD = SHOOTER_VELOCITIY.HIGH.velocity * 0.05;
+        public static final double POS_THRESHOLD = 3;
 
         // angle control constants
         public static final double Ks_ANGLE = 0;
@@ -213,7 +212,7 @@ public final class Constants {
 
         public enum SERVO_ANGLE {
             RETRACTED(0),
-            EXTENDED(30);
+            EXTENDED(45);
 
             public final double angle;
 
@@ -223,12 +222,13 @@ public final class Constants {
         }
 
         public enum CUBER_ANGLE {
-            SHOOTER(140),
+            HIGH(140),
+            MIDDLE(130),
             LOW_SHOOTER(92),
             CANNON(100),
             IDLE(110),
             INTAKE_GROUND(10),
-            INTAKE_SLIDE(SHOOTER.angle);
+            INTAKE_SLIDE(HIGH.angle);
 
             public final int angle;
 
@@ -240,7 +240,7 @@ public final class Constants {
         public enum SHOOTER_VELOCITIY {
             CANNON(2500),
             HIGH(1500),
-            MIDDLE(1180),
+            MIDDLE(1000), //1050
             LOW(750),
             INTAKE(-70);
 

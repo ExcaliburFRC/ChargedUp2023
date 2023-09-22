@@ -24,7 +24,7 @@ public class Rollergripper extends SubsystemBase {
         follower.restoreFactoryDefaults();
         follower.clearFaults();
         follower.setIdleMode(CANSparkMax.IdleMode.kBrake);
-//        follower.follow(rollers, true);
+        follower.follow(rollers, true);
 
         rollers.restoreFactoryDefaults();
         rollers.clearFaults();
@@ -36,7 +36,7 @@ public class Rollergripper extends SubsystemBase {
         Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
                 .withSize(2, 8);
 
-        setDefaultCommand(setRollerGripperMotor(0.25));
+        setDefaultCommand(setRollerGripperMotor(0.2));
     }
 
     /**

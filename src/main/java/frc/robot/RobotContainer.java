@@ -89,9 +89,9 @@ public class RobotContainer {
     operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(driver.R1()));
     operator.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
-    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.SHOOTER, driver.R1()));
-//                    .alongWith(superstructure.leanBackCommand()));
-    operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.SHOOTER, driver.R1()));
+    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, operator.R2()));
+//                    .alongWith(superstructure.leanBackCommand()));\[]
+    operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, operator.R2()));
 //                    .alongWith(superstructure.leanBackCommand()));
     operator.povDown().toggleOnTrue(
             cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, new Trigger(()-> true)));
