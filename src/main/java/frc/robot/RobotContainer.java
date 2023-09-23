@@ -104,8 +104,8 @@ public class RobotContainer {
     driver.PS().onTrue(swerve.resetOdometryAngleCommand());
     driver.square().whileTrue(swerve.balanceRampCommand());
 
-    driver.button(10).onTrue(askForGamepieceCommand(GamePiece.Cone));
-    driver.button(11).onTrue(askForGamepieceCommand(GamePiece.Cube));
+    driver.button(11).onTrue(askForGamepieceCommand(GamePiece.Cone));
+    driver.button(12).onTrue(askForGamepieceCommand(GamePiece.Cube));
 
     driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
     driver.touchpad().whileTrue(toggleMotorsIdleMode());

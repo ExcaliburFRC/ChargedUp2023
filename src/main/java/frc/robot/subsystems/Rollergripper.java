@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.utility.Limelight;
 
-import java.util.function.BooleanSupplier;
-
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.RollerGripperConstants.*;
 
@@ -24,7 +22,7 @@ public class Rollergripper extends SubsystemBase {
         follower.restoreFactoryDefaults();
         follower.clearFaults();
         follower.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        follower.follow(rollers, true);
+//        follower.follow(rollers, true);
 
         rollers.restoreFactoryDefaults();
         rollers.clearFaults();
@@ -36,7 +34,7 @@ public class Rollergripper extends SubsystemBase {
         Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
                 .withSize(2, 8);
 
-        setDefaultCommand(setRollerGripperMotor(0.2));
+        setDefaultCommand(setRollerGripperMotor(0.1));
     }
 
     /**

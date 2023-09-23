@@ -139,15 +139,6 @@ public class LEDs extends SubsystemBase {
                         .withName("TRAIN_CIRCLE, main: " + mainColor.toString() + ", accent: " + accentColor.toString());
                 break;
 
-            case RAINBOW:
-                AtomicInteger h = new AtomicInteger();
-                int s = 255, v = 255;
-                command = this.runOnce(()-> {
-                    Arrays.fill(colors, Color.fromHSV(h.get(), s, v));
-                    if (h.get() <= 180) h.incrementAndGet();
-                    else h.set(0);
-                }).repeatedly().withName("RAINBOW");
-
             default:
                 break;
         }
@@ -195,7 +186,7 @@ public class LEDs extends SubsystemBase {
     }
 
     public Color getAllianceColor(){
-        if (DriverStation.getAlliance().equals(DriverStation.Alliance.Blue)) return Colors.BLUE.color;
+        if (DriverStation.getAlliance().equals(DriverStation.Alliance.Blue)) return Colors.TEAM_BLUE.color;
         else if (DriverStation.getAlliance().equals(DriverStation.Alliance.Red)) return Colors.RED.color;
         else return Colors.WHITE.color;
     }

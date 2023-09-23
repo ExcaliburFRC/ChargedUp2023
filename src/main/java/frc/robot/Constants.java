@@ -187,7 +187,7 @@ public final class Constants {
         public static final float FWD_SOFT_LIMIT = 170f;
         public static final float REV_SOFT_LIMIT = 5f;
 
-        public static final double ANGLE_CONVERSION_FACTOR = 1.0 / 90.0;
+        public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 90.0) * (35.0 / 73.0);
 
         public static final double VEL_THRESHOLD = SHOOTER_VELOCITIY.HIGH.velocity * 0.05;
         public static final double POS_THRESHOLD = 3;
@@ -254,7 +254,7 @@ public final class Constants {
 
     public static class LedsConstants {
         public static final int LEDS_PORT = 0; // pwm
-        public static final int LENGTH = 133;
+        public static final int LENGTH = 50;
 
         public enum GamePiece {
             Cone(Colors.PURPLE),
