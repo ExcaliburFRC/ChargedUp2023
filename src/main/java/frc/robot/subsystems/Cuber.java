@@ -123,7 +123,7 @@ public class Cuber extends SubsystemBase {
     private boolean isAtReverseLimit(){
         double angle = getCuberAngle();
 
-        return angle <= REV_SOFT_LIMIT || (angle > FWD_SOFT_LIMIT);
+        return angle <= 360 && angle >= 330;
     }
 
     // Servo Commands
