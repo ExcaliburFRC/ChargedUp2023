@@ -94,11 +94,13 @@ public class RobotContainer {
     operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, operator.R2()));
 //                    .alongWith(superstructure.leanBackCommand()));
     operator.povDown().toggleOnTrue(
-            cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, new Trigger(()-> true)));
+            cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, operator.R2()));
 
     operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
     // other
+    // ensures that the cube is fully inside the system
+    operator.L2().onFalse(cuber.confirmCubeIntake().withTimeout(2));
     operator.square().onTrue(superstructure.lockArmCommand());
 
     driver.PS().onTrue(swerve.resetOdometryAngleCommand());
@@ -109,6 +111,8 @@ public class RobotContainer {
 
     driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
     driver.touchpad().whileTrue(toggleMotorsIdleMode());
+
+    cuber.setDefaultCommand(cuber.angleControl(operator::getRightY));
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){

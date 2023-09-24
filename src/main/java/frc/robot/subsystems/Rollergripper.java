@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
@@ -12,29 +13,29 @@ import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.RollerGripperConstants.*;
 
 public class Rollergripper extends SubsystemBase {
-    private final CANSparkMax rollers = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
-    private final CANSparkMax follower = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
+    private final CANSparkMax rightRoller = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
+
+    // This is very embarrassing and not at all ideal, please don't laugh at us,
+    // There is a world shortout for SparkMax's, and we had those lying around.
+    private final Spark leftRoller = new Spark(LEFT_ROLLER_MOTOR_PORT);
 
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
     public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 
     public Rollergripper() {
-        follower.restoreFactoryDefaults();
-        follower.clearFaults();
-        follower.setIdleMode(CANSparkMax.IdleMode.kBrake);
-//        follower.follow(rollers, true);
+        rightRoller.restoreFactoryDefaults();
+        rightRoller.clearFaults();
+        rightRoller.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
-        rollers.restoreFactoryDefaults();
-        rollers.clearFaults();
-        rollers.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        rollers.setInverted(false);
+        leftRoller.setInverted(true);
+        rightRoller.setInverted(true);
 
         Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
                 .withPosition(10, 4).withSize(4, 2);
         Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
                 .withSize(2, 8);
 
-        setDefaultCommand(setRollerGripperMotor(0.1));
+        setDefaultCommand(holdConeCommand());
     }
 
     /**
@@ -45,12 +46,12 @@ public class Rollergripper extends SubsystemBase {
      */
     private Command setRollerGripperMotor(double speed) {
         return Commands.runEnd(() -> {
-                    rollers.set(speed);
-                    follower.set(speed);
+                    rightRoller.set(speed);
+                    leftRoller.set(speed);
                 },
                 () -> {
-                    rollers.stopMotor();
-                    follower.stopMotor();
+                    rightRoller.stopMotor();
+                    leftRoller.stopMotor();
                 },
                 this);
     }
@@ -66,11 +67,11 @@ public class Rollergripper extends SubsystemBase {
     public Command intakeCommand() {
         return Commands.runEnd(
                         () -> {
-                            rollers.set(0.75);
+                            rightRoller.set(0.75);
                             Shuffleboard.selectTab("armCamera");
                         },
                         () -> {
-                            rollers.stopMotor();
+                            rightRoller.stopMotor();
                             Shuffleboard.selectTab("driveTab");
                         },
                         this)
@@ -87,8 +88,8 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command ejectCommand(double offset) {
         return Commands.runEnd(
-                        () -> rollers.set(-0.025 - offset),
-                        rollers::stopMotor,
+                        () -> rightRoller.set(-0.025 - offset),
+                        rightRoller::stopMotor,
                         this) //runEnd ends here
                 .until(beambreakTrigger.negate().debounce(0.2));
     }
@@ -104,7 +105,7 @@ public class Rollergripper extends SubsystemBase {
      */
     private Command holdConeCommand() {
         return new ConditionalCommand(
-                Commands.runEnd(() -> rollers.set(0.25), rollers::stopMotor, this).withTimeout(0.05),
+                Commands.runEnd(() -> rightRoller.set(0.25), rightRoller::stopMotor, this).withTimeout(0.05),
                 new InstantCommand(() -> {
                 }, this),
                 beambreakTrigger

@@ -25,7 +25,7 @@ public final class Constants {
     public static final class RollerGripperConstants {
         public static final int BEAMBREAK_PORT = 2;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
-        public static final int LEFT_ROLLER_MOTOR_ID = 32;
+        public static final int LEFT_ROLLER_MOTOR_PORT = 8;
     }
 
     public static final class SwerveConstants {
@@ -176,30 +176,34 @@ public final class Constants {
         public static final int ANGLE_MOTOR_ID = 41;
         public static final int ROLLERS_MOTOR_ID = 42;
 
-        public static final double ABS_ENCODER_OFFSET = 0.501; // dutyCycle
+        public static final double ABS_ENCODER_OFFSET = 0.485; // dutyCycle
+
 
         public static final int SERVO_CHANNEL = 9;
         public static final int ENCODER_CHANNEL = 3;
 
-        public static final double COLOR_DISTANCE_THRESHOLD = 90;
+        public static final double COLOR_DISTANCE_THRESHOLD = 100;
         public static final double ROBOT_ANGLE_THRESHOLD = 10; // degrees
 
-        public static final float FWD_SOFT_LIMIT = 170f;
-        public static final float REV_SOFT_LIMIT = 5f;
+        public static final int MAX_ANGLE_DEGREES = 137; // deg
+
+        public static final double FWD_SOFT_LIMIT = MAX_ANGLE_DEGREES;
+        public static final double REV_SOFT_LIMIT = 0;
 
         public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 90.0) * (35.0 / 73.0);
 
         public static final double VEL_THRESHOLD = SHOOTER_VELOCITIY.HIGH.velocity * 0.05;
         public static final double POS_THRESHOLD = 3;
 
-        // angle control constants
-        public static final double Ks_ANGLE = 0;
-        public static final double Kv_ANGLE = 0;
-        public static final double Kg_ANGLE = 0;
-        public static final double Ka_ANGLE = 0;
 
-        public static final double Kp_ANGLE = 0;
-        public static final double Kd_ANGLE = 0;
+        // angle control constants
+        public static final double Ks_ANGLE = 0.10937;
+        public static final double Kv_ANGLE = 0.066247;
+        public static final double Kg_ANGLE = 0.16856;
+        public static final double Ka_ANGLE = 0.0013148;
+
+        public static final double Kp_ANGLE = 0.076779 * 1.5;
+        public static final double Kd_ANGLE = 0; //0.023136
 
         // shooter control constants
         public static final double Ks_SHOOTER = 0.22;
@@ -222,12 +226,12 @@ public final class Constants {
         }
 
         public enum CUBER_ANGLE {
-            HIGH(140),
-            MIDDLE(130),
+            HIGH(MAX_ANGLE_DEGREES),
+            MIDDLE(128),
             LOW_SHOOTER(92),
             CANNON(100),
             IDLE(110),
-            INTAKE_GROUND(10),
+            INTAKE_GROUND(0),
             INTAKE_SLIDE(HIGH.angle);
 
             public final int angle;
@@ -240,9 +244,10 @@ public final class Constants {
         public enum SHOOTER_VELOCITIY {
             CANNON(2500),
             HIGH(1500),
-            MIDDLE(1000), //1050
-            LOW(750),
-            INTAKE(-70);
+            MIDDLE(1000),
+            LOW(800),
+            IDLE(-300),
+            INTAKE(-1200);
 
             public final int velocity;
 
