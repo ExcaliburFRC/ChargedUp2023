@@ -69,9 +69,9 @@ public class Superstructure {
 
     // this command is used when the cuber needs to lean back, it moves the Arm, so they don't collide
     public Command adjustForShooterCommand(Command shooterCommand) {
-        return arm.holdSetpointCommand(LEANED.setpoint).alongWith(
-                new WaitUntilCommand(()-> arm.armAtSetpoint(LEANED.setpoint)).andThen(shooterCommand))
-                        .andThen(arm.lockArmCommand(rollergripper.beambreakTrigger));
+        return arm.holdSetpointCommand(LEANED.setpoint)
+                .alongWith(new WaitUntilCommand(()-> arm.armAtSetpoint(LEANED.setpoint))
+                        .andThen(shooterCommand, arm.lockArmCommand(rollergripper.beambreakTrigger)));
     }
 
 //    public Command placeOnHeightCommand(double height) {
