@@ -103,7 +103,7 @@ public class Cuber extends SubsystemBase {
         cuberTab.addDouble("applied output", shooterMotor::getAppliedOutput);
         cuberTab.addDouble("get", shooterMotor::getAppliedOutput);
 
-//        setDefaultCommand(closeCuberCommand());
+        setDefaultCommand(closeCuberCommand());
     }
 
     public double getCuberAngle(){

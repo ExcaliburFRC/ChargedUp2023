@@ -20,6 +20,7 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.utility.Calculation;
 import frc.robot.utility.Colors;
+import frc.robot.utility.MorseLEDs;
 
 import java.util.Map;
 
@@ -112,10 +113,8 @@ public class RobotContainer {
     driver.button(11).onTrue(askForGamepieceCommand(GamePiece.Cone));
     driver.button(12).onTrue(askForGamepieceCommand(GamePiece.Cube));
 
-    driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
+    driver.touchpad().whileTrue(MorseLEDs.textToLeds("Excalibur", Colors.TEAM_BLUE.color));
     driver.touchpad().whileTrue(toggleMotorsIdleMode());
-
-    cuber.setDefaultCommand(cuber.angleControl(operator::getRightY));
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){
