@@ -30,11 +30,7 @@ public class Rollergripper extends SubsystemBase {
         leftRoller.setInverted(true);
         rightRoller.setInverted(true);
 
-        Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
-                .withPosition(10, 4).withSize(4, 2);
-        Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
-                .withSize(2, 8);
-
+        initShuffleboardData();
         setDefaultCommand(holdConeCommand());
     }
 
@@ -115,5 +111,12 @@ public class Rollergripper extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putBoolean("rollerGripper button", beambreakTrigger.getAsBoolean());
+    }
+
+    private void initShuffleboardData(){
+        Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
+                .withPosition(10, 4).withSize(4, 2);
+        Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
+                .withSize(2, 8);
     }
 }

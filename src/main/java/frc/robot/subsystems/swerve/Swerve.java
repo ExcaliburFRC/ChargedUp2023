@@ -78,23 +78,9 @@ public class Swerve extends SubsystemBase {
     public Swerve() {
         resetGyroHardware();
 
-        var swerveTab = Shuffleboard.getTab("Swerve");
-        swerveTab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro)
-                .withPosition(4, 0).withSize(4, 4);
-        swerveTab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro)
-                .withPosition(8, 0).withSize(4, 4);
-        swerveTab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro)
-                .withPosition(4, 4).withSize(4, 4);
-        swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
-                .withPosition(8, 4).withSize(4, 4);
-        swerveTab.addDouble("SwerveAngle", this::getGyroDegrees).withWidget(BuiltInWidgets.kGyro)
-                .withPosition(0, 2).withSize(4, 4);
-        swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
-
-        RobotContainer.driveTab.addDouble("SwerveAngle", () -> getOdometryRotation2d().getDegrees())
-                .withWidget(BuiltInWidgets.kGyro).withPosition(0, 0).withSize(4, 2);
-
         odometry.resetPosition(getGyroRotation2d(), getModulesPositions(), new Pose2d(0, 0, new Rotation2d()));
+
+        initShuffleboardData();
     }
 
     // gyro getters and setters
@@ -287,5 +273,24 @@ public class Swerve extends SubsystemBase {
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
+    }
+
+    private void initShuffleboardData(){
+        var swerveTab = Shuffleboard.getTab("Swerve");
+        swerveTab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(4, 0).withSize(4, 4);
+        swerveTab.add("FR", swerveModules[FRONT_RIGHT]).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(8, 0).withSize(4, 4);
+        swerveTab.add("BL", swerveModules[BACK_LEFT]).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(4, 4).withSize(4, 4);
+        swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(8, 4).withSize(4, 4);
+        swerveTab.addDouble("SwerveAngle", this::getGyroDegrees).withWidget(BuiltInWidgets.kGyro)
+                .withPosition(0, 2).withSize(4, 4);
+        swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
+
+        RobotContainer.driveTab.addDouble("SwerveAngle", () -> getOdometryRotation2d().getDegrees())
+                .withWidget(BuiltInWidgets.kGyro).withPosition(0, 0).withSize(4, 2);
+
     }
 }

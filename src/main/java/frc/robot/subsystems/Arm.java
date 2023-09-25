@@ -47,8 +47,6 @@ public class Arm extends SubsystemBase {
 
   public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
 
-  LEDs leds = LEDs.getInstance();
-
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
     angleMotor.restoreFactoryDefaults();
@@ -72,15 +70,6 @@ public class Arm extends SubsystemBase {
     lengthController.setI(0);
     lengthController.setD(kD_LENGTH);
 
-    armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(10, 0).withSize(4, 4)
-           .withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
-    armTab.addDouble("Arm degrees", () -> -angleEncoder.getDistance()).withPosition(6, 0).withSize(4, 4)
-          .withWidget("Simple Dial").withProperties(Map.of("min", 90, "max", 190));
-    armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(6, 4)
-          .withSize(4, 2);
-    armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(8, 6)
-          .withSize(4, 2);
-
     lengthMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 1.03f);
     lengthMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
 
@@ -88,6 +77,7 @@ public class Arm extends SubsystemBase {
 
     lengthEncoder.setPosition(LOCKED_LENGTH_METERS);
 
+    initShuffleboardData();
     setDefaultCommand(fadeArmCommand().alongWith(stopTelescopeMotors()));
   }
 
@@ -271,5 +261,16 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
+  }
+
+  private void initShuffleboardData(){
+    armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(10, 0).withSize(4, 4)
+            .withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
+    armTab.addDouble("Arm degrees", () -> -angleEncoder.getDistance()).withPosition(6, 0).withSize(4, 4)
+            .withWidget("Simple Dial").withProperties(Map.of("min", 90, "max", 190));
+    armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(6, 4)
+            .withSize(4, 2);
+    armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(8, 6)
+            .withSize(4, 2);
   }
 }

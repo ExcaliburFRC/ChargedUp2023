@@ -84,25 +84,7 @@ public class Cuber extends SubsystemBase {
         angleRelativeEncoder.setPositionConversionFactor(ANGLE_CONVERSION_FACTOR);
         angleRelativeEncoder.setPosition(getCuberAngle());
 
-        cuberTab.addDouble("servo angle", this::getServoAngle).withPosition(8, 0).withSize(4, 4)
-                .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 90));;
-        cuberTab.addDouble("colorProximity", colorSensor::getProximity).withPosition(12, 4).withSize(4, 2)
-                .withWidget("Number Slider").withProperties(Map.of("min", 85, "max", 120));
-        cuberTab.addDouble("cuber angle", this::getCuberAngle).withPosition(12, 0).withSize(4, 4)
-                .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 180));
-
-        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger).withPosition(8, 4).withSize(4, 2);
-        cuberTab.addBoolean("isAtTargetVel", isAtTargetVelTrigger).withPosition(8, 6).withSize(4, 2);
-        cuberTab.addBoolean("isAtTargetPos", isAtTargetPosTrigger).withPosition(12, 6).withSize(4, 2);
-
-        cuberTab.addDouble("targetPos", ()-> targetPos).withPosition(13, 8);
-
-        cuberTab.addDouble("velocity", shooterEncoder::getVelocity).withPosition(8, 8);
-        cuberTab.addDouble("targetVel", ()-> targetVel).withPosition(10, 8);
-
-        cuberTab.addDouble("applied output", shooterMotor::getAppliedOutput);
-        cuberTab.addDouble("get", shooterMotor::getAppliedOutput);
-
+        initShuffleboardData();
         setDefaultCommand(closeCuberCommand());
     }
 
@@ -251,5 +233,27 @@ public class Cuber extends SubsystemBase {
 
     public Command rawIntake(double speed){
         return Commands.runEnd(()-> shooterMotor.set(speed), shooterMotor::stopMotor, this);
+    }
+
+    private void initShuffleboardData(){
+        cuberTab.addDouble("servo angle", this::getServoAngle).withPosition(8, 0).withSize(4, 4)
+                .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 90));;
+        cuberTab.addDouble("colorProximity", colorSensor::getProximity).withPosition(12, 4).withSize(4, 2)
+                .withWidget("Number Slider").withProperties(Map.of("min", 85, "max", 120));
+        cuberTab.addDouble("cuber angle", this::getCuberAngle).withPosition(12, 0).withSize(4, 4)
+                .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 180));
+
+        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger).withPosition(8, 4).withSize(4, 2);
+        cuberTab.addBoolean("isAtTargetVel", isAtTargetVelTrigger).withPosition(8, 6).withSize(4, 2);
+        cuberTab.addBoolean("isAtTargetPos", isAtTargetPosTrigger).withPosition(12, 6).withSize(4, 2);
+
+        cuberTab.addDouble("targetPos", ()-> targetPos).withPosition(13, 8);
+
+        cuberTab.addDouble("velocity", shooterEncoder::getVelocity).withPosition(8, 8);
+        cuberTab.addDouble("targetVel", ()-> targetVel).withPosition(10, 8);
+
+        cuberTab.addDouble("applied output", shooterMotor::getAppliedOutput);
+        cuberTab.addDouble("get", shooterMotor::getAppliedOutput);
+
     }
 }
