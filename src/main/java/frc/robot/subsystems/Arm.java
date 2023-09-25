@@ -240,7 +240,10 @@ public class Arm extends SubsystemBase {
     return resetLengthCommand()
           .andThen(moveToAngleCommand(LOCKED.setpoint)
           .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
-          .until(armLockedTrigger);
+          .until(armLockedTrigger).withName("lockArmCommand")
+            // checks is the arm is locked or is being locked and cancels if necessary.
+            .unless(armLockedTrigger.or(()->
+                    CommandScheduler.getInstance().requiring(this).getName().equals("lockArmCommand")));
   }
 
   public boolean armAtSetpoint(Translation2d setpoint){

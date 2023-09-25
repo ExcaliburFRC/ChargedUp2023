@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
@@ -68,11 +67,11 @@ public class Superstructure {
         return arm.lockArmCommand(rollergripper.beambreakTrigger);
     }
 
-    // this command is used when the robot shoots a cube to the high shelf, it moves the Arm, so
-    // it doesn't interfere with the shooter
-    public Command leanBackCommand() {
-        return arm.holdSetpointCommand(LEANED.setpoint)
-                .finallyDo((__) -> arm.lockArmCommand(rollergripper.beambreakTrigger).schedule());
+    // this command is used when the cuber needs to lean back, it moves the Arm, so they don't collide
+    public Command adjustForShooterCommand(Command shooterCommand) {
+        return arm.holdSetpointCommand(LEANED.setpoint).alongWith(
+                new WaitUntilCommand(()-> arm.armAtSetpoint(LEANED.setpoint)).andThen(shooterCommand))
+                        .andThen(arm.lockArmCommand(rollergripper.beambreakTrigger));
     }
 
 //    public Command placeOnHeightCommand(double height) {

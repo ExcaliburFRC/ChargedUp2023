@@ -81,26 +81,29 @@ public class RobotContainer {
 
     // intake commands
     operator.R1().toggleOnTrue(superstructure.intakeFromShelfCommand());
-    operator.L1().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
     operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
+    operator.L1().whileTrue(superstructure.adjustForShooterCommand(
+            cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE)));
 
     // shoot / place commands
     operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(driver.R1()));
     operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(driver.R1()));
     operator.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
-    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, operator.R2()));
-//                    .alongWith(superstructure.leanBackCommand()));\[]
-    operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, operator.R2()));
-//                    .alongWith(superstructure.leanBackCommand()));
+    operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
+            cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1())));
+    operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
+                    cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1())));
     operator.povDown().toggleOnTrue(
-            cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, operator.R2()));
+            cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW_SHOOTER, driver.R1()));
 
     operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
     // other
     // ensures that the cube is fully inside the system
     operator.L2().onFalse(cuber.confirmCubeIntake().withTimeout(2));
+    // makes sure that the arm is being locked even if the command was interrupted
+    operator.L1().or(operator.povLeft().or(operator.povUp())).onFalse(superstructure.lockArmCommand());
     operator.square().onTrue(superstructure.lockArmCommand());
 
     driver.PS().onTrue(swerve.resetOdometryAngleCommand());
