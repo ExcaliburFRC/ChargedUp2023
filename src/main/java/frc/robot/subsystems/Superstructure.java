@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
@@ -70,21 +69,15 @@ public class Superstructure {
     }
 
     // this command is used when the cuber needs to lean back, it moves the Arm, so they don't collide
-    public Command adjustForShooterCommand(Command cuberCommand) {
-        AtomicBoolean terminate = new AtomicBoolean(false);
-
+    public Command adjustForShooterCommand(Command cuberCommand, BooleanSupplier canReturn) {
         return new SequentialCommandGroup(
-                new InstantCommand(()-> terminate.set(false)),
                 arm.holdSetpointCommand(Constants.ArmConstants.Setpoints.CUBER_CHECKPOINT.setpoint).withTimeout(0.75),
-                arm.holdSetpointCommand(CUBER.setpoint).alongWith(
-                                new WaitUntilCommand(()-> arm.armAtSetpoint(CUBER.setpoint)).andThen(
-                                        cuberCommand, new InstantCommand(()-> terminate.set(true))))
-                        .until(terminate::get),
-                new PrintCommand("locking"),
-                new PrintCommand("locking"),
-                new PrintCommand("locking"),
-                new PrintCommand("locking"),
-                arm.lockArmWithSetpoint());
+                new ParallelRaceGroup(
+                        arm.holdSetpointCommand(CUBER.setpoint),
+                        new WaitUntilCommand(arm::armAtSetpoint).andThen(cuberCommand)))
+                //new WaitUntilCommand(()-> arm.armAtSetpoint(CUBER.setpoint)).andThen(cuberCommand)))
+                .finallyDo((__)->
+                        new WaitUntilCommand(canReturn).andThen(arm.lockArmWithSetpoint()).schedule());
     }
 
 //    public Command placeOnHeightCommand(double height) {

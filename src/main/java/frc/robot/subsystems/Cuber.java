@@ -21,6 +21,7 @@ import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.CuberConstants.*;
+import static frc.robot.Constants.CuberConstants.CUBER_VELOCITIY.INTAKE_DUTYCYCLE;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 import static frc.robot.utility.Colors.PURPLE;
 
@@ -56,6 +57,7 @@ public class Cuber extends SubsystemBase {
     public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(angleEncoder.getDistance() - targetPos) < POS_THRESHOLD).debounce(0.2);
 
     public Trigger cuberReadyTrigger = isAtTargetVelTrigger.and(isAtTargetPosTrigger);
+    public Trigger armSafe = new Trigger(()-> getCuberAngle() <= 115);
 
     public Cuber() {
         angleMotor.restoreFactoryDefaults();
@@ -178,7 +180,7 @@ public class Cuber extends SubsystemBase {
     public Command intakeCommand(CUBER_ANGLE cuberAngle) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(cuberAngle),
-                setShooterVelocityCommand(CUBER_VELOCITIY.INTAKE),
+                setShooterDutycycleCommand(INTAKE_DUTYCYCLE.velocity / 100.0),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
                 requirement()).until(hasCubeTrigger);
     }
@@ -203,7 +205,7 @@ public class Cuber extends SubsystemBase {
     public Command confirmCubeIntake(){
         return new ParallelCommandGroup(
                 setCuberAngleCommand(CUBER_ANGLE.IDLE),
-                setShooterVelocityCommand(CUBER_VELOCITIY.INTAKE),
+                setShooterDutycycleCommand(INTAKE_DUTYCYCLE.velocity / 100.0),
                 requirement()).withTimeout(2);
     }
 
@@ -215,6 +217,7 @@ public class Cuber extends SubsystemBase {
     }
 
     // raw commands
+
     public Command angleControl(DoubleSupplier speed){
         return new RunCommand(()-> {
             double output = speed.getAsDouble() / 5.0;
@@ -222,9 +225,12 @@ public class Cuber extends SubsystemBase {
             else angleMotor.set(output);
         }, this);
     }
-
     public Command rawIntake(double speed){
         return Commands.runEnd(()-> shooterMotor.set(speed), shooterMotor::stopMotor, this);
+    }
+
+    private Command setShooterDutycycleCommand(double dc) {
+        return Commands.startEnd(()-> shooterMotor.set(dc), shooterMotor::stopMotor);
     }
 
     private void initShuffleboardData(){

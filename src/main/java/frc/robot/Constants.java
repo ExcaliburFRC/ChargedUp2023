@@ -120,7 +120,7 @@ public final class Constants {
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(174))),
 
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
-            LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(86))),
+            LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(87))),
 
             CUBER_CHECKPOINT(new Translation2d(0.8, Rotation2d.fromDegrees(93))),
             CUBER(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(115)));
@@ -230,7 +230,7 @@ public final class Constants {
             MIDDLE(128),
             LOW(92),
             CANNON(100),
-            IDLE(98),
+            IDLE(95),
             INTAKE_GROUND(358),
             INTAKE_SLIDE(HIGH.angle);
 
@@ -247,7 +247,7 @@ public final class Constants {
             LOW(800),
             CANNON(2500),
             IDLE(-300),
-            INTAKE(-1200);
+            INTAKE_DUTYCYCLE(-15);
 
             public final int velocity;
 

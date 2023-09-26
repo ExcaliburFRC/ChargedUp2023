@@ -47,6 +47,8 @@ public class Arm extends SubsystemBase {
 
   public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
 
+  private Translation2d lastHeldSetpoint = new Translation2d();
+
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
     angleMotor.restoreFactoryDefaults();
@@ -151,7 +153,15 @@ public class Arm extends SubsystemBase {
   }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
-    return moveToLengthCommand(setpoint).alongWith(moveToAngleCommand(setpoint));
+    return new ParallelCommandGroup(
+            updateLastSetpointCommand(setpoint),
+            moveToLengthCommand(setpoint),
+            moveToAngleCommand(setpoint)
+    );
+  }
+
+  private Command updateLastSetpointCommand(Translation2d setpoint){
+    return new InstantCommand(()-> lastHeldSetpoint = setpoint);
   }
 
   public Command setAngleSpeed(double speed) {
@@ -216,7 +226,7 @@ public class Arm extends SubsystemBase {
   }
 
   private boolean angleInRange(double angleA, double angleB) {
-    double tolerance = 3; // degrees
+    double tolerance = 2; // degrees
     return Math.abs(angleA - angleB) < tolerance;
   }
   private boolean lengthInRange(double lengthA, double lengthB) {
@@ -227,6 +237,10 @@ public class Arm extends SubsystemBase {
   public boolean armAtSetpoint(Translation2d setpoint){
     return lengthInRange(setpoint.getNorm(), lengthEncoder.getPosition()) &&
             angleInRange(setpoint.getAngle().getDegrees(), getArmAngle());
+  }
+
+  public boolean armAtSetpoint(){
+    return armAtSetpoint(lastHeldSetpoint);
   }
 
   public Command lockArmCommand(Trigger bbTrigger) {
@@ -240,7 +254,10 @@ public class Arm extends SubsystemBase {
   }
 
   public Command lockArmWithSetpoint(){
-    return holdSetpointCommand(LOCKED.setpoint).until(armLockedTrigger);
+//    return holdSetpointCommand(LOCKED.setpoint).until(armLockedTrigger);
+    return moveToAngleCommand(LOCKED.setpoint).withTimeout(1)
+            .andThen(holdSetpointCommand(LOCKED.setpoint))
+            .until(armLockedTrigger);
   }
 
   public Command stopTelescopeMotors() {
