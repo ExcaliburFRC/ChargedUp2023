@@ -22,8 +22,7 @@ import java.util.function.DoubleSupplier;
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.CuberConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
-import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
-import static frc.robot.utility.Colors.*;
+import static frc.robot.utility.Colors.PURPLE;
 
 
 public class Cuber extends SubsystemBase {
@@ -83,26 +82,20 @@ public class Cuber extends SubsystemBase {
         angleRelativeEncoder.setPositionConversionFactor(ANGLE_CONVERSION_FACTOR);
         angleRelativeEncoder.setPosition(getCuberAngle());
 
+        anglePIDcontrller.enableContinuousInput(0, 360);
+
         initShuffleboardData();
         setDefaultCommand(resetCuberCommand());
     }
 
     public double getCuberAngle(){
         double val = angleEncoder.getDistance();
-        val = val < 0? 360 + val : val;;
-        return val % 360;
+        return val < 0? 360 + val : val;
     }
 
-    private boolean isAtFrontLimit(){
+    private boolean isOutsideOfLimit(){
         double angle = getCuberAngle();
-
-        return angle >= FWD_SOFT_LIMIT && angle <= FWD_SOFT_LIMIT + 30;
-    }
-
-    private boolean isAtReverseLimit(){
-        double angle = getCuberAngle();
-
-        return angle <= 357 && angle >= 330;
+        return angle >= FWD_LIMIT && angle <= REV_LIMIT;
     }
 
     // Servo Commands
@@ -155,9 +148,9 @@ public class Cuber extends SubsystemBase {
                 () -> {
                     double pid = anglePIDcontrller.calculate(getCuberAngle(), angle.angle);
                     double ff = angleFFcontrller.calculate(Math.toRadians(angle.angle), 0);
-                    double output = pid + ff / 60.0;
+                    double output = pid + (ff / 60.0);
 
-                    if ((isAtFrontLimit() && output > 0) || (isAtReverseLimit() && output < 0)) {
+                    if (isOutsideOfLimit()) {
                         angleMotor.stopMotor();
                         DriverStation.reportError("cuber soft limit reached!", false);
                     }
@@ -185,7 +178,7 @@ public class Cuber extends SubsystemBase {
     public Command intakeCommand(CUBER_ANGLE cuberAngle) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(cuberAngle),
-//                setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
+                setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
                 requirement()).until(hasCubeTrigger);
     }
@@ -225,11 +218,8 @@ public class Cuber extends SubsystemBase {
     public Command angleControl(DoubleSupplier speed){
         return new RunCommand(()-> {
             double output = speed.getAsDouble() / 5.0;
-            if ((isAtFrontLimit() && output > 0) || (isAtReverseLimit() && output < 0)) angleMotor.stopMotor();
+            if (isOutsideOfLimit()) angleMotor.stopMotor();
             else angleMotor.set(output);
-
-            System.out.println("front: " + isAtFrontLimit());
-            System.out.println("reverse: " + isAtReverseLimit());
         }, this);
     }
 

@@ -184,21 +184,20 @@ public final class Constants {
         public static final double COLOR_DISTANCE_THRESHOLD = 100;
         public static final double ROBOT_ANGLE_THRESHOLD = 10; // degrees
 
-        public static final int MAX_ANGLE_DEGREES = 137; // deg
+        public static final int MAX_ANGLE_DEGREES = 141; // deg
 
-        public static final double FWD_SOFT_LIMIT = MAX_ANGLE_DEGREES;
-        public static final double REV_SOFT_LIMIT = 0;
+        public static final double FWD_LIMIT = MAX_ANGLE_DEGREES + 3;
+        public static final double REV_LIMIT = 355;
 
         public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 50.0) * (35.0 / 73.0); //104.2857
 
         public static final double VEL_THRESHOLD = SHOOTER_VELOCITIY.HIGH.velocity * 0.05;
         public static final double POS_THRESHOLD = 3;
 
-
         // angle control constants
         public static final double Ks_ANGLE = 0.14942;
         public static final double Kv_ANGLE = 0.063608;
-        public static final double Kg_ANGLE = 0.43944;
+        public static final double Kg_ANGLE = 0.43944 * 1.1;
         public static final double Ka_ANGLE = 0.001574;
 
         public static final double Kp_ANGLE = 0.091365 / 1.3;
@@ -206,7 +205,7 @@ public final class Constants {
 
         // shooter control constants
         public static final double Ks_SHOOTER = 0.15534;
-        public static final double Kv_SHOOTER = 0.13081;
+        public static final double Kv_SHOOTER = 0.13081 * 1.05;
         public static final double Ka_SHOOTER = 0.0067467;
 
         public static final double Kp_SHOOTER = 0.00020361;
