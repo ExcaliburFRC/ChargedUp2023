@@ -6,6 +6,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Servo;
@@ -57,7 +58,7 @@ public class Cuber extends SubsystemBase {
     public int targetPos = MAX_ANGLE_DEGREES;
     public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(angleEncoder.getDistance() - targetPos) < POS_THRESHOLD).debounce(0.2);
 
-//    private GenericEntry shooterVel = cuberTab.add("shooterVel", 0).getEntry();
+    public Trigger cuberReadyTrigger = isAtTargetVelTrigger.and(isAtTargetPosTrigger);
 
     public Cuber() {
         angleMotor.restoreFactoryDefaults();
@@ -85,7 +86,7 @@ public class Cuber extends SubsystemBase {
         angleRelativeEncoder.setPosition(getCuberAngle());
 
         initShuffleboardData();
-        setDefaultCommand(closeCuberCommand());
+        setDefaultCommand(resetCuberCommand());
     }
 
     public double getCuberAngle(){
@@ -158,7 +159,10 @@ public class Cuber extends SubsystemBase {
                     double ff = angleFFcontrller.calculate(Math.toRadians(angle.angle), 0);
                     double output = pid + ff / 60.0;
 
-                    if ((isAtFrontLimit() && output > 0) || (isAtReverseLimit() && output < 0)) angleMotor.stopMotor();
+                    if ((isAtFrontLimit() && output > 0) || (isAtReverseLimit() && output < 0)) {
+                        angleMotor.stopMotor();
+                        DriverStation.reportError("cuber soft limit reached!", false);
+                    }
                     else angleMotor.setVoltage(output);
                 },
                 (__) -> angleMotor.stopMotor(),
@@ -172,7 +176,7 @@ public class Cuber extends SubsystemBase {
         }, this);
     }
 
-    public Command closeCuberCommand() {
+    public Command resetCuberCommand() {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(CUBER_ANGLE.IDLE),
                 stopShooterCommand(),
@@ -183,7 +187,7 @@ public class Cuber extends SubsystemBase {
     public Command intakeCommand(CUBER_ANGLE cuberAngle) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(cuberAngle),
-//                setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
+                setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
                 requirement())
                 .until(hasCubeTrigger);
@@ -192,23 +196,17 @@ public class Cuber extends SubsystemBase {
     public Command shootCubeCommand(SHOOTER_VELOCITIY vel, CUBER_ANGLE angle, Trigger confirm) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(angle),
-//                setShooterVelocityCommand(vel),
-                new WaitUntilCommand(isAtTargetVelTrigger.and(isAtTargetPosTrigger).and(confirm))
-                        .andThen(pushCubeCommand()),
+                setShooterVelocityCommand(vel),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
+                new WaitUntilCommand(cuberReadyTrigger).andThen(
+                        leds.applyPatternCommand(SOLID, GREEN.color),
+                        new WaitUntilCommand(confirm).andThen(pushCubeCommand())),
                 requirement())
                 .until(hasCubeTrigger.negate().debounce(0.75));
     }
 
-    public Command toggleIdleModeCommand(){
-        return new StartEndCommand(
-                ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast),
-                ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake))
-                .ignoringDisable(true);
-    }
-
     public Command cannonShooterCommand(DoubleSupplier robotAngle, Trigger override){
-        return shootCubeCommand(
+        return shootCubeCommand( // TODO: check if PID can get to such high speeds, if not, use open loop.
                 SHOOTER_VELOCITIY.CANNON, CUBER_ANGLE.CANNON,
                 new Trigger(()-> Math.abs(robotAngle.getAsDouble()) > ROBOT_ANGLE_THRESHOLD).or(override)
         );
@@ -219,6 +217,13 @@ public class Cuber extends SubsystemBase {
                 setCuberAngleCommand(CUBER_ANGLE.IDLE),
                 setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
                 requirement()).withTimeout(2);
+    }
+
+    public Command toggleIdleModeCommand(){
+        return new StartEndCommand(
+                ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast),
+                ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake))
+                .ignoringDisable(true);
     }
 
     // raw commands

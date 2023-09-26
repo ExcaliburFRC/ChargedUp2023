@@ -60,11 +60,10 @@ public class MorseLEDs {
 
             command.addCommands(
                     leds.applyPatternCommand(SOLID, ledColor).withTimeout(timeout),
-                    leds.applyPatternCommand(OFF, ledColor).withTimeout(0.1) // delay between letters
+                    leds.applyPatternCommand(OFF, ledColor).withTimeout(0.3) // delay between letters
             );
         }
 
-        command.addCommands(leds.applyPatternCommand(SOLID, ledColor));
         return command;
     }
 }
