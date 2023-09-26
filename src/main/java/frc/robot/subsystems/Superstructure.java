@@ -87,11 +87,6 @@ public class Superstructure {
                 arm.lockArmWithSetpoint());
     }
 
-    private Command com(Command cuberCommand){
-
-        return
-    }
-
 //    public Command placeOnHeightCommand(double height) {
 //        return new SelectCommand(
 //                Map.of(
