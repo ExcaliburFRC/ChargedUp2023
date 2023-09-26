@@ -24,7 +24,7 @@ import frc.robot.utility.Colors;
 import java.util.Map;
 
 import static frc.robot.Constants.CuberConstants.CUBER_ANGLE;
-import static frc.robot.Constants.CuberConstants.SHOOTER_VELOCITIY;
+import static frc.robot.Constants.CuberConstants.CUBER_VELOCITIY;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -81,6 +81,7 @@ public class RobotContainer {
 
     // intake commands
     operator.R1().toggleOnTrue(superstructure.intakeFromShelfCommand());
+
     operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
     operator.L1().whileTrue(superstructure.adjustForShooterCommand(
             cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE)));
@@ -92,17 +93,17 @@ public class RobotContainer {
 
 //    operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
 //            cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1())));
-    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, operator.R2()));
+    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, operator.R2()));
 //    operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
 //                    cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1())));
-    operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, operator.R2()));
-    operator.povDown().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW, driver.R1()));
+    operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, operator.R2()));
+    operator.povDown().toggleOnTrue(cuber.shootCubeCommand(CUBER_VELOCITIY.LOW, CUBER_ANGLE.LOW, driver.R1()));
 
     operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
     // other
     // ensures that the cube is fully inside the system
-//    operator.L2().onFalse(cuber.confirmCubeIntake().withTimeout(2));
+    operator.L2().onFalse(cuber.confirmCubeIntake().withTimeout(2));
     operator.square().onTrue(superstructure.lockArmCommand());
 
     driver.PS().onTrue(swerve.resetOdometryAngleCommand());
@@ -113,6 +114,9 @@ public class RobotContainer {
 
     driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
     driver.touchpad().whileTrue(toggleMotorsIdleMode());
+
+    driver.L1().onTrue(superstructure.adjustForShooterCommand(
+            cuber.shootCubeCommand(CUBER_VELOCITIY.LOW, CUBER_ANGLE.LOW, new Trigger(()-> true))));
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){

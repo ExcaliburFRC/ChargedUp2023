@@ -3,8 +3,10 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
@@ -68,13 +70,26 @@ public class Superstructure {
     }
 
     // this command is used when the cuber needs to lean back, it moves the Arm, so they don't collide
-    public Command adjustForShooterCommand(Command shooterCommand) {
+    public Command adjustForShooterCommand(Command cuberCommand) {
+        AtomicBoolean terminate = new AtomicBoolean(false);
+
         return new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                        arm.holdSetpointCommand(LEANED.setpoint),
-                        new WaitUntilCommand(()-> arm.armAtSetpoint(LEANED.setpoint)).andThen(shooterCommand))
-                        .until(shooterCommand::isFinished),
-                arm.lockArmCommand(rollergripper.beambreakTrigger));
+                new InstantCommand(()-> terminate.set(false)),
+                arm.holdSetpointCommand(Constants.ArmConstants.Setpoints.CUBER_CHECKPOINT.setpoint).withTimeout(0.75),
+                arm.holdSetpointCommand(CUBER.setpoint).alongWith(
+                                new WaitUntilCommand(()-> arm.armAtSetpoint(CUBER.setpoint)).andThen(
+                                        cuberCommand, new InstantCommand(()-> terminate.set(true))))
+                        .until(terminate::get),
+                new PrintCommand("locking"),
+                new PrintCommand("locking"),
+                new PrintCommand("locking"),
+                new PrintCommand("locking"),
+                arm.lockArmWithSetpoint());
+    }
+
+    private Command com(Command cuberCommand){
+
+        return
     }
 
 //    public Command placeOnHeightCommand(double height) {

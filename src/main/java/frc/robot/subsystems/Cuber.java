@@ -116,7 +116,7 @@ public class Cuber extends SubsystemBase {
     }
 
     // Shooter Commands
-    private Command setShooterVelocityCommand(SHOOTER_VELOCITIY vel) {
+    private Command setShooterVelocityCommand(CUBER_VELOCITIY vel) {
         return new FunctionalCommand(
                 () -> this.targetVel = vel.velocity,
                 () -> {
@@ -178,12 +178,12 @@ public class Cuber extends SubsystemBase {
     public Command intakeCommand(CUBER_ANGLE cuberAngle) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(cuberAngle),
-                setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
+                setShooterVelocityCommand(CUBER_VELOCITIY.INTAKE),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
                 requirement()).until(hasCubeTrigger);
     }
 
-    public Command shootCubeCommand(SHOOTER_VELOCITIY vel, CUBER_ANGLE angle, Trigger confirm) {
+    public Command shootCubeCommand(CUBER_VELOCITIY vel, CUBER_ANGLE angle, Trigger confirm) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(angle),
                 setShooterVelocityCommand(vel),
@@ -195,7 +195,7 @@ public class Cuber extends SubsystemBase {
 
     public Command cannonShooterCommand(DoubleSupplier robotAngle, Trigger override){
         return shootCubeCommand( // TODO: check if PID can get to such high speeds, if not, use open loop.
-                SHOOTER_VELOCITIY.CANNON, CUBER_ANGLE.CANNON,
+                CUBER_VELOCITIY.CANNON, CUBER_ANGLE.CANNON,
                 new Trigger(()-> Math.abs(robotAngle.getAsDouble()) > ROBOT_ANGLE_THRESHOLD).or(override)
         );
     }
@@ -203,7 +203,7 @@ public class Cuber extends SubsystemBase {
     public Command confirmCubeIntake(){
         return new ParallelCommandGroup(
                 setCuberAngleCommand(CUBER_ANGLE.IDLE),
-                setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
+                setShooterVelocityCommand(CUBER_VELOCITIY.INTAKE),
                 requirement()).withTimeout(2);
     }
 

@@ -116,13 +116,14 @@ public final class Constants {
             MID(new Translation2d(0.72, Rotation2d.fromDegrees(172))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
             HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(192))),
-            SHELF_EXTENDED(new Translation2d(0.75, Rotation2d.fromDegrees(174))),
+            SHELF_EXTENDED(new Translation2d(0.8, Rotation2d.fromDegrees(174))),
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(174))),
 
             MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
-            LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(88))),
+            LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(86))),
 
-            LEANED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(90)));
+            CUBER_CHECKPOINT(new Translation2d(0.8, Rotation2d.fromDegrees(93))),
+            CUBER(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(115)));
 
             public final Translation2d setpoint;
 
@@ -187,21 +188,22 @@ public final class Constants {
         public static final int MAX_ANGLE_DEGREES = 141; // deg
 
         public static final double FWD_LIMIT = MAX_ANGLE_DEGREES + 3;
-        public static final double REV_LIMIT = 355;
+        public static final double REV_LIMIT = 345;
 
-        public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 50.0) * (35.0 / 73.0); //104.2857
+        public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 90.0) * (35.0 / 73.0); // 1:187.7142
 
-        public static final double VEL_THRESHOLD = SHOOTER_VELOCITIY.HIGH.velocity * 0.05;
+        public static final double VEL_THRESHOLD = CUBER_VELOCITIY.HIGH.velocity * 0.05;
         public static final double POS_THRESHOLD = 3;
 
-        // angle control constants
-        public static final double Ks_ANGLE = 0.14942;
-        public static final double Kv_ANGLE = 0.063608;
-        public static final double Kg_ANGLE = 0.43944 * 1.1;
-        public static final double Ka_ANGLE = 0.001574;
 
-        public static final double Kp_ANGLE = 0.091365 / 1.3;
-        public static final double Kd_ANGLE = 0; //0.034286
+        // angle control constants
+        public static final double Ks_ANGLE = 0.046709;
+        public static final double Kv_ANGLE = 0.066389;
+        public static final double Kg_ANGLE = 0.18154;
+        public static final double Ka_ANGLE = 0.0015036;
+
+        public static final double Kp_ANGLE = 0.051294 * 1.75;
+        public static final double Kd_ANGLE = 0; //040321
 
         // shooter control constants
         public static final double Ks_SHOOTER = 0.15534;
@@ -228,8 +230,8 @@ public final class Constants {
             MIDDLE(128),
             LOW(92),
             CANNON(100),
-            IDLE(110),
-            INTAKE_GROUND(0),
+            IDLE(98),
+            INTAKE_GROUND(358),
             INTAKE_SLIDE(HIGH.angle);
 
             public final int angle;
@@ -239,7 +241,7 @@ public final class Constants {
             }
         }
 
-        public enum SHOOTER_VELOCITIY {
+        public enum CUBER_VELOCITIY {
             HIGH(1500),
             MIDDLE(1000),
             LOW(800),
@@ -249,7 +251,7 @@ public final class Constants {
 
             public final int velocity;
 
-            SHOOTER_VELOCITIY(int angle) {
+            CUBER_VELOCITIY(int angle) {
                 this.velocity = angle;
             }
         }

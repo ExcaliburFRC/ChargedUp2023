@@ -78,7 +78,7 @@ public class Arm extends SubsystemBase {
     lengthEncoder.setPosition(LOCKED_LENGTH_METERS);
 
     initShuffleboardData();
-    setDefaultCommand(fadeArmCommand().alongWith(stopTelescopeMotors()));
+    setDefaultCommand(fadeArmCommand());
   }
 
   /**
@@ -146,8 +146,8 @@ public class Arm extends SubsystemBase {
   public Command resetLengthCommand() {
     return Commands.runEnd(
           () -> lengthMotor.set(-0.7),
-          lengthMotor::stopMotor
-    ).until(armFullyClosedTrigger);
+          lengthMotor::stopMotor)
+            .until(armFullyClosedTrigger);
   }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
@@ -232,11 +232,15 @@ public class Arm extends SubsystemBase {
   public Command lockArmCommand(Trigger bbTrigger) {
     return resetLengthCommand()
           .andThen(moveToAngleCommand(LOCKED.setpoint)
-          .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
-          .until(armLockedTrigger).withName("lockArmCommand")
-            // checks is the arm is locked or is being locked and cancels if necessary.
-            .unless(armLockedTrigger.or(()->
-                    CommandScheduler.getInstance().requiring(this).getName().equals("lockArmCommand")));
+          .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger))).until(armLockedTrigger);
+//          .until(armLockedTrigger).withName("lockArmCommand")
+//            // checks is the arm is locked or is being locked and cancels if necessary.
+//            .unless(armLockedTrigger.or(()->
+//                    CommandScheduler.getInstance().requiring(this).getName().equals("lockArmCommand")));
+  }
+
+  public Command lockArmWithSetpoint(){
+    return holdSetpointCommand(LOCKED.setpoint).until(armLockedTrigger);
   }
 
   public Command stopTelescopeMotors() {
