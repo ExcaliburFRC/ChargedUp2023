@@ -46,7 +46,7 @@ public class LEDs extends SubsystemBase {
     public Command applyPatternCommand(LEDPattern pattern, Color mainColor, Color accentColor) {
         Command command = new InstantCommand();
         Color[] colors = new Color[LENGTH];
-        int trainLength = (int) MathUtil.clamp(LENGTH * 0.15, 1.0, LENGTH / 2.0);
+        int trainLength = (int) MathUtil.clamp(LENGTH * 0.05, 1.0, LENGTH / 2.0);
         final AtomicBoolean invert = new AtomicBoolean(false);
 
         switch (pattern) {

@@ -48,9 +48,7 @@ public class Cuber extends SubsystemBase {
     private final PIDController anglePIDcontrller = new PIDController(Kp_ANGLE, 0, Kd_ANGLE);
     private final ArmFeedforward angleFFcontrller = new ArmFeedforward(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
 
-    public final Trigger hasCubeTrigger = new Trigger(() -> colorSensor.getProximity() >= COLOR_DISTANCE_THRESHOLD).debounce(0.3)
-            .onTrue(leds.applyPatternCommand(SOLID, GREEN.color).withTimeout(0.25))
-            .onFalse(leds.applyPatternCommand(SOLID, RED.color).withTimeout(0.25));
+    public final Trigger hasCubeTrigger = new Trigger(() -> colorSensor.getProximity() >= COLOR_DISTANCE_THRESHOLD).debounce(0.3);
 
     public int targetVel = 0;
     public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.1);
@@ -104,7 +102,7 @@ public class Cuber extends SubsystemBase {
     private boolean isAtReverseLimit(){
         double angle = getCuberAngle();
 
-        return angle <= 360 && angle >= 330;
+        return angle <= 357 && angle >= 330;
     }
 
     // Servo Commands
@@ -187,10 +185,9 @@ public class Cuber extends SubsystemBase {
     public Command intakeCommand(CUBER_ANGLE cuberAngle) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(cuberAngle),
-                setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
+//                setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
-                requirement())
-                .until(hasCubeTrigger);
+                requirement()).until(hasCubeTrigger);
     }
 
     public Command shootCubeCommand(SHOOTER_VELOCITIY vel, CUBER_ANGLE angle, Trigger confirm) {
@@ -198,9 +195,7 @@ public class Cuber extends SubsystemBase {
                 setCuberAngleCommand(angle),
                 setShooterVelocityCommand(vel),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
-                new WaitUntilCommand(cuberReadyTrigger).andThen(
-                        leds.applyPatternCommand(SOLID, GREEN.color),
-                        new WaitUntilCommand(confirm).andThen(pushCubeCommand())),
+                new WaitUntilCommand(cuberReadyTrigger.and(confirm)).andThen(pushCubeCommand()),
                 requirement())
                 .until(hasCubeTrigger.negate().debounce(0.75));
     }

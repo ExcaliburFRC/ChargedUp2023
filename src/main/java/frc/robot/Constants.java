@@ -176,7 +176,7 @@ public final class Constants {
         public static final int ANGLE_MOTOR_ID = 41;
         public static final int ROLLERS_MOTOR_ID = 42;
 
-        public static final double ABS_ENCODER_OFFSET = 0.485; // dutyCycle
+        public static final double ABS_ENCODER_OFFSET = 0.475; // dutyCycle
 
         public static final int SERVO_CHANNEL = 9;
         public static final int ENCODER_CHANNEL = 3;
@@ -196,20 +196,20 @@ public final class Constants {
 
 
         // angle control constants
-        public static final double Ks_ANGLE = 0.10937;
-        public static final double Kv_ANGLE = 0.066247;
-        public static final double Kg_ANGLE = 0.16856;
-        public static final double Ka_ANGLE = 0.0013148;
+        public static final double Ks_ANGLE = 0.14942;
+        public static final double Kv_ANGLE = 0.063608;
+        public static final double Kg_ANGLE = 0.43944;
+        public static final double Ka_ANGLE = 0.001574;
 
-        public static final double Kp_ANGLE = 0.076779 * 1.5;
-        public static final double Kd_ANGLE = 0; //0.023136
+        public static final double Kp_ANGLE = 0.091365 / 1.3;
+        public static final double Kd_ANGLE = 0; //0.034286
 
         // shooter control constants
-        public static final double Ks_SHOOTER = 0.22;
-        public static final double Kv_SHOOTER = 0.137;
-        public static final double Ka_SHOOTER = 0;
+        public static final double Ks_SHOOTER = 0.15534;
+        public static final double Kv_SHOOTER = 0.13081;
+        public static final double Ka_SHOOTER = 0.0067467;
 
-        public static final double Kp_SHOOTER = 0.00025;
+        public static final double Kp_SHOOTER = 0.00020361;
         public static final double Kd_SHOOTER = 0;
 
 
@@ -258,7 +258,7 @@ public final class Constants {
 
     public static class LedsConstants {
         public static final int LEDS_PORT = 0; // pwm
-        public static final int LENGTH = 50;
+        public static final int LENGTH = 139;
 
         public enum GamePiece {
             Cone(Colors.PURPLE),

@@ -17,7 +17,7 @@ public enum Colors {
     PINK(new Color(255, 0, 255)),
 
     ORANGE(new Color(255, 165, 0)),
-    PURPLE(new Color(160, 32, 240));
+    PURPLE(new Color(85, 37, 130));
 
     // TODO: add more colors
 

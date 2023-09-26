@@ -91,8 +91,9 @@ public class RobotContainer {
     operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(driver.R1()));
     operator.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
-    operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
-            cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1())));
+//    operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
+//            cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1())));
+    operator.povUp().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, operator.R2()));
     operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
                     cuber.shootCubeCommand(SHOOTER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1())));
     operator.povDown().toggleOnTrue(cuber.shootCubeCommand(SHOOTER_VELOCITIY.LOW, CUBER_ANGLE.LOW, driver.R1()));
@@ -110,7 +111,7 @@ public class RobotContainer {
     driver.button(11).onTrue(askForGamepieceCommand(GamePiece.Cone));
     driver.button(12).onTrue(askForGamepieceCommand(GamePiece.Cube));
 
-    driver.touchpad().whileTrue(MorseLEDs.textToLeds("Excalibur", Colors.TEAM_BLUE.color));
+    driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
     driver.touchpad().whileTrue(toggleMotorsIdleMode());
   }
 

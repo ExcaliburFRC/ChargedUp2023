@@ -1,6 +1,7 @@
 package frc.robot.utility;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.LEDs;
 
@@ -47,6 +48,7 @@ public class MorseLEDs {
         LEDs leds = LEDs.getInstance();
         SequentialCommandGroup command = new SequentialCommandGroup();
         String morse = textToMorse(txt);
+        System.out.println("morse: " + morse);
 
         for (int i = 0; i < morse.length(); i++) {
             if (morse.charAt(i) == '/'){
@@ -59,6 +61,7 @@ public class MorseLEDs {
             if (morse.charAt(i) == '-') timeout = 1; // delay for stroke
 
             command.addCommands(
+                    new PrintCommand("lighting with " + timeout + " timeout"),
                     leds.applyPatternCommand(SOLID, ledColor).withTimeout(timeout),
                     leds.applyPatternCommand(OFF, ledColor).withTimeout(0.3) // delay between letters
             );
