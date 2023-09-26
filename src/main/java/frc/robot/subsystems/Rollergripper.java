@@ -102,15 +102,10 @@ public class Rollergripper extends SubsystemBase {
     private Command holdConeCommand() {
         return new ConditionalCommand(
                 Commands.runEnd(() -> rightRoller.set(0.25), rightRoller::stopMotor, this).withTimeout(0.05),
-                new InstantCommand(() -> {
-                }, this),
+                new InstantCommand(() -> {},
+                this),
                 beambreakTrigger
         );
-    }
-
-    @Override
-    public void periodic() {
-        SmartDashboard.putBoolean("rollerGripper button", beambreakTrigger.getAsBoolean());
     }
 
     private void initShuffleboardData(){
