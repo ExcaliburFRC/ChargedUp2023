@@ -230,9 +230,11 @@ public class Cuber extends SubsystemBase {
     public Command angleControl(DoubleSupplier speed){
         return new RunCommand(()-> {
             double output = speed.getAsDouble() / 5.0;
-
             if ((isAtFrontLimit() && output > 0) || (isAtReverseLimit() && output < 0)) angleMotor.stopMotor();
             else angleMotor.set(output);
+
+            System.out.println("front: " + isAtFrontLimit());
+            System.out.println("reverse: " + isAtReverseLimit());
         }, this);
     }
 

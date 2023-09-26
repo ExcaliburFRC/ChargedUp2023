@@ -178,7 +178,6 @@ public final class Constants {
 
         public static final double ABS_ENCODER_OFFSET = 0.485; // dutyCycle
 
-
         public static final int SERVO_CHANNEL = 9;
         public static final int ENCODER_CHANNEL = 3;
 
@@ -190,7 +189,7 @@ public final class Constants {
         public static final double FWD_SOFT_LIMIT = MAX_ANGLE_DEGREES;
         public static final double REV_SOFT_LIMIT = 0;
 
-        public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 90.0) * (35.0 / 73.0);
+        public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 50.0) * (35.0 / 73.0); //104.2857
 
         public static final double VEL_THRESHOLD = SHOOTER_VELOCITIY.HIGH.velocity * 0.05;
         public static final double POS_THRESHOLD = 3;

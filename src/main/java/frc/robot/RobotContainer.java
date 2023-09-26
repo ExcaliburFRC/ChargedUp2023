@@ -102,8 +102,6 @@ public class RobotContainer {
     // other
     // ensures that the cube is fully inside the system
     operator.L2().onFalse(cuber.confirmCubeIntake().withTimeout(2));
-    // makes sure that the arm is being locked even if the command was interrupted
-    operator.L1().or(operator.povLeft().or(operator.povUp())).onFalse(superstructure.lockArmCommand());
     operator.square().onTrue(superstructure.lockArmCommand());
 
     driver.PS().onTrue(swerve.resetOdometryAngleCommand());
