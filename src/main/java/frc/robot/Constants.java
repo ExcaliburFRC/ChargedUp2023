@@ -228,7 +228,7 @@ public final class Constants {
         public enum CUBER_ANGLE {
             HIGH(MAX_ANGLE_DEGREES),
             MIDDLE(128),
-            LOW_SHOOTER(92),
+            LOW(92),
             CANNON(100),
             IDLE(110),
             INTAKE_GROUND(0),
@@ -242,10 +242,10 @@ public final class Constants {
         }
 
         public enum SHOOTER_VELOCITIY {
-            CANNON(2500),
             HIGH(1500),
             MIDDLE(1000),
             LOW(800),
+            CANNON(2500),
             IDLE(-300),
             INTAKE(-1200);
 

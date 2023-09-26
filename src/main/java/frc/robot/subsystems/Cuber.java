@@ -64,17 +64,17 @@ public class Cuber extends SubsystemBase {
         angleMotor.restoreFactoryDefaults();
         angleMotor.clearFaults();
         angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        angleMotor.setOpenLoopRampRate(1);
+        angleMotor.setInverted(true);
 
+        // motor soft limit
 //        angleMotor.setSoftLimit(kForward, FWD_SOFT_LIMIT);
 //        angleMotor.enableSoftLimit(kForward, true);
 //        angleMotor.setSoftLimit(kReverse, REV_SOFT_LIMIT);
 //        angleMotor.enableSoftLimit(kReverse, true);
 
-        angleMotor.setOpenLoopRampRate(1);
-        angleMotor.setInverted(true);
-
         shooterMotor.restoreFactoryDefaults();
-        shooterMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        shooterMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
         shooterMotor.clearFaults();
         shooterMotor.setInverted(false);
 

@@ -210,10 +210,8 @@ public class Arm extends SubsystemBase {
    */
   public Command osscilateArmCommand(Translation2d baseAngle, double magnitude) {
     return Commands.repeatingSequence(
-    moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(-magnitude)))
-            .withTimeout(0.5),
-            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(magnitude)))
-            .withTimeout(0.5)
+            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(-magnitude))).withTimeout(1),
+            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(magnitude))).withTimeout(1)
     );
   }
 
@@ -222,8 +220,13 @@ public class Arm extends SubsystemBase {
     return Math.abs(angleA - angleB) < tolerance;
   }
   private boolean lengthInRange(double lengthA, double lengthB) {
-    double tolerance = 5.0 / 100.0; // cm
+    double tolerance = 1; // cm
     return Math.abs(lengthA - lengthB) < tolerance;
+  }
+
+  public boolean armAtSetpoint(Translation2d setpoint){
+    return lengthInRange(setpoint.getNorm(), lengthEncoder.getPosition()) &&
+            angleInRange(setpoint.getAngle().getDegrees(), getArmAngle());
   }
 
   public Command lockArmCommand(Trigger bbTrigger) {
@@ -234,11 +237,6 @@ public class Arm extends SubsystemBase {
             // checks is the arm is locked or is being locked and cancels if necessary.
             .unless(armLockedTrigger.or(()->
                     CommandScheduler.getInstance().requiring(this).getName().equals("lockArmCommand")));
-  }
-
-  public boolean armAtSetpoint(Translation2d setpoint){
-    return lengthInRange(setpoint.getNorm(), lengthEncoder.getPosition()) &&
-            angleInRange(setpoint.getAngle().getDegrees(), getArmAngle());
   }
 
   public Command stopTelescopeMotors() {
