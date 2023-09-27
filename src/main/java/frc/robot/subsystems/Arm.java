@@ -72,9 +72,6 @@ public class Arm extends SubsystemBase {
     lengthController.setI(0);
     lengthController.setD(kD_LENGTH);
 
-    lengthMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 1.03f);
-    lengthMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
-
     angleMotor.setOpenLoopRampRate(1.5);
 
     lengthEncoder.setPosition(LOCKED_LENGTH_METERS);
@@ -140,16 +137,11 @@ public class Arm extends SubsystemBase {
     return MathUtil.clamp(angle, 80, 220);
   }
 
-  public Command blindCloseArmCommand(){
-    return resetLengthCommand().andThen(new RunCommand(()-> angleMotor.set(-0.2))
-            .finallyDo((__)-> moveToLengthCommand(LOCKED.setpoint).schedule()));
-  }
-
   public Command resetLengthCommand() {
     return Commands.runEnd(
-          () -> lengthMotor.set(-0.7),
+          () -> lengthMotor.set(-0.75),
           lengthMotor::stopMotor)
-            .until(armFullyClosedTrigger);
+            .until(()-> !lowerLimitSwitch.get());
   }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
@@ -220,8 +212,8 @@ public class Arm extends SubsystemBase {
    */
   public Command osscilateArmCommand(Translation2d baseAngle, double magnitude) {
     return Commands.repeatingSequence(
-            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(-magnitude))).withTimeout(1),
-            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(magnitude))).withTimeout(1)
+            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(-magnitude))).withTimeout(3),
+            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(magnitude))).withTimeout(3)
     );
   }
 
@@ -243,14 +235,23 @@ public class Arm extends SubsystemBase {
     return armAtSetpoint(lastHeldSetpoint);
   }
 
-  public Command lockArmCommand(Trigger bbTrigger) {
-    return resetLengthCommand()
-          .andThen(moveToAngleCommand(LOCKED.setpoint)
-          .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger))).until(armLockedTrigger);
-//          .until(armLockedTrigger).withName("lockArmCommand")
-//            // checks is the arm is locked or is being locked and cancels if necessary.
-//            .unless(armLockedTrigger.or(()->
-//                    CommandScheduler.getInstance().requiring(this).getName().equals("lockArmCommand")));
+  public Command lockArmCommand(Setpoints setpoint) {
+    return new SequentialCommandGroup(
+            resetLengthCommand().until(armFullyClosedTrigger),
+            new WaitCommand(0.15),
+            moveToAngleCommand(LOCKED.setpoint).alongWith(moveToLengthCommand(setpoint.setpoint))
+    ).until(armLockedTrigger);
+  }
+
+  public Command forceLockArmCommand(){
+    return resetLengthCommand().until(armFullyClosedTrigger)
+            .andThen(
+                    new WaitCommand(0.15),
+                    new ParallelRaceGroup(
+                            moveToAngleCommand(LOCKED.setpoint),
+                            moveToLengthCommand(LOCKED.setpoint),
+                            new WaitUntilCommand(armLockedTrigger)
+                            ));
   }
 
   public Command lockArmWithSetpoint(){

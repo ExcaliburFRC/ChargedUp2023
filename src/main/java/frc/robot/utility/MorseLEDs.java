@@ -1,7 +1,8 @@
 package frc.robot.utility;
 
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.LEDs;
 
@@ -27,6 +28,8 @@ public class MorseLEDs {
 
     private static final Map<Character, String> morseMap = new HashMap<>();
     private static final MorseLEDs INSTANCE = new MorseLEDs();
+    private static final SequentialCommandGroup command = new SequentialCommandGroup();
+
 
     public MorseLEDs(){
         for (int i = 0; i < english.length; i++) {
@@ -34,7 +37,7 @@ public class MorseLEDs {
         }
     }
 
-    public static String textToMorse(String txt){
+    private static String textToMorse(String txt){
         txt = txt.toLowerCase();
         StringBuilder builder = new StringBuilder();
         for (Character chr: txt.toCharArray()) {
@@ -44,29 +47,76 @@ public class MorseLEDs {
         return builder.toString();
     }
 
+    // write a function that translates morse code into led signaling
+    // use the LEDs class to set the LEDs to the correct pattern
+
+
     public static Command textToLeds(String txt, Color ledColor){
-        LEDs leds = LEDs.getInstance();
-        SequentialCommandGroup command = new SequentialCommandGroup();
-        String morse = textToMorse(txt);
-        System.out.println("morse: " + morse);
+        GenericEntry shuffleboardText = Shuffleboard.getTab("driveTab").add("morse text", "").getEntry();
 
-        for (int i = 0; i < morse.length(); i++) {
-            if (morse.charAt(i) == '/'){
-                command.addCommands(leds.applyPatternCommand(OFF, ledColor).withTimeout(1)); // delay for space
-                continue;
+            LEDs leds = LEDs.getInstance();
+            String morse = textToMorse(shuffleboardText.getString("").equals("") ? txt : shuffleboardText.getString(""));
+            System.out.println("morse: " + morse);
+
+
+            for (int i = 0; i < morse.toCharArray().length; i++) {
+//                int finalI = i;
+//                command.addCommands(new InstantCommand(()->
+//                DriverStation.reportError(String.valueOf(morse.charAt(finalI)), false)
+//                ));
+
+                if (morse.charAt(i) == ' ') {
+                    command.addCommands(leds.applyPatternCommand(OFF, ledColor).withTimeout(0.8)); // delay between letters
+                    continue;
+                }
+                if (morse.charAt(i) == '/') {
+                    command.addCommands(leds.applyPatternCommand(OFF, ledColor).withTimeout(1.5)); // delay between words
+                    continue;
+                }
+
+                double timeout = 0;
+                if (morse.charAt(i) == '.') timeout = 0.5; // delay for dot
+                if (morse.charAt(i) == '-') timeout = 1; // delay for stroke
+
+                command.addCommands(
+                        leds.applyPatternCommand(SOLID, ledColor).withTimeout(timeout),
+                        leds.applyPatternCommand(OFF, ledColor).withTimeout(0.3) // delay between signs
+                );
             }
-
-            double timeout = 0;
-            if (morse.charAt(i) == '.') timeout = 0.5; // delay for dot
-            if (morse.charAt(i) == '-') timeout = 1; // delay for stroke
-
-            command.addCommands(
-                    new PrintCommand("lighting with " + timeout + " timeout"),
-                    leds.applyPatternCommand(SOLID, ledColor).withTimeout(timeout),
-                    leds.applyPatternCommand(OFF, ledColor).withTimeout(0.3) // delay between letters
-            );
-        }
 
         return command;
     }
+
+//    public static Command textToLeds(String txt, Color ledColor){
+//        AtomicInteger index = new AtomicInteger(0);
+//        String morse = textToMorse(txt);
+//
+//        return new InstantCommand(()-> index.set(0)).andThen(
+//                Commands.repeatingSequence(
+//                        new InstantCommand(()-> DriverStation.reportError(String.valueOf(morse.charAt(index.get())), false)),
+//                        getLEDsCommand(morse.charAt(index.get()), ledColor),
+//                        LEDs.getInstance().applyPatternCommand(OFF, ledColor).withTimeout(0.15),
+//                        new InstantCommand(index::incrementAndGet)))
+//                .until(()-> index.get() == morse.length()).ignoringDisable(true);
+//    }
+//
+//    private static Command getLEDsCommand(char chr, Color ledColor){
+//        LEDs leds = LEDs.getInstance();
+//
+//        return new ConditionalCommand(
+//                leds.applyPatternCommand(OFF, ledColor).withTimeout(4), // delay for / (between words)
+//                new PrintCommand("A"),
+//                new ConditionalCommand(
+//                        leds.applyPatternCommand(SOLID, ledColor).withTimeout(1), // delay for .
+//                        new PrintCommand("B"),
+//                        new ConditionalCommand(
+//                                leds.applyPatternCommand(SOLID, ledColor).withTimeout(2), // delay for -
+//                                new PrintCommand("C"),
+//                                leds.applyPatternCommand(OFF, ledColor).withTimeout(0.5), // delay for space (between letters)
+//                                new PrintCommand("D"),
+//                                ()-> chr == '-'),
+//                        ()-> chr == '.'),
+//                ()-> chr == '/'
+//        );
+//    }
 }

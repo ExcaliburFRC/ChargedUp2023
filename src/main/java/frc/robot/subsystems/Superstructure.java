@@ -1,16 +1,12 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
-import frc.robot.RobotContainer;
 
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
-import static frc.robot.utility.Colors.GREEN;
-import static frc.robot.utility.Colors.RED;
+import static frc.robot.utility.Colors.ORANGE;
 
 public class Superstructure {
     public final Arm arm = new Arm();
@@ -21,27 +17,21 @@ public class Superstructure {
     public Command intakeFromShelfCommand() {
         return new SequentialCommandGroup(
                 arm.moveToLengthCommand(MIDDLE.setpoint),
-                new InstantCommand(() -> Shuffleboard.selectTab("armCamera")),
-
-                new ParallelCommandGroup(
+                new ParallelRaceGroup(
                         rollergripper.intakeCommand(),
                         arm.holdSetpointCommand(SHELF_EXTENDED.setpoint),
-                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, RED.color))
-                        .until(rollergripper.beambreakTrigger.debounce(0.15)),
-
-                new ParallelCommandGroup(
-                        RobotContainer.selectDriveTabCommand(),
-                        arm.holdSetpointCommand(SHELF_RETRACTED.setpoint),
-                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.SOLID, GREEN.color))
-                        .withTimeout(0.5));
+                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, ORANGE.color),
+                        new WaitUntilCommand(rollergripper.beambreakTrigger.debounce(0.25))))
+                .finallyDo((__)-> arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).schedule());
     }
 
     public Command placeOnHighCommand(Trigger release) {
         return new SequentialCommandGroup(
+                arm.forceLockArmCommand().withTimeout(0.25),
                 arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.25),
                 arm.holdSetpointCommand(HIGH.setpoint).until(release),
-                arm.osscilateArmCommand(HIGH.setpoint, 3).until(release.negate()),
-                arm.setAngleSpeed(-5).alongWith(rollergripper.ejectCommand())
+                arm.osscilateArmCommand(HIGH.setpoint, 7).until(release.negate()),
+                arm.setAngleSpeed(2.5).alongWith(rollergripper.ejectCommand())
                         .until(rollergripper.beambreakTrigger.negate()),
                 arm.resetLengthCommand());
     }
@@ -65,13 +55,17 @@ public class Superstructure {
     }
 
     public Command lockArmCommand() {
-        return arm.lockArmCommand(rollergripper.beambreakTrigger);
+        return new ConditionalCommand(
+                arm.lockArmCommand(MIDDLE),
+                arm.lockArmCommand(LOCKED),
+                rollergripper.beambreakTrigger
+        );
     }
 
     // this command is used when the cuber needs to lean back, it moves the Arm, so they don't collide
     public Command adjustForShooterCommand(Command cuberCommand, BooleanSupplier canReturn) {
         return new SequentialCommandGroup(
-                arm.holdSetpointCommand(Constants.ArmConstants.Setpoints.CUBER_CHECKPOINT.setpoint).withTimeout(0.75),
+                arm.holdSetpointCommand(CUBER_CHECKPOINT.setpoint).until(()-> arm.armAtSetpoint(CUBER_CHECKPOINT.setpoint)),
                 new ParallelRaceGroup(
                         arm.holdSetpointCommand(CUBER.setpoint),
                         new WaitUntilCommand(arm::armAtSetpoint).andThen(cuberCommand)))

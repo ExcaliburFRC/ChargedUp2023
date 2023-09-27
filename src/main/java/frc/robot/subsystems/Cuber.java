@@ -182,13 +182,13 @@ public class Cuber extends SubsystemBase {
                 setCuberAngleCommand(cuberAngle),
                 setShooterDutycycleCommand(INTAKE_DUTYCYCLE.velocity / 100.0),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
-                requirement()).until(hasCubeTrigger);
+                requirement()).until(hasCubeTrigger).finallyDo((__)-> confirmCubeIntake().schedule());
     }
 
     public Command shootCubeCommand(CUBER_VELOCITIY vel, CUBER_ANGLE angle, Trigger confirm) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(angle),
-                setShooterVelocityCommand(vel),
+                new WaitCommand(0.5).andThen(setShooterVelocityCommand(vel)),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
                 new WaitUntilCommand(cuberReadyTrigger.and(confirm)).andThen(pushCubeCommand()),
                 requirement())
@@ -205,8 +205,8 @@ public class Cuber extends SubsystemBase {
     public Command confirmCubeIntake(){
         return new ParallelCommandGroup(
                 setCuberAngleCommand(CUBER_ANGLE.IDLE),
-                setShooterDutycycleCommand(INTAKE_DUTYCYCLE.velocity / 100.0),
-                requirement()).withTimeout(2);
+                setShooterDutycycleCommand((INTAKE_DUTYCYCLE.velocity + 10) / 100.0),
+                requirement()).withTimeout(0.25);
     }
 
     public Command toggleIdleModeCommand(){

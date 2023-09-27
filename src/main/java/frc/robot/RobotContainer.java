@@ -19,12 +19,14 @@ import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.utility.Calculation;
-import frc.robot.utility.Colors;
+import frc.robot.utility.MorseLEDs;
 
 import java.util.Map;
 
 import static frc.robot.Constants.CuberConstants.CUBER_ANGLE;
 import static frc.robot.Constants.CuberConstants.CUBER_VELOCITIY;
+import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
+import static frc.robot.utility.Colors.WHITE;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -100,9 +102,8 @@ public class RobotContainer {
     operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
     // other
-    // ensures that the cube is fully inside the system
-    operator.L2().onFalse(cuber.confirmCubeIntake().withTimeout(2));
     operator.square().onTrue(superstructure.lockArmCommand());
+    operator.R2().onTrue(superstructure.arm.forceLockArmCommand());
 
     driver.PS().onTrue(swerve.resetOdometryAngleCommand());
     driver.square().whileTrue(swerve.balanceRampCommand());
@@ -110,8 +111,9 @@ public class RobotContainer {
     driver.button(11).onTrue(askForGamepieceCommand(GamePiece.Cone));
     driver.button(12).onTrue(askForGamepieceCommand(GamePiece.Cube));
 
-    driver.touchpad().whileTrue(lEDs.applyPatternCommand(LEDs.LEDPattern.SOLID, Colors.WHITE.color));
     driver.touchpad().whileTrue(toggleMotorsIdleMode());
+    driver.touchpad().whileTrue(lEDs.applyPatternCommand(SOLID, WHITE.color));
+    driver.button(15).onTrue(MorseLEDs.textToLeds("fuck you", WHITE.color));
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){

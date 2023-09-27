@@ -64,7 +64,7 @@ public final class Constants {
         }
 
         public static final double kTolerance = 0.05;
-        public static final double kDeadband = 0.05;
+        public static final double kDeadband = 0.07;
 
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
@@ -115,14 +115,15 @@ public final class Constants {
             LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),//
             MID(new Translation2d(0.72, Rotation2d.fromDegrees(172))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
-            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(192))),
-            SHELF_EXTENDED(new Translation2d(0.8, Rotation2d.fromDegrees(174))),
-            SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(174))),
+            HIGH(new Translation2d(0.97, Rotation2d.fromDegrees(192))),
 
-            MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(135))),
+            SHELF_EXTENDED(new Translation2d(0.85, Rotation2d.fromDegrees(175))),
+            SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(179))),
+
+            MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(137))),
             LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(87))),
 
-            CUBER_CHECKPOINT(new Translation2d(0.8, Rotation2d.fromDegrees(93))),
+            CUBER_CHECKPOINT(new Translation2d(0.75, Rotation2d.fromDegrees(93))),
             CUBER(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(115)));
 
             public final Translation2d setpoint;
@@ -207,7 +208,7 @@ public final class Constants {
 
         // shooter control constants
         public static final double Ks_SHOOTER = 0.15534;
-        public static final double Kv_SHOOTER = 0.13081 * 1.05;
+        public static final double Kv_SHOOTER = 0.13081 * 1.2;
         public static final double Ka_SHOOTER = 0.0067467;
 
         public static final double Kp_SHOOTER = 0.00020361;
@@ -247,7 +248,7 @@ public final class Constants {
             LOW(800),
             CANNON(2500),
             IDLE(-300),
-            INTAKE_DUTYCYCLE(-15);
+            INTAKE_DUTYCYCLE(-20);
 
             public final int velocity;
 

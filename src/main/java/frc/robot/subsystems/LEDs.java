@@ -11,11 +11,11 @@ import frc.robot.utility.Colors;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.Constants.LedsConstants.*;
+import static frc.robot.Constants.LedsConstants.LEDS_PORT;
+import static frc.robot.Constants.LedsConstants.LENGTH;
 import static frc.robot.utility.Colors.OFF;
 import static frc.robot.utility.Colors.TEAM_GOLD;
 
@@ -73,10 +73,10 @@ public class LEDs extends SubsystemBase {
             case ALTERNATING_MOVING:
                 AtomicReference<Color> mainAlternatingColor = new AtomicReference<>(mainColor);
                 AtomicReference<Color> accentAlternatingColor = new AtomicReference<>(accentColor);
-                AtomicReference<Color> tempAlternatingColor = new AtomicReference<>();
+                AtomicReference<Color> tempAlternatingColor = new AtomicReference<>(mainColor);
 
                 command = this.runOnce(()-> {
-                            for (int i = 0; i < LENGTH; i++) {
+                            for (int i = 0; i < LENGTH - 1; i++) {
                                 colors[i] = mainAlternatingColor.get();
                                 colors[i + 1] = accentAlternatingColor.get();
                                 i++;
@@ -143,7 +143,7 @@ public class LEDs extends SubsystemBase {
                 break;
         }
 
-        return command.ignoringDisable(true).finallyDo((__) -> restoreLEDs());
+        return command.ignoringDisable(true);
     }
 
     public Command applyPatternCommand(LEDPattern pattern, Color color) {
@@ -182,7 +182,6 @@ public class LEDs extends SubsystemBase {
         TRAIN,
         RANDOM,
         BLINKING;
-
     }
 
     public Color getAllianceColor(){

@@ -4,17 +4,15 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import frc.robot.utility.Colors;
 import frc.robot.utility.FaultReporter;
+import frc.robot.utility.MorseLEDs;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -100,6 +98,7 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
+    DriverStation.reportError(MorseLEDs.textToLeds("excalibur", Colors.WHITE.color).toString(), false);
 //    Shuffleboard.selectTab("driveTab");
   }
 

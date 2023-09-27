@@ -4,7 +4,6 @@ import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.utility.Limelight;
@@ -63,11 +62,13 @@ public class Rollergripper extends SubsystemBase {
     public Command intakeCommand() {
         return Commands.runEnd(
                         () -> {
-                            rightRoller.set(0.75);
+                            rightRoller.set(0.35);
+                            leftRoller.set(0.35);
                             Shuffleboard.selectTab("armCamera");
                         },
                         () -> {
                             rightRoller.stopMotor();
+                            leftRoller.stopMotor();
                             Shuffleboard.selectTab("driveTab");
                         },
                         this)
@@ -101,11 +102,16 @@ public class Rollergripper extends SubsystemBase {
      */
     private Command holdConeCommand() {
         return new ConditionalCommand(
-                Commands.runEnd(() -> rightRoller.set(0.25), rightRoller::stopMotor, this).withTimeout(0.05),
-                new InstantCommand(() -> {},
-                this),
+                new InstantCommand(()-> {
+                    rightRoller.set(0.1);
+                    leftRoller.set(0.15);
+                }, this),
+                new InstantCommand(()-> {
+                    rightRoller.stopMotor();
+                    leftRoller.stopMotor();
+                }, this),
                 beambreakTrigger
-        );
+        ).repeatedly();
     }
 
     private void initShuffleboardData(){
