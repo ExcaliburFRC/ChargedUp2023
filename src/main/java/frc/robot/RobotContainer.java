@@ -85,8 +85,7 @@ public class RobotContainer {
     operator.R1().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
     operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
-    operator.L1().toggleOnTrue(superstructure.adjustForShooterCommand(
-            cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE), cuber.armSafe));
+    operator.L1().toggleOnTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
 
     // shoot / place commands
     operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(driver.R1()));
@@ -113,7 +112,7 @@ public class RobotContainer {
 
     driver.touchpad().whileTrue(toggleMotorsIdleMode());
     driver.touchpad().whileTrue(lEDs.applyPatternCommand(SOLID, WHITE.color));
-    driver.button(15).onTrue(MorseLEDs.textToLeds("fuck you", WHITE.color));
+    driver.button(15).onTrue(MorseLEDs.textToLeds("im scared", WHITE.color));
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){

@@ -3,10 +3,10 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.utility.Limelight;
 
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.RollerGripperConstants.*;
@@ -64,15 +64,15 @@ public class Rollergripper extends SubsystemBase {
                         () -> {
                             rightRoller.set(0.35);
                             leftRoller.set(0.35);
-                            Shuffleboard.selectTab("armCamera");
+//                            Shuffleboard.selectTab("armCamera");
                         },
                         () -> {
                             rightRoller.stopMotor();
                             leftRoller.stopMotor();
-                            Shuffleboard.selectTab("driveTab");
+//                            Shuffleboard.selectTab("driveTab");
                         },
                         this)
-                .until(beambreakTrigger);
+                .until(beambreakTrigger.debounce(0.1));
     }
 
     /**
@@ -100,24 +100,23 @@ public class Rollergripper extends SubsystemBase {
      *
      * @return the command
      */
-    private Command holdConeCommand() {
-        return new ConditionalCommand(
-                new InstantCommand(()-> {
-                    rightRoller.set(0.1);
-                    leftRoller.set(0.15);
-                }, this),
-                new InstantCommand(()-> {
+    public Command holdConeCommand() {
+        return Commands.runEnd(
+                ()->{
+                    rightRoller.set(0.15);
+                    leftRoller.set(0.25);
+                },
+                ()->{
                     rightRoller.stopMotor();
                     leftRoller.stopMotor();
-                }, this),
-                beambreakTrigger
-        ).repeatedly();
+                }, this
+        ).until(beambreakTrigger.negate()).unless(beambreakTrigger.negate()).repeatedly();
     }
 
     private void initShuffleboardData(){
         Arm.armTab.addBoolean("isConeDetected", beambreakTrigger)
                 .withPosition(10, 4).withSize(4, 2);
-        Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
-                .withSize(2, 8);
+//        Limelight.armCameraTab.addBoolean("isConeDetected", beambreakTrigger)
+//                .withSize(2, 8);
     }
 }

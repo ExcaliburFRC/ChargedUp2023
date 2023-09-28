@@ -53,8 +53,8 @@ public class Cuber extends SubsystemBase {
     public int targetVel = 0;
     public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.1);
 
-    public int targetPos = MAX_ANGLE_DEGREES;
-    public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(angleEncoder.getDistance() - targetPos) < POS_THRESHOLD).debounce(0.2);
+    public int targetPos = CUBER_ANGLE.IDLE.angle;
+    public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(getCuberAngle() - targetPos) < POS_THRESHOLD).debounce(0.2);
 
     public Trigger cuberReadyTrigger = isAtTargetVelTrigger.and(isAtTargetPosTrigger);
     public Trigger armSafe = new Trigger(()-> getCuberAngle() <= 115);

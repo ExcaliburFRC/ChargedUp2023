@@ -214,7 +214,7 @@ public class Swerve extends SubsystemBase {
                 () -> rampController.calculate(getRobotPitch(), 0),
                 () -> 0,
                 () -> 0,
-                () -> false);
+                () -> false).alongWith(new PrintCommand("output: " + rampController.calculate(getRobotPitch(), 0)).repeatedly().asProxy());
 //          .until(robotBalancedTrigger.debounce(0.2));
     }
 
@@ -288,6 +288,7 @@ public class Swerve extends SubsystemBase {
         swerveTab.addDouble("SwerveAngle", this::getGyroDegrees).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
+        swerveTab.addDouble("robotPitch", this::getRobotPitch);
 
         RobotContainer.driveTab.addDouble("SwerveAngle", () -> getOdometryRotation2d().getDegrees())
                 .withWidget(BuiltInWidgets.kGyro).withPosition(0, 0).withSize(4, 2);

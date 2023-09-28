@@ -1,7 +1,5 @@
 package frc.robot.utility;
 
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.LEDs;
@@ -52,10 +50,11 @@ public class MorseLEDs {
 
 
     public static Command textToLeds(String txt, Color ledColor){
-        GenericEntry shuffleboardText = Shuffleboard.getTab("driveTab").add("morse text", "").getEntry();
+//        GenericEntry shuffleboardText = Shuffleboard.getTab("driveTab").add("morse text", "").getEntry();
 
             LEDs leds = LEDs.getInstance();
-            String morse = textToMorse(shuffleboardText.getString("").equals("") ? txt : shuffleboardText.getString(""));
+//            String morse = textToMorse(shuffleboardText.getString("").equals("") ? txt : shuffleboardText.getString(""));
+            String morse = textToMorse(txt);
             System.out.println("morse: " + morse);
 
 

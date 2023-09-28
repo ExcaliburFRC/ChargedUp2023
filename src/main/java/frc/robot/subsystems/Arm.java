@@ -140,7 +140,7 @@ public class Arm extends SubsystemBase {
   public Command resetLengthCommand() {
     return Commands.runEnd(
           () -> lengthMotor.set(-0.75),
-          lengthMotor::stopMotor)
+          lengthMotor::stopMotor, this)
             .until(()-> !lowerLimitSwitch.get());
   }
 
@@ -244,14 +244,9 @@ public class Arm extends SubsystemBase {
   }
 
   public Command forceLockArmCommand(){
-    return resetLengthCommand().until(armFullyClosedTrigger)
-            .andThen(
+    return resetLengthCommand().andThen(
                     new WaitCommand(0.15),
-                    new ParallelRaceGroup(
-                            moveToAngleCommand(LOCKED.setpoint),
-                            moveToLengthCommand(LOCKED.setpoint),
-                            new WaitUntilCommand(armLockedTrigger)
-                            ));
+                    holdSetpointCommand(LOCKED.setpoint).until(armLockedTrigger));
   }
 
   public Command lockArmWithSetpoint(){

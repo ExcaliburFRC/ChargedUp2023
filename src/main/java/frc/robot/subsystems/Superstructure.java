@@ -20,26 +20,24 @@ public class Superstructure {
                 new ParallelRaceGroup(
                         rollergripper.intakeCommand(),
                         arm.holdSetpointCommand(SHELF_EXTENDED.setpoint),
-                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, ORANGE.color),
-                        new WaitUntilCommand(rollergripper.beambreakTrigger.debounce(0.25))))
-                .finallyDo((__)-> arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).schedule());
+                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, ORANGE.color)))
+                .finallyDo((__)-> arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).alongWith(rollergripper.holdConeCommand()).schedule());
     }
 
     public Command placeOnHighCommand(Trigger release) {
         return new SequentialCommandGroup(
-                arm.forceLockArmCommand().withTimeout(0.25),
+                arm.forceLockArmCommand().withTimeout(0.3),
                 arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.25),
-                arm.holdSetpointCommand(HIGH.setpoint).until(release),
-                arm.osscilateArmCommand(HIGH.setpoint, 7).until(release.negate()),
-                arm.setAngleSpeed(2.5).alongWith(rollergripper.ejectCommand())
-                        .until(rollergripper.beambreakTrigger.negate()),
-                arm.resetLengthCommand());
+                arm.holdSetpointCommand(HIGH.setpoint).until(release))
+//                arm.osscilateArmCommand(HIGH.setpoint, 7).until(release.negate()))
+                .finallyDo((__)-> ejectCommand(0, 0).schedule());
     }
 
     public Command placeOnMidCommand(BooleanSupplier release) {
-        return arm.holdSetpointCommand(MID.setpoint).until(release)
-                .andThen(arm.setAngleSpeed(-6.5).alongWith(rollergripper.ejectCommand()))
-                .until(rollergripper.beambreakTrigger.negate().debounce(0.1));
+        return new SequentialCommandGroup(
+                arm.forceLockArmCommand().withTimeout(0.15),
+                arm.holdSetpointCommand(MID.setpoint).until(release))
+                .finallyDo((__)-> ejectCommand(0, -5).schedule());
     }
 
     public Command placeOnMidSequentially() {
@@ -56,10 +54,15 @@ public class Superstructure {
 
     public Command lockArmCommand() {
         return new ConditionalCommand(
-                arm.lockArmCommand(MIDDLE),
+                arm.lockArmCommand(CONE_LOCK),
                 arm.lockArmCommand(LOCKED),
                 rollergripper.beambreakTrigger
         );
+    }
+
+    public Command ejectCommand(double ejectOffset, double armOffset){
+        return rollergripper.ejectCommand(ejectOffset).alongWith(arm.setAngleSpeed(armOffset))
+                .until(rollergripper.beambreakTrigger.negate()).andThen(arm.holdSetpointCommand(SHELF_RETRACTED.setpoint));
     }
 
     // this command is used when the cuber needs to lean back, it moves the Arm, so they don't collide

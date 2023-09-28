@@ -23,6 +23,6 @@ public class Calculation {
     }
 
     public static double getSwerveDeceleratorVal(double triggerVal){
-        return Math.max(1.0 - convertJoystickRange(triggerVal), 0.1);
+        return Math.max(1.0 - convertJoystickRange(triggerVal), 0.25);
     }
 }

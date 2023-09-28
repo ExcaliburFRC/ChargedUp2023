@@ -113,14 +113,15 @@ public final class Constants {
     public static final class ArmConstants {
         public enum Setpoints {
             LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),//
-            MID(new Translation2d(0.72, Rotation2d.fromDegrees(172))),
+            MID(new Translation2d(0.68, Rotation2d.fromDegrees(171))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
-            HIGH(new Translation2d(0.97, Rotation2d.fromDegrees(192))),
+            HIGH(new Translation2d(0.97, Rotation2d.fromDegrees(194))),
 
             SHELF_EXTENDED(new Translation2d(0.85, Rotation2d.fromDegrees(175))),
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(179))),
 
-            MIDDLE(new Translation2d(0.7, Rotation2d.fromDegrees(137))),
+            MIDDLE(new Translation2d(0.65, Rotation2d.fromDegrees(137))),
+            CONE_LOCK(new Translation2d(0.85, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(87))),
 
             CUBER_CHECKPOINT(new Translation2d(0.75, Rotation2d.fromDegrees(93))),
@@ -193,7 +194,7 @@ public final class Constants {
 
         public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 90.0) * (35.0 / 73.0); // 1:187.7142
 
-        public static final double VEL_THRESHOLD = CUBER_VELOCITIY.HIGH.velocity * 0.05;
+        public static final double VEL_THRESHOLD = CUBER_VELOCITIY.HIGH.velocity * 0.1;
         public static final double POS_THRESHOLD = 3;
 
 
@@ -207,8 +208,8 @@ public final class Constants {
         public static final double Kd_ANGLE = 0; //040321
 
         // shooter control constants
-        public static final double Ks_SHOOTER = 0.15534;
-        public static final double Kv_SHOOTER = 0.13081 * 1.2;
+        public static final double Ks_SHOOTER = 0.15534 * 1.05;
+        public static final double Kv_SHOOTER = 0.13081 * 1.16;
         public static final double Ka_SHOOTER = 0.0067467;
 
         public static final double Kp_SHOOTER = 0.00020361;
@@ -231,9 +232,9 @@ public final class Constants {
             MIDDLE(128),
             LOW(92),
             CANNON(100),
-            IDLE(95),
+            IDLE(90),
             INTAKE_GROUND(358),
-            INTAKE_SLIDE(HIGH.angle);
+            INTAKE_SLIDE(114);
 
             public final int angle;
 
@@ -243,7 +244,7 @@ public final class Constants {
         }
 
         public enum CUBER_VELOCITIY {
-            HIGH(1500),
+            HIGH(1450),
             MIDDLE(1000),
             LOW(800),
             CANNON(2500),

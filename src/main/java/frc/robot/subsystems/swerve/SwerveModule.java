@@ -56,7 +56,7 @@ public class SwerveModule implements Sendable {
     _spinningMotor.clearFaults();
 
     _spinningMotor.setSmartCurrentLimit(20);
-    _driveMotor.setSmartCurrentLimit(60);
+    _driveMotor.setSmartCurrentLimit(65);
 
     _driveEncoder = _driveMotor.getEncoder();
     _spinningEncoder = _spinningMotor.getEncoder();
