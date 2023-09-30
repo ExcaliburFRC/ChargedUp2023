@@ -80,6 +80,9 @@ public class Swerve extends SubsystemBase {
 
         odometry.resetPosition(getGyroRotation2d(), getModulesPositions(), new Pose2d(0, 0, new Rotation2d()));
 
+        angleTeleopController.enableContinuousInput(0, 360);
+        angleTeleopController.setTolerance(1);
+
         initShuffleboardData();
     }
 
@@ -119,8 +122,8 @@ public class Swerve extends SubsystemBase {
 
     public Command setOdometryAngleCommand(double angle) {
         return setOdometryPositionCommand(
-                new Pose2d(odometry.getEstimatedPosition().getTranslation(), Rotation2d.fromDegrees(angle))
-        );
+                new Pose2d(odometry.getEstimatedPosition().getTranslation(), Rotation2d.fromDegrees(angle)))
+                .ignoringDisable(true);
     }
 
     public Command resetOdometryAngleCommand() {
@@ -173,7 +176,7 @@ public class Swerve extends SubsystemBase {
             DoubleSupplier ySpeedSupplier,
             DoubleSupplier spinningSpeedSupplier,
             BooleanSupplier fieldOriented) {
-        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 0);
+        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1);
     }
 
     public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fieldOriented) {
@@ -199,6 +202,14 @@ public class Swerve extends SubsystemBase {
                         .and(swerveModules[BACK_LEFT].isReset)
                         .and(swerveModules[BACK_RIGHT].isReset),
                 this);
+    }
+
+    public Command turnToAngleCommand(double setpoint){
+        return new InstantCommand(()-> angleTeleopController.setSetpoint(setpoint)).andThen(
+                driveSwerveCommand(
+                        ()-> 0, ()-> 0,
+                        ()-> angleTeleopController.calculate(getOdometryRotation2d().getDegrees(), setpoint),
+                        ()-> false).until(new Trigger(angleTeleopController::atSetpoint).debounce(0.1)));
     }
 
     // autonomous ramp climbing commands
@@ -285,7 +296,7 @@ public class Swerve extends SubsystemBase {
                 .withPosition(4, 4).withSize(4, 4);
         swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(8, 4).withSize(4, 4);
-        swerveTab.addDouble("SwerveAngle", this::getGyroDegrees).withWidget(BuiltInWidgets.kGyro)
+        swerveTab.addDouble("SwerveAngle", ()-> getOdometryRotation2d().getDegrees()).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
         swerveTab.addDouble("robotPitch", this::getRobotPitch);

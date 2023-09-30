@@ -16,7 +16,7 @@ public class Superstructure {
 
     public Command intakeFromShelfCommand() {
         return new SequentialCommandGroup(
-                arm.moveToLengthCommand(MIDDLE.setpoint),
+                arm.moveToLengthCommand(INTAKE_CHECKPOINT.setpoint),
                 new ParallelRaceGroup(
                         rollergripper.intakeCommand(),
                         arm.holdSetpointCommand(SHELF_EXTENDED.setpoint),
@@ -26,18 +26,16 @@ public class Superstructure {
 
     public Command placeOnHighCommand(Trigger release) {
         return new SequentialCommandGroup(
-                arm.forceLockArmCommand().withTimeout(0.3),
+                arm.holdSetpointCommand(BUMPER.setpoint).withTimeout(0.3),
                 arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.25),
-                arm.holdSetpointCommand(HIGH.setpoint).until(release))
+                arm.holdSetpointCommand(HIGH.setpoint).until(release)).unless(rollergripper.beambreakTrigger.negate())
 //                arm.osscilateArmCommand(HIGH.setpoint, 7).until(release.negate()))
-                .finallyDo((__)-> ejectCommand(0, 0).schedule());
+                .finallyDo((__)-> ejectCommand(0, 0, true).schedule());
     }
 
     public Command placeOnMidCommand(BooleanSupplier release) {
-        return new SequentialCommandGroup(
-                arm.forceLockArmCommand().withTimeout(0.15),
-                arm.holdSetpointCommand(MID.setpoint).until(release))
-                .finallyDo((__)-> ejectCommand(0, -5).schedule());
+                return arm.holdSetpointCommand(MID.setpoint).until(release).unless(rollergripper.beambreakTrigger.negate())
+                .finallyDo((__)-> ejectCommand(0, -5, false).schedule());
     }
 
     public Command placeOnMidSequentially() {
@@ -60,19 +58,20 @@ public class Superstructure {
         );
     }
 
-    public Command ejectCommand(double ejectOffset, double armOffset){
+    public Command ejectCommand(double ejectOffset, double armOffset, boolean holdArm){
         return rollergripper.ejectCommand(ejectOffset).alongWith(arm.setAngleSpeed(armOffset))
-                .until(rollergripper.beambreakTrigger.negate()).andThen(arm.holdSetpointCommand(SHELF_RETRACTED.setpoint));
+                .until(rollergripper.beambreakTrigger.negate())
+                .andThen(new ConditionalCommand(
+                        arm.holdSetpointCommand(SHELF_RETRACTED.setpoint),
+                        new InstantCommand(()-> {}),
+                        ()-> holdArm));
     }
 
     // this command is used when the cuber needs to lean back, it moves the Arm, so they don't collide
     public Command adjustForShooterCommand(Command cuberCommand, BooleanSupplier canReturn) {
         return new SequentialCommandGroup(
-                arm.holdSetpointCommand(CUBER_CHECKPOINT.setpoint).until(()-> arm.armAtSetpoint(CUBER_CHECKPOINT.setpoint)),
-                new ParallelRaceGroup(
-                        arm.holdSetpointCommand(CUBER.setpoint),
-                        new WaitUntilCommand(arm::armAtSetpoint).andThen(cuberCommand)))
-                //new WaitUntilCommand(()-> arm.armAtSetpoint(CUBER.setpoint)).andThen(cuberCommand)))
+                arm.holdSetpointCommand(CUBER_CHECKPOINT.setpoint).until(arm::armAtSetpoint),
+                arm.holdSetpointCommand(CUBER.setpoint).alongWith(cuberCommand).until(cuberCommand::isFinished))
                 .finallyDo((__)->
                         new WaitUntilCommand(canReturn).andThen(arm.lockArmWithSetpoint()).schedule());
     }

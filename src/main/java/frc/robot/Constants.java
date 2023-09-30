@@ -93,8 +93,8 @@ public final class Constants {
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
 
         // autonomous constants
-        public static final double kp_ANGLE = 0.00585;
-        public static final double kd_ANGLE = 0;
+        public static final double kp_ANGLE = 0.005733;
+        public static final double kd_ANGLE = 3.51E-4;
         public static final double kp_TRANSLATION = 0;
         public static final double kd_TRANSLATION = 0;
     }
@@ -112,19 +112,20 @@ public final class Constants {
 
     public static final class ArmConstants {
         public enum Setpoints {
-            LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),//
-            MID(new Translation2d(0.68, Rotation2d.fromDegrees(171))),
+            LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),
+            MID(new Translation2d(0.75, Rotation2d.fromDegrees(171))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
-            HIGH(new Translation2d(0.97, Rotation2d.fromDegrees(194))),
+            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(194))),
 
             SHELF_EXTENDED(new Translation2d(0.85, Rotation2d.fromDegrees(175))),
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(179))),
 
-            MIDDLE(new Translation2d(0.65, Rotation2d.fromDegrees(137))),
-            CONE_LOCK(new Translation2d(0.85, Rotation2d.fromDegrees(90))),
+            BUMPER(new Translation2d(0.75, Rotation2d.fromDegrees(105))),
+            INTAKE_CHECKPOINT(new Translation2d(0.77, Rotation2d.fromDegrees(137))),
+            CONE_LOCK(new Translation2d(0.78, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(87))),
 
-            CUBER_CHECKPOINT(new Translation2d(0.75, Rotation2d.fromDegrees(93))),
+            CUBER_CHECKPOINT(new Translation2d(0.85, Rotation2d.fromDegrees(92))),
             CUBER(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(115)));
 
             public final Translation2d setpoint;
@@ -142,12 +143,13 @@ public final class Constants {
 
         public static final int ABS_ANGLE_ENCODER_PORT = 7;
 
-        public static final double MINIMAL_LENGTH_METERS = 0.6175;// m
+        public static final double MINIMAL_LENGTH_METERS = 0.71;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.08; // m
         public static final double LOCKED_LENGTH_METERS = 1.01; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //https://brainly.in/question/3238411
 
+        public static final double ANGLE_CONVERSION_FACTOR = 1 / 57.857;
         public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.4234 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
 
         // Angle control
@@ -155,11 +157,6 @@ public final class Constants {
         public static final double kV_ANGLE = 0.020229;
         public static final double kA_ANGLE = 0.0024233;
         public static final double kG_ANGLE = -0.56;
-
-//        static {
-//            kG_ANGLE.put(MINIMAL_LENGTH_METERS, 0.50333);
-//            kG_ANGLE.put(MAXIMAL_LENGTH_METERS, 0.69438);
-//        }
 
         public static final double kP_ANGLE = 0.061938;
         public static final double kD_ANGLE = 0.015837;

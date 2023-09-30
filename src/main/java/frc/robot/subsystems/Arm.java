@@ -5,7 +5,6 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -18,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
@@ -29,6 +29,7 @@ public class Arm extends SubsystemBase {
   private final CANSparkMax lengthMotor = new CANSparkMax(LENGTH_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
 
   private final RelativeEncoder lengthEncoder = lengthMotor.getEncoder();
+  private final RelativeEncoder angleRelativeEncoder = angleMotor.getEncoder();
 
   private final DutyCycleEncoder angleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_PORT);
 
@@ -43,11 +44,9 @@ public class Arm extends SubsystemBase {
 
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
 
-  public static double floatDutyCycle = 0;
-
   public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
 
-  private Translation2d lastHeldSetpoint = new Translation2d();
+  private AtomicReference<Translation2d> lastHeldSetpoint = new AtomicReference<>(new Translation2d());
 
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
@@ -68,6 +67,12 @@ public class Arm extends SubsystemBase {
     angleEncoder.setPositionOffset(ABS_ENCODER_OFFSET_ANGLE_DEG);
     angleEncoder.setDistancePerRotation(360);
 
+    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 200f);
+    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+
+    angleFollowerMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 200f);
+    angleFollowerMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+
     lengthController.setP(kP_LENGTH);
     lengthController.setI(0);
     lengthController.setD(kD_LENGTH);
@@ -77,7 +82,7 @@ public class Arm extends SubsystemBase {
     lengthEncoder.setPosition(LOCKED_LENGTH_METERS);
 
     initShuffleboardData();
-    setDefaultCommand(fadeArmCommand());
+    setDefaultCommand(setAngleSpeed(0));
   }
 
   /**
@@ -92,8 +97,6 @@ public class Arm extends SubsystemBase {
           () -> {
             lengthMotor.set(-lengthJoystick.getAsDouble() / 2);
             angleMotor.set(-angleJoystick.getAsDouble() / 4);
-
-            floatDutyCycle = angleJoystick.getAsDouble() / 4;
           }, this);
   }
 
@@ -115,7 +118,6 @@ public class Arm extends SubsystemBase {
       }
 
       angleMotor.set(angleJoystick.getAsDouble() / 4);
-      floatDutyCycle = MathUtil.clamp(angleJoystick.getAsDouble(), -1, 0);
     }, this);
   }
 
@@ -153,28 +155,19 @@ public class Arm extends SubsystemBase {
   }
 
   private Command updateLastSetpointCommand(Translation2d setpoint){
-    return new InstantCommand(()-> lastHeldSetpoint = setpoint);
+    return new InstantCommand(()-> lastHeldSetpoint.set(setpoint));
   }
 
   public Command setAngleSpeed(double speed) {
     return new RunCommand(() -> angleMotor.set(speed / 100.0), this);
   }
 
-  /**
-   * when the motor stops, gravity slowly pulls the arm down, making the arm "fade" down
-   *
-   * @return the command
-   */
-  public Command fadeArmCommand(){
-    return setAngleSpeed(0);
-  }
-
-  public Command moveToLengthCommand(Translation2d setPoint) {
+  public Command moveToLengthCommand(Translation2d setpoint) {
     return new ProxyCommand(
           () -> new TrapezoidProfileCommand(
                 new TrapezoidProfile(
                       new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxLinearAcceleration),
-                      new TrapezoidProfile.State(setPoint.getNorm(), 0),
+                      new TrapezoidProfile.State(setpoint.getNorm(), 0),
                       new TrapezoidProfile.State(lengthEncoder.getPosition(), lengthEncoder.getVelocity())),
                 state -> {
                   double feedforward = kS_LENGTH * Math.signum(state.velocity)
@@ -212,8 +205,10 @@ public class Arm extends SubsystemBase {
    */
   public Command osscilateArmCommand(Translation2d baseAngle, double magnitude) {
     return Commands.repeatingSequence(
-            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(-magnitude))).withTimeout(3),
-            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(magnitude))).withTimeout(3)
+            setAngleSpeed(magnitude).withTimeout(1),
+            setAngleSpeed(0).withTimeout(1)
+//            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(-magnitude))).withTimeout(3),
+//            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(magnitude))).withTimeout(3)
     );
   }
 
@@ -223,7 +218,7 @@ public class Arm extends SubsystemBase {
   }
   private boolean lengthInRange(double lengthA, double lengthB) {
     double tolerance = 1; // cm
-    return Math.abs(lengthA - lengthB) < tolerance;
+    return Math.abs(lengthA - lengthB) < (tolerance / 100.0);
   }
 
   public boolean armAtSetpoint(Translation2d setpoint){
@@ -232,31 +227,32 @@ public class Arm extends SubsystemBase {
   }
 
   public boolean armAtSetpoint(){
-    return armAtSetpoint(lastHeldSetpoint);
+    return armAtSetpoint(lastHeldSetpoint.get());
   }
 
   public Command lockArmCommand(Setpoints setpoint) {
     return new SequentialCommandGroup(
-            resetLengthCommand().until(armFullyClosedTrigger),
+            resetLengthCommand(),
             new WaitCommand(0.15),
             moveToAngleCommand(LOCKED.setpoint).alongWith(moveToLengthCommand(setpoint.setpoint))
-    ).until(armLockedTrigger);
+    ).until(armLockedTrigger).finallyDo((__)-> stopTelescopeMotor().schedule());
   }
 
-  public Command forceLockArmCommand(){
-    return resetLengthCommand().andThen(
-                    new WaitCommand(0.15),
-                    holdSetpointCommand(LOCKED.setpoint).until(armLockedTrigger));
+  public Command forceLockArm(){
+    return new SequentialCommandGroup(
+            resetLengthCommand(),
+            new WaitCommand(0.15),
+            holdSetpointCommand(LOCKED.setpoint).until(this::armAtSetpoint))
+            .finallyDo((__)-> stopTelescopeMotor().schedule());
   }
 
   public Command lockArmWithSetpoint(){
-//    return holdSetpointCommand(LOCKED.setpoint).until(armLockedTrigger);
     return moveToAngleCommand(LOCKED.setpoint).withTimeout(1)
             .andThen(holdSetpointCommand(LOCKED.setpoint))
-            .until(armLockedTrigger);
+            .until(armLockedTrigger).finallyDo((__)-> stopTelescopeMotor().schedule());
   }
 
-  public Command stopTelescopeMotors() {
+  public Command stopTelescopeMotor() {
     return new InstantCommand(lengthMotor::stopMotor);
   }
 
@@ -276,6 +272,7 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
+    angleRelativeEncoder.setPosition(getArmAngle());
   }
 
   private void initShuffleboardData(){

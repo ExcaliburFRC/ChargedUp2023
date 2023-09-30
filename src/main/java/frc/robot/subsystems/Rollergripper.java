@@ -103,8 +103,8 @@ public class Rollergripper extends SubsystemBase {
     public Command holdConeCommand() {
         return Commands.runEnd(
                 ()->{
-                    rightRoller.set(0.15);
-                    leftRoller.set(0.25);
+                    rightRoller.set(0.05);
+                    leftRoller.set(0.15);
                 },
                 ()->{
                     rightRoller.stopMotor();

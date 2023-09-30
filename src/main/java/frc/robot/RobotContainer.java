@@ -19,12 +19,14 @@ import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.utility.Calculation;
+import frc.robot.utility.Color;
 import frc.robot.utility.MorseLEDs;
 
 import java.util.Map;
 
 import static frc.robot.Constants.CuberConstants.CUBER_ANGLE;
 import static frc.robot.Constants.CuberConstants.CUBER_VELOCITIY;
+import static frc.robot.subsystems.LEDs.LEDPattern.OFF;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 import static frc.robot.utility.Colors.WHITE;
 
@@ -37,7 +39,7 @@ import static frc.robot.utility.Colors.WHITE;
 public class RobotContainer {
   private final Swerve swerve = new Swerve();
   private final Cuber cuber = new Cuber();
-  private final LEDs lEDs = LEDs.getInstance();
+  private final LEDs leds = LEDs.getInstance();
   private final Superstructure superstructure = new Superstructure();
 
   public final Trigger userButtonTrigger = new Trigger(RobotController::getUserButton);
@@ -102,21 +104,31 @@ public class RobotContainer {
 
     // other
     operator.square().onTrue(superstructure.lockArmCommand());
-    operator.R2().onTrue(superstructure.arm.forceLockArmCommand());
+    operator.R2().onTrue(superstructure.arm.forceLockArm());
+    operator.button(15).onTrue(new InstantCommand(() ->{
+      leds.restoreLEDs();
+      leds.setDefaultCommand(leds.applyPatternCommand(OFF, new Color()));
+    }).ignoringDisable(true));
 
     driver.PS().onTrue(swerve.resetOdometryAngleCommand());
+
     driver.square().whileTrue(swerve.balanceRampCommand());
+
+    driver.povUp().whileTrue(swerve.turnToAngleCommand(0));
+    driver.povRight().whileTrue(swerve.turnToAngleCommand(90));
+    driver.povDown().whileTrue(swerve.turnToAngleCommand(180));
+    driver.povLeft().whileTrue(swerve.turnToAngleCommand(270));
 
     driver.button(11).onTrue(askForGamepieceCommand(GamePiece.Cone));
     driver.button(12).onTrue(askForGamepieceCommand(GamePiece.Cube));
 
     driver.touchpad().whileTrue(toggleMotorsIdleMode());
-    driver.touchpad().whileTrue(lEDs.applyPatternCommand(SOLID, WHITE.color));
-    driver.button(15).onTrue(MorseLEDs.textToLeds("im scared", WHITE.color));
+    driver.touchpad().whileTrue(leds.applyPatternCommand(SOLID, WHITE.color));
+    driver.button(15).onTrue(MorseLEDs.textToLeds("trigon 5990", WHITE.color));
   }
 
   public Command askForGamepieceCommand(GamePiece gamePiece){
-    return lEDs.applyPatternCommand(LEDs.LEDPattern.BLINKING, gamePiece.color).withTimeout(2);
+    return leds.applyPatternCommand(LEDs.LEDPattern.BLINKING, gamePiece.color).withTimeout(2);
   }
 
   public static Command selectDriveTabCommand(){
@@ -137,7 +149,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return null;
+    return swerve.turnToAngleCommand(90);
   }
 
   /*
