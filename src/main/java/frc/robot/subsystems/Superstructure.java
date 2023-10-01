@@ -39,9 +39,10 @@ public class Superstructure {
     }
 
     public Command placeOnMidSequentially() {
-        return arm.moveToAngleCommand(MID.setpoint)
+        return arm.resetLengthCommand()
+                .andThen(arm.moveToAngleCommand(MID.setpoint))
                 .alongWith(new WaitCommand(1).andThen(arm.moveToLengthCommand(MID.setpoint)))
-                .until(() -> arm.armAtSetpoint(MID.setpoint)).andThen(placeOnMidCommand(() -> true));
+                .until(() -> arm.armAtSetpoint(MID.setpoint)).andThen(ejectCommand(0, -5, false));
     }
 
     public Command placeOnLowCommand() {

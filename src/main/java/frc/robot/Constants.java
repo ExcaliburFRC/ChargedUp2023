@@ -79,8 +79,8 @@ public final class Constants {
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
-        public static final double RAMP_BALANCE_KP = 0.006;
-        public static final double RAMP_BALANCE_KD = 0.002;
+        public static final double RAMP_BALANCE_KP = 0.015;
+        public static final double RAMP_BALANCE_KD = 0.0032;
 
         // intentional limitations
         public static final double kSpeedPercantageLimit = 100; // %
@@ -117,7 +117,7 @@ public final class Constants {
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
             HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(194))),
 
-            SHELF_EXTENDED(new Translation2d(0.85, Rotation2d.fromDegrees(175))),
+            SHELF_EXTENDED(new Translation2d(0.85, Rotation2d.fromDegrees(174))),
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(179))),
 
             BUMPER(new Translation2d(0.75, Rotation2d.fromDegrees(105))),

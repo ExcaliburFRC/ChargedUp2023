@@ -16,8 +16,7 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.LedsConstants.LEDS_PORT;
 import static frc.robot.Constants.LedsConstants.LENGTH;
-import static frc.robot.utility.Colors.OFF;
-import static frc.robot.utility.Colors.TEAM_GOLD;
+import static frc.robot.utility.Colors.*;
 
 public class LEDs extends SubsystemBase {
     private final AddressableLED LedStrip = new AddressableLED(LEDS_PORT);
@@ -33,7 +32,7 @@ public class LEDs extends SubsystemBase {
         LedStrip.setLength(LENGTH);
         LedStrip.start();
 
-        setDefaultCommand(applyPatternCommand(LEDPattern.TRAIN_CIRCLE, getAllianceColor(), TEAM_GOLD.color));
+        setDefaultCommand(applyPatternCommand(LEDPattern.TRAIN_CIRCLE, BLUE.color, TEAM_GOLD.color));
     }
 
     public static LEDs getInstance() {

@@ -1,6 +1,7 @@
 package frc.robot.subsystems.swerve;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -65,7 +66,7 @@ public class Swerve extends SubsystemBase {
     private final PIDController angleTeleopController = new PIDController(kp_ANGLE, 0, kd_ANGLE);
     private final PIDController distanceTeleopController = new PIDController(kp_TRANSLATION, 0, kd_TRANSLATION);
 
-    private final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRobotPitch()) < 10).debounce(0.35);
+    public final Trigger robotBalancedTrigger = new Trigger(() -> Math.abs(getRobotPitch()) < 10).debounce(0.35);
 
     private final SwerveDrivePoseEstimator odometry = new SwerveDrivePoseEstimator(
             kSwerveKinematics,
@@ -212,6 +213,14 @@ public class Swerve extends SubsystemBase {
                         ()-> false).until(new Trigger(angleTeleopController::atSetpoint).debounce(0.1)));
     }
 
+    public double getAngleDC(double angle){
+        return angleTeleopController.calculate(getOdometryRotation2d().getDegrees(), angle);
+    }
+
+    public double getAngleDC(){
+        return getAngleDC(0);
+    }
+
     // autonomous ramp climbing commands
     public Command driveToRampCommand(boolean forward) {
         final double speed = forward ? 0.45 : -0.45;
@@ -221,18 +230,20 @@ public class Swerve extends SubsystemBase {
     }
 
     public Command balanceRampCommand() {
+//        return new RunCommand(()-> System.out.println(Math.min(rampController.calculate(getRobotPitch(), 0), 0.15)));
         return driveSwerveCommand(
-                () -> rampController.calculate(getRobotPitch(), 0),
+                () -> MathUtil.clamp(rampController.calculate(getRobotPitch(), 0), -0.35, 0.35),
                 () -> 0,
                 () -> 0,
-                () -> false).alongWith(new PrintCommand("output: " + rampController.calculate(getRobotPitch(), 0)).repeatedly().asProxy());
-//          .until(robotBalancedTrigger.debounce(0.2));
+                () -> true,
+                ()-> 0.9)
+          .until(robotBalancedTrigger.debounce(0.2)).andThen(new InstantCommand(this::stopModules, this));
     }
 
     public Command climbCommand(boolean isForward) {
         return driveToRampCommand(isForward)
                 .andThen(
-                        driveSwerveCommand(() -> 0.375, () -> 0, () -> 0, () -> true).withTimeout(1.315),
+                        driveSwerveCommand(() -> isForward? 0.4 : -0.4, () -> 0, () -> 0, () -> true).withTimeout(1.2),
                         new WaitCommand(0.15),
                         balanceRampCommand());
     }

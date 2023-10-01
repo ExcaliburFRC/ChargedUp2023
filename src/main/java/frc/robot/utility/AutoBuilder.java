@@ -1,14 +1,15 @@
  package frc.robot.utility;
 
+ import com.pathplanner.lib.PathConstraints;
+ import com.pathplanner.lib.PathPlanner;
  import com.pathplanner.lib.PathPlannerTrajectory;
  import com.pathplanner.lib.PathPoint;
  import com.pathplanner.lib.auto.PIDConstants;
  import com.pathplanner.lib.auto.SwerveAutoBuilder;
- import edu.wpi.first.math.controller.PIDController;
  import edu.wpi.first.math.geometry.Rotation2d;
  import edu.wpi.first.math.geometry.Translation2d;
  import edu.wpi.first.wpilibj2.command.Command;
- import edu.wpi.first.wpilibj2.command.button.Trigger;
+ import edu.wpi.first.wpilibj2.command.PrintCommand;
  import frc.robot.subsystems.swerve.Swerve;
 
  import java.util.HashMap;
@@ -18,31 +19,27 @@
  public class AutoBuilder {
      private Swerve swerve;
 
-     private final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
-             swerve::getPose2d, (__)->{},
-             kSwerveKinematics,
-             new PIDConstants(kp_TRANSLATION, 0, kd_TRANSLATION),
-             new PIDConstants(kp_ANGLE, 0, kd_ANGLE),
-             swerve::setModulesStates,
-             new HashMap<>(),
-             true, // WTFFF
-             swerve
-     );
+     private final SwerveAutoBuilder swerveAutoBuilder;
 
      public AutoBuilder(Swerve swerve){
          this.swerve = swerve;
+
+         swerveAutoBuilder = new SwerveAutoBuilder(
+                 swerve::getPose2d, (__)-> {},
+                 kSwerveKinematics,
+                 new PIDConstants(0, 0, 0),
+                 new PIDConstants(kp_ANGLE, 0, kd_ANGLE),
+                 swerve::setModulesStates,
+                 new HashMap<>(),
+                 true,
+                 swerve
+         );
      }
 
-     public Command followTrajectoryCommand(PathPlannerTrajectory traj) {
-         return swerve.straightenModulesCommand().andThen(swerveAutoBuilder.fullAuto(traj));
-     }
-
-     public Command turnToAngleCommand(double setpoint) {
-         return swerve.tankDriveCommand(
-                 () -> 0,
-                 () -> new PIDController(kp_ANGLE, 0, kd_ANGLE).calculate(swerve.getOdometryRotation2d().getDegrees(), setpoint),
-                 false)
-                 .until(new Trigger(()-> Math.abs(swerve.getOdometryRotation2d().getDegrees() - setpoint) < 1.5).debounce(0.15));
+     public Command followTrajectoryCommand(String trajName) {
+         PathPlannerTrajectory traj = PathPlanner.loadPath(trajName, new PathConstraints(2, 2));
+         if (traj != null) return swerve.straightenModulesCommand().andThen(swerveAutoBuilder.fullAuto(traj));
+         return new PrintCommand("null path");
      }
 
     private static PathPoint getPathpoint(PathPoint point){
