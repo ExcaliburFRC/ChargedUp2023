@@ -13,6 +13,7 @@
  import frc.robot.subsystems.swerve.Swerve;
 
  import java.util.HashMap;
+ import java.util.List;
 
  import static frc.robot.Constants.SwerveConstants.*;
 
@@ -42,11 +43,17 @@
          return new PrintCommand("null path");
      }
 
+     public Command generatePath(List<PathPoint> points){
+//         return swerve.setOdometryPositionCommand(new Pose2d(new Translation2d(0, 0), swerve.getGyroRotation2d())).andThen(
+                 return swerveAutoBuilder.followPath(
+                 PathPlanner.generatePath(new PathConstraints(4, 3), false, points));
+     }
+
     private static PathPoint getPathpoint(PathPoint point){
         return new PathPoint(new Translation2d(point.position.getX(), -point.position.getY()), point.heading.times(-1), Rotation2d.fromDegrees(360).minus(point.holonomicRotation));
     }
 
-    public static PathPoint getPathpoint(Translation2d position, Rotation2d heading, Rotation2d holonomicRotation){
-        return getPathpoint(new PathPoint(position, heading, holonomicRotation));
+    public static PathPoint getPathpoint(Translation2d position, double heading, double holonomicRotation){
+        return getPathpoint(new PathPoint(position, Rotation2d.fromDegrees(heading), Rotation2d.fromDegrees(holonomicRotation)));
     }
  }

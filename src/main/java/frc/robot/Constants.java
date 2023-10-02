@@ -25,7 +25,7 @@ public final class Constants {
     public static final class RollerGripperConstants {
         public static final int BEAMBREAK_PORT = 2;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
-        public static final int LEFT_ROLLER_MOTOR_PORT = 8;
+        public static final int LEFT_ROLLER_MOTOR_PORT  = 8;
     }
 
     public static final class SwerveConstants {
@@ -121,6 +121,7 @@ public final class Constants {
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(179))),
 
             BUMPER(new Translation2d(0.75, Rotation2d.fromDegrees(105))),
+            AUTO_CHECKPOINT(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(90))),
             INTAKE_CHECKPOINT(new Translation2d(0.77, Rotation2d.fromDegrees(137))),
             CONE_LOCK(new Translation2d(0.78, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(87))),

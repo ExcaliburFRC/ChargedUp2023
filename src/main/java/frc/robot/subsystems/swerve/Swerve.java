@@ -80,6 +80,7 @@ public class Swerve extends SubsystemBase {
         resetGyroHardware();
 
         odometry.resetPosition(getGyroRotation2d(), getModulesPositions(), new Pose2d(0, 0, new Rotation2d()));
+        resetOdometryAngleCommand();
 
         angleTeleopController.enableContinuousInput(0, 360);
         angleTeleopController.setTolerance(1);

@@ -8,13 +8,11 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.LedsConstants.GamePiece;
+import frc.robot.commands.autonomous.ClimbOverRampCommand;
 import frc.robot.subsystems.Cuber;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
@@ -109,7 +107,7 @@ public class RobotContainer {
 
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
-        driver.square().whileTrue(swerve.climbCommand(true));
+        driver.square().whileTrue(swerve.balanceRampCommand());
 
         driver.povUp().whileTrue(swerve.turnToAngleCommand(0));
         driver.povRight().whileTrue(swerve.turnToAngleCommand(90));
@@ -158,8 +156,21 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return autoBuilder.followTrajectoryCommand("deploy/pathplanner/Bintake5Cube").alongWith(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
+        return new SequentialCommandGroup(
+                superstructure.placeOnMidSequentially(),
+                superstructure.lockArmCommand(),
+                new ClimbOverRampCommand(swerve, true)
+        );
     }
+
+        /*  return new ParallelDeadlineGroup(
+                autoBuilder.generatePath(List.of(
+                        AutoBuilder.getPathpoint(new Translation2d(1.78, 0.50), 0, 0),
+                        AutoBuilder.getPathpoint(new Translation2d(7.08, 0.75), -5.24, 0))),
+                cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
+    */
+
+
 
   /*
   button layout:
@@ -189,4 +200,27 @@ public class RobotContainer {
   POV up, left, down - prepare shooter for high, mid, low
   POV right - enable automatic cannon mode
    */
+
+
+    /*
+    autos:
+
+    collect cube 5:
+    AutoBuilder.getPathpoint(new Translation2d(1.78, 4.90), -17.50, 0),
+    AutoBuilder.getPathpoint(new Translation2d(5.09, 5.85), 31.26, 43.78)
+
+
+    new ParallelDeadlineGroup(
+                autoBuilder.generatePath(List.of(
+                        AutoBuilder.getPathpoint(new Translation2d(1.77, 4.93), -13.94, 0),
+                        AutoBuilder.getPathpoint(new Translation2d(7.35, 5.28), -88.60, -62.78),
+                        AutoBuilder.getPathpoint(new Translation2d(5.35, 4.81), 168.93, 73.86),
+                        AutoBuilder.getPathpoint(new Translation2d(1.77, 4.41), -149.81, 180.00))),
+                cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND)).withTimeout(5)
+                .andThen(
+                superstructure.adjustForShooterCommand(
+                        cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, new Trigger(() -> true)), cuber.armSafe)
+        );
+
+     */
 }
