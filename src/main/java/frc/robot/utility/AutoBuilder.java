@@ -1,59 +1,81 @@
- package frc.robot.utility;
+package frc.robot.utility;
 
- import com.pathplanner.lib.PathConstraints;
- import com.pathplanner.lib.PathPlanner;
- import com.pathplanner.lib.PathPlannerTrajectory;
- import com.pathplanner.lib.PathPoint;
- import com.pathplanner.lib.auto.PIDConstants;
- import com.pathplanner.lib.auto.SwerveAutoBuilder;
- import edu.wpi.first.math.geometry.Rotation2d;
- import edu.wpi.first.math.geometry.Translation2d;
- import edu.wpi.first.wpilibj2.command.Command;
- import edu.wpi.first.wpilibj2.command.PrintCommand;
- import frc.robot.subsystems.swerve.Swerve;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.CuberConstants.CUBER_ANGLE;
+import frc.robot.Constants.CuberConstants.CUBER_VELOCITIY;
+import frc.robot.commands.autonomous.ClimbOverRampCommand;
+import frc.robot.commands.autonomous.LeaveCommunityCommand;
+import frc.robot.subsystems.Cuber;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.swerve.Swerve;
 
- import java.util.HashMap;
- import java.util.List;
+import static frc.robot.Constants.LedsConstants.GamePiece;
 
- import static frc.robot.Constants.SwerveConstants.*;
+public class AutoBuilder {
+    public static final SendableChooser<Command> autoChooser = new SendableChooser<>();
+    public static final SendableChooser<Double> heightChooser = new SendableChooser<>();
+    public static final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
 
- public class AutoBuilder {
-     private Swerve swerve;
+    public static final Timer autoTimer = new Timer();
 
-     private final SwerveAutoBuilder swerveAutoBuilder;
+    public static void loadAutoChoosers(Swerve swerve, Cuber cuber) {
+        initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
+        initialGamePiece.addOption("cube", GamePiece.CUBE);
 
-     public AutoBuilder(Swerve swerve){
-         this.swerve = swerve;
+        heightChooser.setDefaultOption("low", 0.0);
+        heightChooser.addOption("mid", 1.0);
+        heightChooser.addOption("high", 2.0);
 
-         swerveAutoBuilder = new SwerveAutoBuilder(
-                 swerve::getPose2d, (__)-> {},
-                 kSwerveKinematics,
-                 new PIDConstants(0, 0, 0),
-                 new PIDConstants(kp_ANGLE, 0, kd_ANGLE),
-                 swerve::setModulesStates,
-                 new HashMap<>(),
-                 true,
-                 swerve
-         );
-     }
+        autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve, true));
+        autoChooser.addOption("balance ramp", swerve.climbCommand(true));
+        autoChooser.addOption("climb over & balance ramp", new ClimbOverRampCommand(swerve, getRobotHeading(initialGamePiece.getSelected())));
+        autoChooser.addOption("don't drive", new InstantCommand(() -> {}));
 
-     public Command followTrajectoryCommand(String trajName) {
-         PathPlannerTrajectory traj = PathPlanner.loadPath(trajName, new PathConstraints(2, 2));
-         if (traj != null) return swerve.straightenModulesCommand().andThen(swerveAutoBuilder.fullAuto(traj));
-         return new PrintCommand("null path");
-     }
-
-     public Command generatePath(List<PathPoint> points){
-//         return swerve.setOdometryPositionCommand(new Pose2d(new Translation2d(0, 0), swerve.getGyroRotation2d())).andThen(
-                 return swerveAutoBuilder.followPath(
-                 PathPlanner.generatePath(new PathConstraints(4, 3), false, points));
-     }
-
-    private static PathPoint getPathpoint(PathPoint point){
-        return new PathPoint(new Translation2d(point.position.getX(), -point.position.getY()), point.heading.times(-1), Rotation2d.fromDegrees(360).minus(point.holonomicRotation));
+        var tab = Shuffleboard.getTab("Autonomous builder");
+        tab.add("initial game piece", initialGamePiece).withSize(4, 2).withPosition(8, 1);
+        tab.add("height", heightChooser).withSize(4, 2).withPosition(8, 3);
+        tab.add("auto", autoChooser).withSize(4, 2).withPosition(8, 5);
     }
 
-    public static PathPoint getPathpoint(Translation2d position, double heading, double holonomicRotation){
-        return getPathpoint(new PathPoint(position, Rotation2d.fromDegrees(heading), Rotation2d.fromDegrees(holonomicRotation)));
+    public static Command getAutonomousCommand(Superstructure superstructure, Cuber cuber, Swerve swerve) {
+        return new ProxyCommand(
+                new SequentialCommandGroup(
+                        new InstantCommand(autoTimer::start),
+                        swerve.setOdometryAngleCommand(initialGamePiece.getSelected().equals(GamePiece.CUBE) ? 180 : 0),
+
+                        new ConditionalCommand(
+                                superstructure.arm.resetLengthCommand().andThen(
+                                        superstructure.placeOnHeightCommand(heightChooser.getSelected())),
+
+                                cuber.shootCubeCommand(
+                                        getVelocity(heightChooser.getSelected()),
+                                        getAngle(heightChooser.getSelected()),
+                                        new Trigger(()-> true)),
+
+                                () -> initialGamePiece.getSelected().equals(GamePiece.CONE)),
+
+                        autoChooser.getSelected().alongWith(new ConditionalCommand(
+                                        new InstantCommand(),
+                                        superstructure.lockArmCommand(),
+                                        superstructure.arm.armLockedTrigger)))
+        );
     }
- }
+
+    private static CUBER_VELOCITIY getVelocity(double height){
+        if (height == 1) return CUBER_VELOCITIY.MIDDLE;
+        return CUBER_VELOCITIY.HIGH;
+    }
+
+    private static CUBER_ANGLE getAngle(double angle){
+        if (angle == 1) return CUBER_ANGLE.MIDDLE;
+        return CUBER_ANGLE.HIGH;
+    }
+
+    private static boolean getRobotHeading(GamePiece gamePiece){
+        return gamePiece.equals(GamePiece.CUBE);
+    }
+}

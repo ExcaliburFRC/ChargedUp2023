@@ -8,7 +8,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.LedsConstants.GamePiece;
@@ -17,10 +20,10 @@ import frc.robot.subsystems.Cuber;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.utility.AutoBuilder;
 import frc.robot.utility.Calculation;
 import frc.robot.utility.Color;
 import frc.robot.utility.MorseLEDs;
+import frc.robot.utility.SwerveAuto;
 
 import java.util.Map;
 
@@ -41,7 +44,7 @@ public class RobotContainer {
     private final Cuber cuber = new Cuber();
     private final LEDs leds = LEDs.getInstance();
     private final Superstructure superstructure = new Superstructure();
-    private final AutoBuilder autoBuilder = new AutoBuilder(swerve);
+    private final SwerveAuto autoBuilder = new SwerveAuto(swerve);
 
     public final Trigger userButtonTrigger = new Trigger(RobotController::getUserButton);
 
@@ -96,7 +99,7 @@ public class RobotContainer {
                 cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1()), cuber.armSafe));
         operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
                 cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()), cuber.armSafe));
-        operator.povDown().toggleOnTrue(cuber.shootCubeCommand(CUBER_VELOCITIY.LOW, CUBER_ANGLE.LOW, driver.R1()));
+        operator.povDown().toggleOnTrue(cuber.shootCubeToLowerCommand(driver.R1()));
 
         operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
@@ -106,7 +109,6 @@ public class RobotContainer {
         operator.button(15).toggleOnTrue(toggleLedsCommand());
 
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
-
         driver.square().whileTrue(swerve.balanceRampCommand());
 
         driver.povUp().whileTrue(swerve.turnToAngleCommand(0));
@@ -114,12 +116,12 @@ public class RobotContainer {
         driver.povDown().whileTrue(swerve.turnToAngleCommand(180));
         driver.povLeft().whileTrue(swerve.turnToAngleCommand(270));
 
-        driver.button(11).onTrue(askForGamepieceCommand(GamePiece.Cone));
-        driver.button(12).onTrue(askForGamepieceCommand(GamePiece.Cube));
+        driver.button(11).onTrue(askForGamepieceCommand(GamePiece.CONE));
+        driver.button(12).onTrue(askForGamepieceCommand(GamePiece.CUBE));
 
         driver.touchpad().whileTrue(toggleMotorsIdleMode());
         driver.touchpad().whileTrue(leds.applyPatternCommand(SOLID, WHITE.color));
-        driver.button(15).onTrue(MorseLEDs.textToLeds("move it move it", WHITE.color));
+        driver.button(15).onTrue(MorseLEDs.textToLeds("i hate mechanics", WHITE.color));
     }
 
     private Command toggleLedsCommand() {
@@ -156,22 +158,11 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return new SequentialCommandGroup(
-                superstructure.placeOnMidSequentially(),
-                superstructure.lockArmCommand(),
+        return superstructure.placeOnMidSequentially().finallyDo((__)->
+                superstructure.arm.lockArmWithSetpoint().andThen(
                 new ClimbOverRampCommand(swerve, true)
-        );
+        ));
     }
-
-        /*  return new ParallelDeadlineGroup(
-                autoBuilder.generatePath(List.of(
-                        AutoBuilder.getPathpoint(new Translation2d(1.78, 0.50), 0, 0),
-                        AutoBuilder.getPathpoint(new Translation2d(7.08, 0.75), -5.24, 0))),
-                cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
-    */
-
-
-
   /*
   button layout:
 
@@ -222,5 +213,11 @@ public class RobotContainer {
                         cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, new Trigger(() -> true)), cuber.armSafe)
         );
 
+---------------------------------
+return new ParallelDeadlineGroup(
+                autoBuilder.generatePath(List.of(
+                        AutoBuilder.getPathpoint(new Translation2d(1.78, 0.50), 0, 0),
+                        AutoBuilder.getPathpoint(new Translation2d(7.08, 0.75), -5.24, 0))),
+                cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
      */
 }

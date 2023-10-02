@@ -225,7 +225,7 @@ public class Swerve extends SubsystemBase {
     // autonomous ramp climbing commands
     public Command driveToRampCommand(boolean forward) {
         final double speed = forward ? 0.45 : -0.45;
-        return driveSwerveCommand(() -> speed, () -> 0, () -> 0, () -> true)
+        return driveSwerveCommand(() -> speed, () -> 0, this::getAngleDC, () -> true)
                 .until(robotBalancedTrigger.negate())
                 .andThen(new InstantCommand(this::stopModules));
     }
@@ -241,6 +241,12 @@ public class Swerve extends SubsystemBase {
           .until(robotBalancedTrigger.debounce(0.2)).andThen(new InstantCommand(this::stopModules, this));
     }
 
+    /**
+     * runs the climb sequence <b> **Warning - if ran while robot already on ramp
+     * it will jump off aggressively </b>
+     * @param isForward is the ramp in front of the robot in field relative
+     * @return the command
+     */
     public Command climbCommand(boolean isForward) {
         return driveToRampCommand(isForward)
                 .andThen(

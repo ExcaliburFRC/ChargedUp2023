@@ -261,10 +261,12 @@ public class Arm extends SubsystemBase {
             ()-> {
               angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
               angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+              lengthMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
             },
             ()-> {
               angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
               angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+              lengthMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
             })
             .ignoringDisable(true);
   }

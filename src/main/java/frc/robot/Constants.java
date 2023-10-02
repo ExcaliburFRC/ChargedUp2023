@@ -25,7 +25,7 @@ public final class Constants {
     public static final class RollerGripperConstants {
         public static final int BEAMBREAK_PORT = 2;
         public static final int RIGHT_ROLLER_MOTOR_ID = 31;
-        public static final int LEFT_ROLLER_MOTOR_PORT  = 8;
+        public static final int LEFT_ROLLER_MOTOR_ID = 32;
     }
 
     public static final class SwerveConstants {
@@ -87,8 +87,6 @@ public final class Constants {
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
-
-        //unclear values
         public static final double kMaxDriveAccelerationUnitsPerSecond = 3;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
 
@@ -124,7 +122,9 @@ public final class Constants {
             AUTO_CHECKPOINT(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(90))),
             INTAKE_CHECKPOINT(new Translation2d(0.77, Rotation2d.fromDegrees(137))),
             CONE_LOCK(new Translation2d(0.78, Rotation2d.fromDegrees(90))),
-            LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(87))),
+            LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(86))),
+            MID_AUTO(new Translation2d(0.9, Rotation2d.fromDegrees(174))),
+
 
             CUBER_CHECKPOINT(new Translation2d(0.85, Rotation2d.fromDegrees(92))),
             CUBER(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(115)));
@@ -146,7 +146,7 @@ public final class Constants {
 
         public static final double MINIMAL_LENGTH_METERS = 0.71;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.08; // m
-        public static final double LOCKED_LENGTH_METERS = 1.01; // m
+        public static final double LOCKED_LENGTH_METERS = 1.02; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //https://brainly.in/question/3238411
 
@@ -228,10 +228,10 @@ public final class Constants {
         public enum CUBER_ANGLE {
             HIGH(MAX_ANGLE_DEGREES),
             MIDDLE(128),
-            LOW(92),
+            LOW(60),
             CANNON(100),
             IDLE(90),
-            INTAKE_GROUND(358),
+            INTAKE_GROUND(1),
             INTAKE_SLIDE(114);
 
             public final int angle;
@@ -243,8 +243,8 @@ public final class Constants {
 
         public enum CUBER_VELOCITIY {
             HIGH(1450),
-            MIDDLE(1000),
-            LOW(800),
+            MIDDLE(1100),
+            LOW(700),
             CANNON(2500),
             IDLE(-300),
             INTAKE_DUTYCYCLE(-20);
@@ -262,8 +262,8 @@ public final class Constants {
         public static final int LENGTH = 139;
 
         public enum GamePiece {
-            Cone(Colors.PURPLE),
-            Cube(Colors.ORANGE);
+            CONE(Colors.PURPLE),
+            CUBE(Colors.ORANGE);
 
             public Color color;
 

@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
@@ -35,15 +36,17 @@ public class Superstructure {
 
     public Command placeOnMidCommand(BooleanSupplier release) {
                 return arm.holdSetpointCommand(MID.setpoint).until(release).unless(rollergripper.beambreakTrigger.negate())
-                .finallyDo((__)-> ejectCommand(0, -5, false).schedule());
+                .finallyDo((__)-> ejectCommand(0, -10, false).schedule());
     }
 
     public Command placeOnMidSequentially() {
         return arm.resetLengthCommand().andThen(
-                arm.moveToAngleCommand(MID.setpoint)
-                .alongWith(new WaitCommand(1).andThen(arm.moveToLengthCommand(MID.setpoint))))
-                .until(() -> arm.armAtSetpoint(MID.setpoint))
-                .finallyDo((__)-> placeOnMidCommand(() -> true).schedule());
+                arm.moveToAngleCommand(MID_AUTO.setpoint)
+                .alongWith(new WaitCommand(1).andThen(arm.moveToLengthCommand(MID_AUTO.setpoint))))
+                .withTimeout(3.7)
+                .finallyDo((__)->
+                        ejectCommand(0, -8, false).withTimeout(0.5)
+                                .andThen(arm.resetLengthCommand().withTimeout(0.5)).schedule());
     }
 
     public Command placeOnLowCommand() {
@@ -78,13 +81,13 @@ public class Superstructure {
                         new WaitUntilCommand(canReturn).andThen(arm.lockArmWithSetpoint()).schedule());
     }
 
-//    public Command placeOnHeightCommand(double height) {
-//        return new SelectCommand(
-//                Map.of(
-//                        LOW_RPM, placeOnLowCommand(),
-//                        MID_RPM, placeOnMidSequentially(),
-//                        HIGH_RPM, new InstantCommand(() -> {
-//                        })), // arm mechanics doesn't allow high cone placement in autonomous
-//                () -> height);
-//    }
+    public Command placeOnHeightCommand(double height) {
+        return new SelectCommand(
+                Map.of(
+                        0, placeOnLowCommand(),
+                        1, placeOnMidSequentially(),
+                        2, new InstantCommand(() -> {})),
+                // arm mechanics doesn't allow high cone placement in autonomous
+                () -> height);
+    }
 }

@@ -195,17 +195,25 @@ public class Cuber extends SubsystemBase {
                 .until(hasCubeTrigger.negate().debounce(0.75));
     }
 
+    public Command shootCubeToLowerCommand(Trigger confirm){
+        return new ParallelCommandGroup(
+                setCuberAngleCommand(CUBER_ANGLE.LOW),
+                new WaitUntilCommand(confirm).andThen(setShooterDutycycleCommand(0.2)),
+                requirement()).until(cuberReadyTrigger.negate());
+    }
+
     public Command cannonShooterCommand(DoubleSupplier robotAngle, Trigger override){
-        return shootCubeCommand( // TODO: check if PID can get to such high speeds, if not, use open loop.
-                CUBER_VELOCITIY.CANNON, CUBER_ANGLE.CANNON,
-                new Trigger(()-> Math.abs(robotAngle.getAsDouble()) > ROBOT_ANGLE_THRESHOLD).or(override)
-        );
+        return new ParallelCommandGroup(
+                setShooterDutycycleCommand(-0.5),
+                new WaitUntilCommand(new Trigger(()-> Math.abs(robotAngle.getAsDouble()) > ROBOT_ANGLE_THRESHOLD).or(override))
+                        .andThen(pushCubeCommand()),
+                requirement());
     }
 
     public Command confirmCubeIntake(){
         return new ParallelCommandGroup(
                 setCuberAngleCommand(CUBER_ANGLE.IDLE),
-                setShooterDutycycleCommand((INTAKE_DUTYCYCLE.velocity + 10) / 100.0),
+                setShooterDutycycleCommand(-0.2),
                 requirement()).withTimeout(0.25);
     }
 
