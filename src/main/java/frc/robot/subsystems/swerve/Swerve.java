@@ -138,7 +138,8 @@ public class Swerve extends SubsystemBase {
             DoubleSupplier ySpeedSupplier,
             DoubleSupplier spinningSpeedSupplier,
             BooleanSupplier fieldOriented,
-            DoubleSupplier decelerator) {
+            DoubleSupplier decelerator,
+            DoubleSupplier turnToAngle) {
 
         final SlewRateLimiter
                 xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
@@ -150,10 +151,12 @@ public class Swerve extends SubsystemBase {
                         () -> {
                         },
                         () -> {
+                            double spinning = turnToAngle.getAsDouble() == -1? spinningSpeedSupplier.getAsDouble() : getAngleDC(turnToAngle.getAsDouble());
+
                             //create the speeds for x,y and spin
                             double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
                                     ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
-                                    spinningSpeed = spinningLimiter.calculate(spinningSpeedSupplier.getAsDouble()) * kMaxDriveTurningSpeed * decelerator.getAsDouble();
+                                    spinningSpeed = spinningLimiter.calculate(spinning) * kMaxDriveTurningSpeed * decelerator.getAsDouble();
 
                             // **all credits to the decelerator idea are for Ofir from Trigon #5990 (ohfear_ on discord)**
 
@@ -178,7 +181,7 @@ public class Swerve extends SubsystemBase {
             DoubleSupplier ySpeedSupplier,
             DoubleSupplier spinningSpeedSupplier,
             BooleanSupplier fieldOriented) {
-        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1);
+        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1, ()-> -1);
     }
 
     public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fieldOriented) {
@@ -237,7 +240,8 @@ public class Swerve extends SubsystemBase {
                 () -> 0,
                 () -> 0,
                 () -> true,
-                ()-> 0.9)
+                ()-> 0.9,
+                ()-> -1)
           .until(robotBalancedTrigger.debounce(0.2)).andThen(new InstantCommand(this::stopModules, this));
     }
 

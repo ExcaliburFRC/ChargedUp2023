@@ -50,7 +50,7 @@ public class RobotContainer {
 
     public final CommandPS4Controller driver = new CommandPS4Controller(0);
     public final CommandPS4Controller operator = new CommandPS4Controller(1);
-    public final CommandPS4Controller testController = new CommandPS4Controller(2);
+//    public final CommandPS4Controller testController = new CommandPS4Controller(2);
 
     public static final ShuffleboardTab driveTab = Shuffleboard.getTab("driveTab");
 
@@ -81,7 +81,8 @@ public class RobotContainer {
                         () -> Calculation.deadband(driver.getLeftX()),
                         () -> Calculation.deadband(driver.getRightX()),
                         driver.L2().negate(),
-                        () -> Calculation.getSwerveDeceleratorVal(driver.getR2Axis()))
+                        () -> Calculation.getSwerveDeceleratorVal(driver.getR2Axis()),
+                        ()-> getAngleFromButtons(driver.triangle(), driver.circle(), driver.cross(), driver.square()))
         );
 
         // intake commands
@@ -121,7 +122,7 @@ public class RobotContainer {
 
         driver.touchpad().whileTrue(toggleMotorsIdleMode());
         driver.touchpad().whileTrue(leds.applyPatternCommand(SOLID, WHITE.color));
-        driver.button(15).onTrue(MorseLEDs.textToLeds("i hate mechanics", WHITE.color));
+        driver.button(15).onTrue(MorseLEDs.textToAddressableLeds("ab cd as d as da sd q fwe", WHITE.color));
     }
 
     private Command toggleLedsCommand() {
@@ -152,6 +153,14 @@ public class RobotContainer {
         );
     }
 
+    public double getAngleFromButtons(Trigger triangle, Trigger circle, Trigger cross, Trigger square){
+        if (triangle.getAsBoolean()) return 0;
+        if (circle.getAsBoolean()) return 90;
+        if (cross.getAsBoolean()) return 90;
+        if (square.getAsBoolean()) return 90;
+        return -1;
+    }
+
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
@@ -163,35 +172,6 @@ public class RobotContainer {
                 new ClimbOverRampCommand(swerve, true)
         ));
     }
-  /*
-  button layout:
-
-  driver:
-  joysticks - drive
-  joystick buttons - askForGamePiece LEDs
-
-  R1 - release / confirm
-
-  L2 & R2 - swerve modifications
-
-  Playstation - resetGyro
-  Touchpad - Coast motors & whiteLEDs
-
-  square - balanceRamp
-  ----------------------------------
-  operator:
-
-  X - Lock Arm
-  Y, B, A - raise arm to high, mid, low
-
-  RB - intake cone (shelf only)
-
-  LT & LB - intake cube from ground / slide
-
-  POV up, left, down - prepare shooter for high, mid, low
-  POV right - enable automatic cannon mode
-   */
-
 
     /*
     autos:

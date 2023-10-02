@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.LedsConstants.LEDS_PORT;
 import static frc.robot.Constants.LedsConstants.LENGTH;
@@ -74,7 +73,7 @@ public class LEDs extends SubsystemBase {
                 AtomicReference<Color> accentAlternatingColor = new AtomicReference<>(accentColor);
                 AtomicReference<Color> tempAlternatingColor = new AtomicReference<>(mainColor);
 
-                command = this.runOnce(()-> {
+                command = this.runOnce(() -> {
                             for (int i = 0; i < LENGTH - 1; i++) {
                                 colors[i] = mainAlternatingColor.get();
                                 colors[i + 1] = accentAlternatingColor.get();
@@ -92,7 +91,7 @@ public class LEDs extends SubsystemBase {
                 break;
 
             case RANDOM:
-                command = this.runOnce(()-> {
+                command = this.runOnce(() -> {
                             Arrays.fill(colors, new Color(rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255)));
                             setLedStrip(colors);
                         }).andThen(new WaitCommand(1))
@@ -117,7 +116,8 @@ public class LEDs extends SubsystemBase {
             case TRAIN:
                 command = new InstantCommand(() -> {
                     Arrays.fill(colors, mainColor);
-                    for (int j = 0; j < trainLength; j++) colors[MathUtil.clamp(j + tailIndex - 1, 0 , LENGTH)] = accentColor;
+                    for (int j = 0; j < trainLength; j++)
+                        colors[MathUtil.clamp(j + tailIndex - 1, 0, LENGTH)] = accentColor;
                     this.tailIndex = invert.get() ? this.tailIndex - 1 : this.tailIndex + 1;
                     if (this.tailIndex == LENGTH - trainLength || this.tailIndex == 0) invert.set(!invert.get());
                     setLedStrip(colors);
@@ -130,7 +130,7 @@ public class LEDs extends SubsystemBase {
                 command = new InstantCommand(() -> {
                     Arrays.fill(colors, mainColor);
                     for (int j = 0; j < trainLength; j++) colors[stayInBounds(j + tailIndex, LENGTH)] = accentColor;
-                    tailIndex ++;
+                    tailIndex++;
                     if (tailIndex == LENGTH) tailIndex = 0;
                     setLedStrip(colors);
                 }, this)
@@ -149,22 +149,14 @@ public class LEDs extends SubsystemBase {
         return applyPatternCommand(pattern, color, OFF.color);
     }
 
-    public Command controllableLedCommand(DoubleSupplier offset, Color mainColor, Color accentColor){
-        Color[] colors = new Color[LENGTH];
-        Arrays.fill(colors, mainColor);
-        int trainLength = (int) Math.max(LENGTH * 0.15, 1.0);
-
-        return new RunCommand(()->{
-            this.offset -= offset.getAsDouble();
-            shiftTrain(colors, mainColor, accentColor, trainLength, MathUtil.clamp((int) this.offset, -1, 1));
-
-            if (this.offset >= 1 || this.offset <= -1) this.offset = 0;
-
-            setLedStrip(colors);
-        }, this)
-                .ignoringDisable(true).finallyDo((__)-> restoreLEDs())
-                .withName("CONTROLLABLE, main: " + mainColor + ", accent: " + accentColor);
-    }
+//    public Command setLEDsCommand(Color[] colors) {
+//        return Commands.repeatingSequence(
+//                new InstantCommand(() -> setLedStrip(colors)),
+//                new InstantCommand(() ->),
+//
+//
+//                () -> setLedStrip(colors)).ignoringDisable(true);
+//    }
 
     public void restoreLEDs() {
         CommandScheduler.getInstance().cancel(
@@ -183,22 +175,18 @@ public class LEDs extends SubsystemBase {
         BLINKING;
     }
 
-    public Color getAllianceColor(){
+    public Color getAllianceColor() {
         if (DriverStation.getAlliance().equals(DriverStation.Alliance.Blue)) return Colors.TEAM_BLUE.color;
         else if (DriverStation.getAlliance().equals(DriverStation.Alliance.Red)) return Colors.RED.color;
         else return Colors.WHITE.color;
     }
 
     private void setLedStrip(Color[] colors) {
-        for (int i = 0; i < colors.length; i++) {
-//            buffer.setLED(i, Color.balance(colors[i]));
-            buffer.setLED(i, colors[i]);
-        }
-
+        for (int i = 0; i < colors.length; i++) buffer.setLED(i, colors[i]);
         LedStrip.setData(buffer);
     }
 
-    private void shiftTrain(Color[] colors, Color mainColor, Color trainColor, int trainLength, int offset){
+    private void shiftTrain(Color[] colors, Color mainColor, Color trainColor, int trainLength, int offset) {
         tailIndex = findTailIndex(colors, trainColor);
         Arrays.fill(colors, mainColor);
         for (int i = 0; i < trainLength; i++) {
@@ -212,11 +200,21 @@ public class LEDs extends SubsystemBase {
         }
         return -1;
     }
+
     private int findTailIndex(Color[] colors, Color trainColor) {
         for (int i = 0; i < colors.length; i++) {
             if (colors[i].equals(trainColor)) return i;
         }
         return -1;
+    }
+
+    private void shiftLeds(Color[] colors) {
+        Color nextColor = colors[0];
+
+        for (int i = 0; i < colors.length - 2; i++) {
+            nextColor = colors[i + 1];
+            colors[i + 1] = colors[1];
+        }
     }
 
     private int stayInBounds(int value, int length) {

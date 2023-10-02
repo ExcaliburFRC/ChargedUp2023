@@ -125,7 +125,7 @@ public class Cuber extends SubsystemBase {
                     double pid = shooterPIDcontroller.calculate(shooterEncoder.getVelocity(), vel.velocity);
                     double ff = shooterFFcontroller.calculate(vel.velocity, 0) / 60;
 
-                    shooterMotor.setVoltage(pid + ff);
+                    shooterMotor.setVoltage(pid + ff);//chatich
 
                     SmartDashboard.putNumber("setpoint", vel.velocity);
                     SmartDashboard.putNumber("velocity", shooterEncoder.getVelocity());

@@ -13,40 +13,45 @@ public class Superstructure {
     public final Arm arm = new Arm();
     public final Rollergripper rollergripper = new Rollergripper();
 
-    public Superstructure() {}
-
     public Command intakeFromShelfCommand() {
         return new SequentialCommandGroup(
                 arm.moveToLengthCommand(INTAKE_CHECKPOINT.setpoint),
                 new ParallelRaceGroup(
                         rollergripper.intakeCommand(),
                         arm.holdSetpointCommand(SHELF_EXTENDED.setpoint),
-                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, ORANGE.color)))
-                .finallyDo((__)-> arm.holdSetpointCommand(SHELF_RETRACTED.setpoint).alongWith(rollergripper.holdConeCommand()).schedule());
+                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, ORANGE.color)),
+                arm.holdSetpointCommand(SHELF_RETRACTED.setpoint));
     }
 
     public Command placeOnHighCommand(Trigger release) {
         return new SequentialCommandGroup(
                 arm.holdSetpointCommand(BUMPER.setpoint).withTimeout(0.3),
                 arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.25),
-                arm.holdSetpointCommand(HIGH.setpoint).until(release)).unless(rollergripper.beambreakTrigger.negate())
-//                arm.osscilateArmCommand(HIGH.setpoint, 7).until(release.negate()))
-                .finallyDo((__)-> ejectCommand(0, 0, true).schedule());
+                arm.holdSetpointCommand(HIGH.setpoint).until(release),
+                arm.osscilateArmCommand(5).until(release.negate()),
+                rollergripper.ejectCommand().alongWith(arm.setAngleSpeed(0)).until(rollergripper.beambreakTrigger.negate()),
+                arm.holdSetpointCommand(SHELF_RETRACTED.setpoint));
+
+//                .finallyDo((__)-> ejectCommand(0, 0, true).schedule());
     }
 
     public Command placeOnMidCommand(BooleanSupplier release) {
-                return arm.holdSetpointCommand(MID.setpoint).until(release).unless(rollergripper.beambreakTrigger.negate())
-                .finallyDo((__)-> ejectCommand(0, -10, false).schedule());
+        return new SequentialCommandGroup(
+                arm.holdSetpointCommand(MID.setpoint).until(release),
+                rollergripper.ejectCommand(0).alongWith(arm.setAngleSpeed(-10))
+                        .until(rollergripper.beambreakTrigger.negate()));
+//                        ejectCommand(0, -10, false))
     }
 
     public Command placeOnMidSequentially() {
-        return arm.resetLengthCommand().andThen(
-                arm.moveToAngleCommand(MID_AUTO.setpoint)
-                .alongWith(new WaitCommand(1).andThen(arm.moveToLengthCommand(MID_AUTO.setpoint))))
-                .withTimeout(3.7)
-                .finallyDo((__)->
-                        ejectCommand(0, -8, false).withTimeout(0.5)
-                                .andThen(arm.resetLengthCommand().withTimeout(0.5)).schedule());
+        return new SequentialCommandGroup(
+                arm.resetLengthCommand(),
+                arm.moveToAngleCommand(MID_AUTO.setpoint).alongWith(
+                        new WaitCommand(1).andThen(arm.moveToLengthCommand(MID_AUTO.setpoint)))
+                        .until(()-> arm.armAtSetpoint(MID_AUTO.setpoint)),
+
+//                ejectCommand(0, -8, false).withTimeout(0.5),
+                arm.resetLengthCommand().withTimeout(0.5));
     }
 
     public Command placeOnLowCommand() {
@@ -76,9 +81,8 @@ public class Superstructure {
     public Command adjustForShooterCommand(Command cuberCommand, BooleanSupplier canReturn) {
         return new SequentialCommandGroup(
                 arm.holdSetpointCommand(CUBER_CHECKPOINT.setpoint).until(arm::armAtSetpoint),
-                arm.holdSetpointCommand(CUBER.setpoint).alongWith(cuberCommand).until(cuberCommand::isFinished))
-                .finallyDo((__)->
-                        new WaitUntilCommand(canReturn).andThen(arm.lockArmWithSetpoint()).schedule());
+                arm.holdSetpointCommand(CUBER.setpoint).alongWith(cuberCommand).until(cuberCommand::isFinished),
+                new WaitUntilCommand(canReturn).andThen(arm.lockArmWithSetpoint()));
     }
 
     public Command placeOnHeightCommand(double height) {

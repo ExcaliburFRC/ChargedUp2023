@@ -11,6 +11,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
@@ -43,6 +44,8 @@ public class Arm extends SubsystemBase {
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
+  private TrapezoidProfile trapezoidProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0, 0), new TrapezoidProfile.State());
+  private final Timer trapozoidTimer = new Timer();
 
   public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
 
@@ -163,22 +166,26 @@ public class Arm extends SubsystemBase {
   }
 
   public Command moveToLengthCommand(Translation2d setpoint) {
-    return new ProxyCommand(
-          () -> new TrapezoidProfileCommand(
-                new TrapezoidProfile(
+    return new FunctionalCommand(
+            ()-> {
+              trapozoidTimer.restart();
+              trapezoidProfile = new TrapezoidProfile(
                       new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxLinearAcceleration),
                       new TrapezoidProfile.State(setpoint.getNorm(), 0),
-                      new TrapezoidProfile.State(lengthEncoder.getPosition(), lengthEncoder.getVelocity())),
-                state -> {
-                  double feedforward = kS_LENGTH * Math.signum(state.velocity)
+                      new TrapezoidProfile.State(lengthEncoder.getPosition(), lengthEncoder.getVelocity()));
+            },
+            ()-> {
+              TrapezoidProfile.State state = trapezoidProfile.calculate(trapozoidTimer.get());
+              double feedforward = kS_LENGTH * Math.signum(state.velocity)
                         + kG_LENGTH * Math.sin(Units.degreesToRadians(getArmAngle()))
                         + kV_LENGTH * state.velocity;
 
-                  lengthController.setReference(state.position, CANSparkMax.ControlType.kPosition,
-                        0,
-                        feedforward, SparkMaxPIDController.ArbFFUnits.kVoltage);
-                }))
-          .finallyDo((__) -> lengthMotor.stopMotor());
+              lengthController.setReference(
+                      state.position, CANSparkMax.ControlType.kPosition, 0,
+                      feedforward, SparkMaxPIDController.ArbFFUnits.kVoltage);
+                },
+            (__)-> trapozoidTimer.stop(),
+            ()-> trapozoidTimer.hasElapsed(trapezoidProfile.totalTime()));
   }
 
   public Command moveToAngleCommand(Translation2d setpoint) {
@@ -199,11 +206,10 @@ public class Arm extends SubsystemBase {
   /**
    * yes, this is a real command, it's meant to oscillate the arm up and down slightly,
    * to help the driver aim the arm better, and increase our success rate in cone placement to the high node
-   * @param baseAngle the angle to oscillate from
    * @param magnitude the magnitude of the oscillations (degrees)
    * @return the command
    */
-  public Command osscilateArmCommand(Translation2d baseAngle, double magnitude) {
+  public Command osscilateArmCommand(double magnitude) {
     return Commands.repeatingSequence(
             setAngleSpeed(magnitude).withTimeout(1),
             setAngleSpeed(0).withTimeout(1)
@@ -234,8 +240,8 @@ public class Arm extends SubsystemBase {
     return new SequentialCommandGroup(
             resetLengthCommand(),
             new WaitCommand(0.15),
-            moveToAngleCommand(LOCKED.setpoint).alongWith(moveToLengthCommand(setpoint.setpoint))
-    ).until(armLockedTrigger).finallyDo((__)-> stopTelescopeMotor().schedule());
+            moveToAngleCommand(LOCKED.setpoint).alongWith(moveToLengthCommand(setpoint.setpoint)).until(armLockedTrigger),
+            stopTelescopeMotor());
   }
 
   public Command forceLockArm(){

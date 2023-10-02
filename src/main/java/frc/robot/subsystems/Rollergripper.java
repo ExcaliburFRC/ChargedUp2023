@@ -4,6 +4,7 @@ import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -101,17 +102,16 @@ public class Rollergripper extends SubsystemBase {
      * @return the command
      */
     public Command holdConeCommand() {
-        return Commands.runEnd(
-                () -> {
+        return new ConditionalCommand(
+                this.runOnce(() -> {
                     right.set(0.05);
                     left.set(0.15);
-                },
-                        () -> {
+                }),
+                this.runOnce(() -> {
                     right.stopMotor();
                     left.stopMotor();
-                        },
-                this)
-                .until(beambreakTrigger.negate()).unless(beambreakTrigger.negate()).repeatedly();
+                    }),
+                beambreakTrigger).repeatedly();
     }
 
     private void initShuffleboardData() {

@@ -177,7 +177,7 @@ public final class Constants {
         public static final int ANGLE_MOTOR_ID = 41;
         public static final int ROLLERS_MOTOR_ID = 42;
 
-        public static final double ABS_ENCODER_OFFSET = 0.475; // dutyCycle
+        public static final double ABS_ENCODER_OFFSET = 0.99; // dutyCycle - 0.475
 
         public static final int SERVO_CHANNEL = 9;
         public static final int ENCODER_CHANNEL = 3;
