@@ -228,7 +228,7 @@ public class Swerve extends SubsystemBase {
     // autonomous ramp climbing commands
     public Command driveToRampCommand(boolean forward) {
         final double speed = forward ? 0.45 : -0.45;
-        return driveSwerveCommand(() -> speed, () -> 0, this::getAngleDC, () -> true)
+        return driveSwerveCommand(() -> speed, () -> 0, () -> 0, () -> true)
                 .until(robotBalancedTrigger.negate())
                 .andThen(new InstantCommand(this::stopModules));
     }
@@ -306,6 +306,10 @@ public class Swerve extends SubsystemBase {
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
+    }
+
+    private static double getFwd(boolean isForward){
+        return isForward? 0 : 180;
     }
 
     private void initShuffleboardData(){

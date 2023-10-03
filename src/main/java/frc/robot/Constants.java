@@ -113,7 +113,7 @@ public final class Constants {
             LOW(new Translation2d(0.7, Rotation2d.fromDegrees(130))),
             MID(new Translation2d(0.75, Rotation2d.fromDegrees(171))),
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
-            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(194))),
+            HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(195))),
 
             SHELF_EXTENDED(new Translation2d(0.85, Rotation2d.fromDegrees(174))),
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(179))),
@@ -124,7 +124,6 @@ public final class Constants {
             CONE_LOCK(new Translation2d(0.78, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(86))),
             MID_AUTO(new Translation2d(0.85, Rotation2d.fromDegrees(175))),
-
 
             CUBER_CHECKPOINT(new Translation2d(0.85, Rotation2d.fromDegrees(92))),
             CUBER(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(115)));

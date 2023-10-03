@@ -60,12 +60,8 @@ public class AutoBuilder {
 
                         // place cone / cube
                         new ConditionalCommand(
-                                superstructure.placeOnHeightCommand(heightChooser.getSelected()),
-                                cuber.shootCubeCommand(
-                                        getVelocity(heightChooser.getSelected()),
-                                        getAngle(heightChooser.getSelected()),
-                                        new Trigger(()-> true)),
-
+                                superstructure.placeOnMidSequentially(),
+                                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, new Trigger(()-> true)),
                                 () -> initialGamePiece.getSelected().equals(GamePiece.CONE)),
 
                         // lock arm if placed cone
@@ -77,16 +73,6 @@ public class AutoBuilder {
                         // drive auto
                         autoChooser.getSelected())
                 );
-    }
-
-    private static CUBER_VELOCITIY getVelocity(double height){
-        if (height == 1) return CUBER_VELOCITIY.MIDDLE;
-        return CUBER_VELOCITIY.HIGH;
-    }
-
-    private static CUBER_ANGLE getAngle(double angle){
-        if (angle == 1) return CUBER_ANGLE.MIDDLE;
-        return CUBER_ANGLE.HIGH;
     }
 
     private static boolean getRobotHeading(GamePiece gamePiece){

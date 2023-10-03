@@ -32,11 +32,9 @@ public class Superstructure {
                 arm.holdSetpointCommand(BUMPER.setpoint).withTimeout(0.3),
                 arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.25),
                 arm.holdSetpointCommand(HIGH.setpoint).until(release),
-                arm.osscilateArmCommand(5).until(release.negate()),
+//                arm.osscilateArmCommand(5).until(release.negate()),
                 rollergripper.ejectCommand().alongWith(arm.setAngleSpeed(0)).until(rollergripper.beambreakTrigger.negate()),
                 arm.holdSetpointCommand(SHELF_RETRACTED.setpoint));
-
-//                .finallyDo((__)-> ejectCommand(0, 0, true).schedule());
     }
 
     public Command placeOnMidCommand(BooleanSupplier release) {
