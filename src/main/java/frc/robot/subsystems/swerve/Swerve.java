@@ -156,7 +156,7 @@ public class Swerve extends SubsystemBase {
                             //create the speeds for x,y and spin
                             double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
                                     ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
-                                    spinningSpeed = spinningLimiter.calculate(spinning) * kMaxDriveTurningSpeed * decelerator.getAsDouble();
+                                    spinningSpeed = spinningLimiter.calculate(spinning) * kMaxTurningSpeed * decelerator.getAsDouble();
 
                             // **all credits to the decelerator idea are for Ofir from Trigon #5990 (ohfear_ on discord)**
 

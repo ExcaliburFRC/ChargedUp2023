@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -20,7 +22,9 @@ public class Superstructure {
                         rollergripper.intakeCommand(),
                         arm.holdSetpointCommand(SHELF_EXTENDED.setpoint),
                         LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, ORANGE.color)),
-                arm.holdSetpointCommand(SHELF_RETRACTED.setpoint));
+                rollergripper.holdConeCommand().alongWith(
+                arm.holdSetpointCommand(SHELF_RETRACTED.setpoint))
+        );
     }
 
     public Command placeOnHighCommand(Trigger release) {
@@ -48,10 +52,10 @@ public class Superstructure {
                 arm.resetLengthCommand(),
                 arm.moveToAngleCommand(MID_AUTO.setpoint).alongWith(
                         new WaitCommand(1).andThen(arm.moveToLengthCommand(MID_AUTO.setpoint)))
-                        .until(()-> arm.armAtSetpoint(MID_AUTO.setpoint)),
-
-//                ejectCommand(0, -8, false).withTimeout(0.5),
-                arm.resetLengthCommand().withTimeout(0.5));
+                        .until(()-> arm.armAtSetpoint(new Translation2d(0.85, Rotation2d.fromDegrees(174)))),
+                rollergripper.ejectCommand().alongWith(arm.setAngleSpeed(-5)).until(rollergripper.beambreakTrigger.negate()),
+                arm.resetLengthCommand().withTimeout(0.75)
+        );
     }
 
     public Command placeOnLowCommand() {
@@ -88,9 +92,9 @@ public class Superstructure {
     public Command placeOnHeightCommand(double height) {
         return new SelectCommand(
                 Map.of(
-                        0, placeOnLowCommand(),
-                        1, placeOnMidSequentially(),
-                        2, new InstantCommand(() -> {})),
+                        0.0, placeOnLowCommand(),
+                        1.0, placeOnMidSequentially(),
+                        2.0, new InstantCommand(() -> {})),
                 // arm mechanics doesn't allow high cone placement in autonomous
                 () -> height);
     }

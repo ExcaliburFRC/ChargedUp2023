@@ -1,7 +1,6 @@
 package frc.robot.utility;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.LEDs;
@@ -105,14 +104,14 @@ public class MorseLEDs {
             }
 
             if (revMorse.charAt(i) == '.') {
-                    colors[j] = color;
+                    colors[j] = Colors.TEAM_GOLD.color; // color
                     colors[j + 1] = Colors.OFF.color;
                     j++;
             }
 
             if (revMorse.charAt(i) == '-') {
-                colors[j] = color;
-                colors[j + 1] = color;
+                colors[j] = Colors.TEAM_BLUE.color;
+                colors[j + 1] = Colors.TEAM_BLUE.color;
                 colors[j + 2] = Colors.OFF.color;
                 j += 2;
             }
@@ -124,8 +123,7 @@ public class MorseLEDs {
             j ++;
         }
 
-//        return leds.setLEDsCommand(colors);
-        return new InstantCommand(()->{});
+        return leds.circleLEDs(colors).ignoringDisable(true);
     }
 
     private static int getLEDsLength(String morse){

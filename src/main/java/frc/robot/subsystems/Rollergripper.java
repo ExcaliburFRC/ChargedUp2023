@@ -27,7 +27,6 @@ public class Rollergripper extends SubsystemBase {
 
         left.restoreFactoryDefaults();
         left.clearFaults();
-        left.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
         initShuffleboardData();
         setDefaultCommand(holdConeCommand());
@@ -58,7 +57,7 @@ public class Rollergripper extends SubsystemBase {
         return Commands.runEnd(
                         () -> {
                             right.set(0.5);
-                            left.set(0.5);
+                            left.set(0.1f);
                         },
 //                            Shuffleboard.selectTab("armCamera");,
                         () -> {
@@ -104,8 +103,8 @@ public class Rollergripper extends SubsystemBase {
     public Command holdConeCommand() {
         return new ConditionalCommand(
                 this.runOnce(() -> {
-                    right.set(0.05);
-                    left.set(0.15);
+                    right.set(0.06);
+                    left.set(0.17);
                 }),
                 this.runOnce(() -> {
                     right.stopMotor();

@@ -199,7 +199,7 @@ public class Cuber extends SubsystemBase {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(CUBER_ANGLE.LOW),
                 new WaitUntilCommand(confirm).andThen(setShooterDutycycleCommand(0.2)),
-                requirement()).until(cuberReadyTrigger.negate());
+                requirement()).until(hasCubeTrigger.negate().debounce(0.75));
     }
 
     public Command cannonShooterCommand(DoubleSupplier robotAngle, Trigger override){
@@ -207,7 +207,7 @@ public class Cuber extends SubsystemBase {
                 setShooterDutycycleCommand(-0.5),
                 new WaitUntilCommand(new Trigger(()-> Math.abs(robotAngle.getAsDouble()) > ROBOT_ANGLE_THRESHOLD).or(override))
                         .andThen(pushCubeCommand()),
-                requirement());
+                requirement()).until(hasCubeTrigger.negate().debounce(0.75));
     }
 
     public Command confirmCubeIntake(){

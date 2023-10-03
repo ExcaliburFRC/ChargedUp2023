@@ -219,7 +219,7 @@ public class Arm extends SubsystemBase {
   }
 
   private boolean angleInRange(double angleA, double angleB) {
-    double tolerance = 2; // degrees
+    double tolerance = 3; // degrees
     return Math.abs(angleA - angleB) < tolerance;
   }
   private boolean lengthInRange(double lengthA, double lengthB) {

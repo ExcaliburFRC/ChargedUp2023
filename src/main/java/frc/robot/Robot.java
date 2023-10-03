@@ -112,8 +112,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
     CommandScheduler.getInstance().enable();
 
-//    m_robotContainer.SystemTester().schedule();
-//    m_robotContainer.manual().schedule();
+    m_robotContainer.SystemTester().schedule();
   }
 
   /** This function is called periodically during test mode. */

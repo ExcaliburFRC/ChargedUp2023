@@ -15,15 +15,15 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.LedsConstants.GamePiece;
-import frc.robot.commands.autonomous.ClimbOverRampCommand;
+import frc.robot.commands.SystemTester;
 import frc.robot.subsystems.Cuber;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.utility.AutoBuilder;
 import frc.robot.utility.Calculation;
 import frc.robot.utility.Color;
 import frc.robot.utility.MorseLEDs;
-import frc.robot.utility.SwerveAuto;
 
 import java.util.Map;
 
@@ -44,7 +44,9 @@ public class RobotContainer {
     private final Cuber cuber = new Cuber();
     private final LEDs leds = LEDs.getInstance();
     private final Superstructure superstructure = new Superstructure();
-    private final SwerveAuto autoBuilder = new SwerveAuto(swerve);
+
+//    private final SwerveAuto autoBuilder = new SwerveAuto(swerve);
+    private final AutoBuilder autoBuilder = new AutoBuilder(swerve, cuber, superstructure);
 
     public final Trigger userButtonTrigger = new Trigger(RobotController::getUserButton);
 
@@ -59,6 +61,7 @@ public class RobotContainer {
      */
     public RobotContainer() {
         configureBindings();
+        autoBuilder.loadAutoChoosers();
 
         driveTab.addDouble("Remaining Time", DriverStation::getMatchTime)
                 .withSize(4, 4).withPosition(16, 0).withWidget("Simple Dial")
@@ -98,8 +101,7 @@ public class RobotContainer {
 
         operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
                 cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1()), cuber.armSafe));
-        operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
-                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()), cuber.armSafe));
+        operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()));
         operator.povDown().toggleOnTrue(cuber.shootCubeToLowerCommand(driver.R1()));
 
         operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
@@ -122,7 +124,7 @@ public class RobotContainer {
 
         driver.touchpad().whileTrue(toggleMotorsIdleMode());
         driver.touchpad().whileTrue(leds.applyPatternCommand(SOLID, WHITE.color));
-        driver.button(15).onTrue(MorseLEDs.textToAddressableLeds("ab cd as d as da sd q fwe", WHITE.color));
+        driver.button(15).onTrue(MorseLEDs.textToAddressableLeds("excalibur 6738", WHITE.color));
     }
 
     private Command toggleLedsCommand() {
@@ -161,16 +163,17 @@ public class RobotContainer {
         return -1;
     }
 
+    public Command SystemTester(){
+        return new SystemTester(swerve, cuber, superstructure, operator.touchpad());
+    }
+
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return superstructure.placeOnMidSequentially().finallyDo((__)->
-                superstructure.arm.lockArmWithSetpoint().andThen(
-                new ClimbOverRampCommand(swerve, true)
-        ));
+        return autoBuilder.getAutonomousCommand();
     }
 
     /*

@@ -85,7 +85,7 @@ public final class Constants {
         // intentional limitations
         public static final double kSpeedPercantageLimit = 100; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
-        public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
+        public static final double kMaxTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
         public static final double kMaxDriveAccelerationUnitsPerSecond = 3;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
@@ -123,7 +123,7 @@ public final class Constants {
             INTAKE_CHECKPOINT(new Translation2d(0.77, Rotation2d.fromDegrees(137))),
             CONE_LOCK(new Translation2d(0.78, Rotation2d.fromDegrees(90))),
             LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(86))),
-            MID_AUTO(new Translation2d(0.9, Rotation2d.fromDegrees(174))),
+            MID_AUTO(new Translation2d(0.85, Rotation2d.fromDegrees(175))),
 
 
             CUBER_CHECKPOINT(new Translation2d(0.85, Rotation2d.fromDegrees(92))),
@@ -140,7 +140,7 @@ public final class Constants {
         public static final int ANGLE_FOLLOWER_MOTOR_ID = 22;
         public static final int LENGTH_MOTOR_ID = 23;
 
-        public static final int CLOSED_LIMIT_SWITCH_ID = 6;
+        public static final int CLOSED_LIMIT_SWITCH_ID = 1;
 
         public static final int ABS_ANGLE_ENCODER_PORT = 7;
 
@@ -192,18 +192,18 @@ public final class Constants {
 
         public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 90.0) * (35.0 / 73.0); // 1:187.7142
 
-        public static final double VEL_THRESHOLD = CUBER_VELOCITIY.HIGH.velocity * 0.1;
+        public static final double VEL_THRESHOLD = CUBER_VELOCITIY.HIGH.velocity * 0.125;
         public static final double POS_THRESHOLD = 3;
 
 
         // angle control constants
-        public static final double Ks_ANGLE = 0.046709;
+        public static final double Ks_ANGLE = 0.18838;
         public static final double Kv_ANGLE = 0.066389;
-        public static final double Kg_ANGLE = 0.18154;
+        public static final double Kg_ANGLE = 0.10081;
         public static final double Ka_ANGLE = 0.0015036;
 
-        public static final double Kp_ANGLE = 0.051294 * 1.75;
-        public static final double Kd_ANGLE = 0; //040321
+        public static final double Kp_ANGLE = 0.050409 * 1.75;
+        public static final double Kd_ANGLE = 0; //053457
 
         // shooter control constants
         public static final double Ks_SHOOTER = 0.15534 * 1.05;
@@ -227,7 +227,7 @@ public final class Constants {
 
         public enum CUBER_ANGLE {
             HIGH(MAX_ANGLE_DEGREES),
-            MIDDLE(128),
+            MIDDLE(115),
             LOW(60),
             CANNON(100),
             IDLE(90),
@@ -243,7 +243,7 @@ public final class Constants {
 
         public enum CUBER_VELOCITIY {
             HIGH(1450),
-            MIDDLE(1100),
+            MIDDLE(950),
             LOW(700),
             CANNON(2500),
             IDLE(-300),

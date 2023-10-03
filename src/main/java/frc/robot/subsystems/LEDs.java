@@ -149,14 +149,19 @@ public class LEDs extends SubsystemBase {
         return applyPatternCommand(pattern, color, OFF.color);
     }
 
-//    public Command setLEDsCommand(Color[] colors) {
-//        return Commands.repeatingSequence(
-//                new InstantCommand(() -> setLedStrip(colors)),
-//                new InstantCommand(() ->),
-//
-//
-//                () -> setLedStrip(colors)).ignoringDisable(true);
-//    }
+
+
+    public Command setLEDsCommand(Color[] colors) {
+        return this.runOnce(()-> setLedStrip(colors)).ignoringDisable(true);
+    }
+
+    public Command circleLEDs(Color[] colors){
+        return Commands.repeatingSequence(
+                setLEDsCommand(colors),
+                new WaitCommand(0.1),
+                new InstantCommand(()-> shiftLeds(colors)))
+                .ignoringDisable(true);
+    }
 
     public void restoreLEDs() {
         CommandScheduler.getInstance().cancel(
@@ -209,12 +214,13 @@ public class LEDs extends SubsystemBase {
     }
 
     private void shiftLeds(Color[] colors) {
-        Color nextColor = colors[0];
+        Color lastColor = colors[colors.length - 1];
 
-        for (int i = 0; i < colors.length - 2; i++) {
-            nextColor = colors[i + 1];
-            colors[i + 1] = colors[1];
+        for (int i = colors.length - 2; i >= 0; i--) {
+            colors[i + 1] = colors[i];
         }
+
+        colors[0] = lastColor;
     }
 
     private int stayInBounds(int value, int length) {
