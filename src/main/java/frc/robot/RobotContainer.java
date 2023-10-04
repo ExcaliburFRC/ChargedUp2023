@@ -125,6 +125,8 @@ public class RobotContainer {
         driver.touchpad().whileTrue(toggleMotorsIdleMode());
         driver.touchpad().whileTrue(leds.applyPatternCommand(SOLID, WHITE.color));
         driver.button(15).onTrue(MorseLEDs.textToAddressableLeds("excalibur 6738", WHITE.color));
+
+//        cuber.setDefaultCommand(cuber.angleControl(operator::getRightY));
     }
 
     private Command toggleLedsCommand() {

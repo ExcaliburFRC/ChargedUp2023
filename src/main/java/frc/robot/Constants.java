@@ -227,8 +227,8 @@ public final class Constants {
         public enum CUBER_ANGLE {
             HIGH(MAX_ANGLE_DEGREES),
             MIDDLE(115),
-            LOW(60),
-            CANNON(100),
+            LOW(70),
+            CANNON(115),
             IDLE(90),
             INTAKE_GROUND(1),
             INTAKE_SLIDE(114);

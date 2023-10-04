@@ -56,6 +56,7 @@ public class AutoBuilder {
                 new SequentialCommandGroup(
                         //init
                         new InstantCommand(autoTimer::start),
+//                        new InstantCommand(LEDs.getInstance()::restoreLEDs),
                         swerve.setOdometryAngleCommand(initialGamePiece.getSelected().equals(GamePiece.CUBE) ? 180 : 0),
 
                         // place cone / cube

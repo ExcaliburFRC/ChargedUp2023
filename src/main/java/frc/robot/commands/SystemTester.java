@@ -13,11 +13,14 @@ public class SystemTester extends SequentialCommandGroup {
   public SystemTester(Swerve swerve, Cuber cuber, Superstructure superstructure, Trigger next){
     super(
             swerve.tankDriveCommand(()-> 0, ()-> 0.3, false).until(next),
-            cuber.intakeCommand(Constants.CuberConstants.CUBER_ANGLE.INTAKE_SLIDE).until(next),
+            new WaitCommand(0.5),
+            cuber.intakeCommand(Constants.CuberConstants.CUBER_ANGLE.INTAKE_SLIDE),
+            new WaitCommand(0.5),
             cuber.shootCubeToLowerCommand(next),
             new WaitCommand(1),
             superstructure.intakeFromShelfCommand(),
             new WaitUntilCommand(next),
+            new WaitCommand(0.5),
             superstructure.lockArmCommand()
             );
   }
