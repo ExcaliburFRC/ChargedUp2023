@@ -12,22 +12,22 @@ import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.RollerGripperConstants.*;
 
 public class Rollergripper extends SubsystemBase {
-    private final CANSparkMax rollers = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
+    private final CANSparkMax leader = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
     private final CANSparkMax follower = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
 
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
     public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 
     public Rollergripper() {
-        rollers.restoreFactoryDefaults();
-        rollers.clearFaults();
-        rollers.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        rollers.setInverted(true);
+        leader.restoreFactoryDefaults();
+        leader.clearFaults();
+        leader.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        leader.setInverted(true);
 
         follower.restoreFactoryDefaults();
         follower.clearFaults();
         follower.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        follower.follow(rollers);
+        follower.follow(leader);
 
         initShuffleboardData();
         setDefaultCommand(holdConeCommand());
@@ -41,7 +41,7 @@ public class Rollergripper extends SubsystemBase {
      */
     private Command setRollerGripperMotor(double speed) {
         return Commands.runEnd(
-                () -> follower.set(speed),
+                () -> leader.set(speed),
                 ()-> {},
                 this);
     }
@@ -56,8 +56,8 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command intakeCommand() {
         return Commands.runEnd(
-                        () -> rollers.set(0.5),
-                        rollers::stopMotor,
+                        () -> leader.set(0.5),
+                        leader::stopMotor,
                         this)
                 .until(beambreakTrigger.debounce(0.1));
     }
@@ -72,8 +72,8 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command ejectCommand(double offset) {
         return Commands.runEnd(
-                        () -> rollers.set(-0.025 - offset),
-                        rollers::stopMotor,
+                        () -> leader.set(-0.025 - offset),
+                        leader::stopMotor,
                         this) //runEnd ends here
                 .until(beambreakTrigger.negate().debounce(0.2));
     }
@@ -89,8 +89,8 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command holdConeCommand() {
         return new ConditionalCommand(
-                setRollerGripperMotor(0.05).until(()-> true),
-                setRollerGripperMotor(0).until(()-> true),
+                setRollerGripperMotor(0.1).withTimeout(0.25),
+                setRollerGripperMotor(0).withTimeout(0.25),
                 beambreakTrigger)
                 .repeatedly();
     }

@@ -115,7 +115,7 @@ public final class Constants {
             HIGH_CHECKPOINT(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(130))),
             HIGH(new Translation2d(MAXIMAL_LENGTH_METERS, Rotation2d.fromDegrees(195))),
 
-            SHELF_EXTENDED(new Translation2d(0.85, Rotation2d.fromDegrees(174))),
+            SHELF_EXTENDED(new Translation2d(0.85, Rotation2d.fromDegrees(173))),
             SHELF_RETRACTED(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(179))),
 
             BUMPER(new Translation2d(0.75, Rotation2d.fromDegrees(105))),
