@@ -227,11 +227,12 @@ public final class Constants {
         public enum CUBER_ANGLE {
             HIGH(MAX_ANGLE_DEGREES),
             MIDDLE(115),
-            LOW(70),
+            LOW(95),
             CANNON(115),
             IDLE(90),
-            INTAKE_GROUND(1),
+//            INTAKE_GROUND(1),
             INTAKE_SLIDE(114);
+            // cannot have anything below 90 due to a mechanical brake
 
             public final int angle;
 

@@ -251,10 +251,9 @@ public class Swerve extends SubsystemBase {
      * @param isForward is the ramp in front of the robot in field relative
      * @return the command
      */
-    public Command climbCommand(boolean isForward) {
-        return driveToRampCommand(isForward)
-                .andThen(
-                        driveSwerveCommand(() -> isForward? 0.4 : -0.4, () -> 0, () -> 0, () -> true).withTimeout(1.2),
+    public Command climbCommand(boolean isForward, double offset) {
+        return driveToRampCommand(isForward).andThen(
+                        driveSwerveCommand(() -> (isForward? 1 : -1) * (0.4 + offset), () -> 0, () -> 0, () -> true).withTimeout(1.2),
                         new WaitCommand(0.15),
                         balanceRampCommand());
     }

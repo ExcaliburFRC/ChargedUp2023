@@ -64,7 +64,7 @@ public class RobotContainer {
         autoBuilder.loadAutoChoosers();
 
         driveTab.addDouble("Remaining Time", DriverStation::getMatchTime)
-                .withSize(4, 4).withPosition(16, 0).withWidget("Simple Dial")
+                .withSize(8, 8).withPosition(16, 0).withWidget("Simple Dial")
                 .withProperties(Map.of("min", 0, "max", 135));
     }
 
@@ -91,7 +91,7 @@ public class RobotContainer {
         // intake commands
         operator.R1().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
-        operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
+//        operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
         operator.L1().toggleOnTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
 
         // shoot / place commands

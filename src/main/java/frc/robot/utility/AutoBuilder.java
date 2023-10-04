@@ -41,7 +41,7 @@ public class AutoBuilder {
 //        heightChooser.addOption("high", 2.0);
 
         autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve, getRobotHeading(initialGamePiece.getSelected())));
-        autoChooser.addOption("balance ramp", swerve.climbCommand(true));
+        autoChooser.addOption("balance ramp", swerve.climbCommand(true, 0));
         autoChooser.addOption("climb over & balance ramp", new ClimbOverRampCommand(swerve, getRobotHeading(initialGamePiece.getSelected())));
         autoChooser.addOption("don't drive", new InstantCommand(() -> {}));
 

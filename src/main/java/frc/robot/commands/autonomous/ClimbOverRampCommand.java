@@ -10,7 +10,7 @@ public class ClimbOverRampCommand extends SequentialCommandGroup {
             swerve.driveSwerveCommand(()-> isForward? 0.35 : -0.35, swerve::getAngleDC, () -> 0, ()-> true)
                     .until(()-> isOverRamp(isForward, swerve.getRobotPitch())),
             swerve.driveSwerveCommand(()-> isForward? 0.2 : -0.2, ()-> 0, swerve::getAngleDC, ()-> true).withTimeout(1.23),
-            swerve.climbCommand(!isForward)
+            swerve.climbCommand(!isForward, 0.1)
     );
   }
 
