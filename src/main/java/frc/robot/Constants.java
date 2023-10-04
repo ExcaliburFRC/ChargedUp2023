@@ -79,8 +79,8 @@ public final class Constants {
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
         public static final double kMaxAccelerationMetersPerSecondSquared = 3; //TODO find
 
-        public static final double RAMP_BALANCE_KP = 0.015;
-        public static final double RAMP_BALANCE_KD = 0.0032;
+        public static final double RAMP_BALANCE_KP = 0.008;
+        public static final double RAMP_BALANCE_KD = 0.003;
 
         // intentional limitations
         public static final double kSpeedPercantageLimit = 100; // %
@@ -232,7 +232,7 @@ public final class Constants {
             IDLE(90),
 //            INTAKE_GROUND(1),
             INTAKE_SLIDE(114);
-            // cannot have anything below 90 due to a mechanical brake
+            // cannot have anything below 90 due to a+ mechanical brake
 
             public final int angle;
 

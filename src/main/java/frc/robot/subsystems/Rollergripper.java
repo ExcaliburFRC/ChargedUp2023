@@ -8,25 +8,26 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushed;
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.RollerGripperConstants.*;
 
 public class Rollergripper extends SubsystemBase {
-    private final CANSparkMax right = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
-    private final CANSparkMax left = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushed);
+    private final CANSparkMax rollers = new CANSparkMax(RIGHT_ROLLER_MOTOR_ID, kBrushless);
+    private final CANSparkMax follower = new CANSparkMax(LEFT_ROLLER_MOTOR_ID, kBrushless);
 
     private final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
     public final Trigger beambreakTrigger = new Trigger(() -> !beambreak.get());
 
     public Rollergripper() {
-        right.restoreFactoryDefaults();
-        right.clearFaults();
-        right.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        right.setInverted(true);
+        rollers.restoreFactoryDefaults();
+        rollers.clearFaults();
+        rollers.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        rollers.setInverted(true);
 
-        left.restoreFactoryDefaults();
-        left.clearFaults();
+        follower.restoreFactoryDefaults();
+        follower.clearFaults();
+        follower.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        follower.follow(rollers);
 
         initShuffleboardData();
         setDefaultCommand(holdConeCommand());
@@ -39,9 +40,9 @@ public class Rollergripper extends SubsystemBase {
      * @return the command
      */
     private Command setRollerGripperMotor(double speed) {
-        return Commands.runEnd(() ->
-                        left.set(speed),
-                left::stopMotor,
+        return Commands.runEnd(
+                () -> follower.set(speed),
+                ()-> {},
                 this);
     }
 
@@ -55,16 +56,8 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command intakeCommand() {
         return Commands.runEnd(
-                        () -> {
-                            right.set(0.5);
-                            left.set(0.1f);
-                        },
-//                            Shuffleboard.selectTab("armCamera");,
-                        () -> {
-                            right.stopMotor();
-                            left.stopMotor();
-                        },
-//                            Shuffleboard.selectTab("driveTab");,
+                        () -> rollers.set(0.5),
+                        rollers::stopMotor,
                         this)
                 .until(beambreakTrigger.debounce(0.1));
     }
@@ -79,14 +72,8 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command ejectCommand(double offset) {
         return Commands.runEnd(
-                        () -> {
-                            right.set(-0.025 - offset);
-                            left.set(-0.025 - offset);
-                        },
-                        () -> {
-                            right.stopMotor();
-                            left.stopMotor();
-                        },
+                        () -> rollers.set(-0.025 - offset),
+                        rollers::stopMotor,
                         this) //runEnd ends here
                 .until(beambreakTrigger.negate().debounce(0.2));
     }
@@ -102,15 +89,10 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command holdConeCommand() {
         return new ConditionalCommand(
-                this.runOnce(() -> {
-                    right.set(0.06);
-                    left.set(0.17);
-                }),
-                this.runOnce(() -> {
-                    right.stopMotor();
-                    left.stopMotor();
-                    }),
-                beambreakTrigger).repeatedly();
+                setRollerGripperMotor(0.05).until(()-> true),
+                setRollerGripperMotor(0).until(()-> true),
+                beambreakTrigger)
+                .repeatedly();
     }
 
     private void initShuffleboardData() {

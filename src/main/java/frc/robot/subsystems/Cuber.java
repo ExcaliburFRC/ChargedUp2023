@@ -197,8 +197,9 @@ public class Cuber extends SubsystemBase {
 
     public Command shootCubeToLowerCommand(Trigger confirm){
         return new ParallelCommandGroup(
+                leds.applyPatternCommand(BLINKING, PURPLE.color),
                 setCuberAngleCommand(CUBER_ANGLE.LOW),
-                new WaitUntilCommand(confirm).andThen(setShooterDutycycleCommand(0.2).alongWith(pushCubeCommand())),
+                new WaitUntilCommand(confirm).andThen(setShooterDutycycleCommand(0.1).alongWith(pushCubeCommand())),
                 requirement()).until(hasCubeTrigger.negate().debounce(0.75));
     }
 
