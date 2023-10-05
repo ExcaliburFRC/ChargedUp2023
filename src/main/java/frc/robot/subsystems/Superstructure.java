@@ -1,62 +1,59 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
-import frc.robot.RobotContainer;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
-import static frc.robot.utility.Colors.GREEN;
-import static frc.robot.utility.Colors.RED;
+import static frc.robot.utility.Colors.ORANGE;
 
 public class Superstructure {
     public final Arm arm = new Arm();
     public final Rollergripper rollergripper = new Rollergripper();
 
-    public Superstructure() {
-        rollergripper.setDefaultCommand(rollergripper.holdConeCommand());
-
-        arm.setDefaultCommand(arm.fadeArmCommand().alongWith(arm.stopTelescopeMotors()));
-    }
-
     public Command intakeFromShelfCommand() {
         return new SequentialCommandGroup(
-                arm.moveToLengthCommand(MIDDLE.setpoint),
-                new InstantCommand(() -> Shuffleboard.selectTab("armCamera")),
-
-                new ParallelCommandGroup(
+                arm.moveToLengthCommand(INTAKE_CHECKPOINT.setpoint),
+                new ParallelRaceGroup(
                         rollergripper.intakeCommand(),
                         arm.holdSetpointCommand(SHELF_EXTENDED.setpoint),
-                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, RED.color))
-                        .until(rollergripper.beambreakTrigger.debounce(0.15)),
-
-                new ParallelCommandGroup(
-                        RobotContainer.selectDriveTabCommand(),
-                        arm.holdSetpointCommand(SHELF_RETRACTED.setpoint),
-                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.SOLID, GREEN.color))
-                        .withTimeout(0.5));
+                        LEDs.getInstance().applyPatternCommand(LEDs.LEDPattern.BLINKING, ORANGE.color)),
+                rollergripper.holdConeCommand().alongWith(
+                arm.holdSetpointCommand(SHELF_RETRACTED.setpoint))
+        );
     }
 
-    public Command placeOnHighCommand(BooleanSupplier release) {
+    public Command placeOnHighCommand(Trigger release) {
         return new SequentialCommandGroup(
+                arm.holdSetpointCommand(BUMPER.setpoint).withTimeout(0.3),
                 arm.holdSetpointCommand(HIGH_CHECKPOINT.setpoint).withTimeout(1.25),
                 arm.holdSetpointCommand(HIGH.setpoint).until(release),
-                arm.fadeArmCommand().alongWith(rollergripper.ejectCommand(0.03))
-                        .until(rollergripper.beambreakTrigger.negate().debounce(0.1)),
-                arm.resetLengthCommand());
+//                arm.osscilateArmCommand(5).until(release.negate()),
+                rollergripper.ejectCommand().alongWith(arm.setAngleSpeed(0)).until(rollergripper.beambreakTrigger.negate()),
+                arm.holdSetpointCommand(SHELF_RETRACTED.setpoint));
     }
 
     public Command placeOnMidCommand(BooleanSupplier release) {
-        return arm.holdSetpointCommand(MID.setpoint).until(release)
-                .andThen(arm.setAngleSpeed(-6.5).alongWith(rollergripper.ejectCommand()))
-                .until(rollergripper.beambreakTrigger.negate().debounce(0.1));
+        return new SequentialCommandGroup(
+                arm.holdSetpointCommand(MID.setpoint).until(release),
+                rollergripper.ejectCommand(0).alongWith(arm.setAngleSpeed(-10))
+                        .until(rollergripper.beambreakTrigger.negate()));
+//                        ejectCommand(0, -10, false))
     }
 
     public Command placeOnMidSequentially() {
-        return arm.moveToAngleCommand(MID.setpoint)
-                .alongWith(new WaitCommand(1).andThen(arm.moveToLengthCommand(MID.setpoint)))
-                .until(() -> arm.armAtSetpoint(MID.setpoint)).andThen(placeOnMidCommand(() -> true));
+        return new SequentialCommandGroup(
+                arm.resetLengthCommand(),
+                arm.moveToAngleCommand(MID_AUTO.setpoint).alongWith(
+                        new WaitCommand(1).andThen(arm.moveToLengthCommand(MID_AUTO.setpoint)))
+                        .until(()-> arm.armAtSetpoint(new Translation2d(0.85, Rotation2d.fromDegrees(174)))),
+                rollergripper.ejectCommand().alongWith(arm.setAngleSpeed(-5)).until(rollergripper.beambreakTrigger.negate()),
+                arm.resetLengthCommand().withTimeout(0.75)
+        );
     }
 
     public Command placeOnLowCommand() {
@@ -66,23 +63,37 @@ public class Superstructure {
     }
 
     public Command lockArmCommand() {
-        return arm.lockArmCommand(rollergripper.beambreakTrigger);
+        return new ConditionalCommand(
+                arm.lockArmCommand(CONE_LOCK),
+                arm.lockArmCommand(LOCKED),
+                rollergripper.beambreakTrigger
+        );
     }
 
-    // this command is used when the robot shoots a cube to the high shelf, it moves the Arm, so
-    // it doesn't interfere with the shooter
-    public Command leanBackCommand() {
-        return arm.holdSetpointCommand(CLOSED.setpoint)
-                .finallyDo((__) -> arm.lockArmCommand(rollergripper.beambreakTrigger).schedule());
+    public Command ejectCommand(double ejectOffset, double armOffset, boolean holdArm){
+        return rollergripper.ejectCommand(ejectOffset).alongWith(arm.setAngleSpeed(armOffset))
+                .until(rollergripper.beambreakTrigger.negate())
+                .andThen(new ConditionalCommand(
+                        arm.holdSetpointCommand(SHELF_RETRACTED.setpoint),
+                        new InstantCommand(()-> {}),
+                        ()-> holdArm));
     }
 
-//    public Command placeOnHeightCommand(double height) {
-//        return new SelectCommand(
-//                Map.of(
-//                        LOW_RPM, placeOnLowCommand(),
-//                        MID_RPM, placeOnMidSequentially(),
-//                        HIGH_RPM, new InstantCommand(() -> {
-//                        })), // arm mechanics doesn't allow high cone placement in autonomous
-//                () -> height);
-//    }
+    // this command is used when the cuber needs to lean back, it moves the Arm, so they don't collide
+    public Command adjustForShooterCommand(Command cuberCommand, BooleanSupplier canReturn) {
+        return new SequentialCommandGroup(
+                arm.holdSetpointCommand(CUBER_CHECKPOINT.setpoint).until(arm::armAtSetpoint),
+                arm.holdSetpointCommand(CUBER.setpoint).alongWith(cuberCommand).until(cuberCommand::isFinished))
+                .finallyDo((__)-> new WaitUntilCommand(canReturn).andThen(arm.lockArmWithSetpoint()).schedule());
+    }
+
+    public Command placeOnHeightCommand(double height) {
+        return new SelectCommand(
+                Map.of(
+                        0.0, placeOnLowCommand(),
+                        1.0, placeOnMidSequentially(),
+                        2.0, new InstantCommand(() -> {})),
+                // arm mechanics doesn't allow high cone placement in autonomous
+                () -> height);
+    }
 }

@@ -3,22 +3,27 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.utility.PIDFFController;
 
-import static com.revrobotics.CANSparkMax.SoftLimitDirection.kForward;
-import static com.revrobotics.CANSparkMax.SoftLimitDirection.kReverse;
+import java.util.Map;
+import java.util.function.DoubleSupplier;
+
 import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.CuberConstants.*;
+import static frc.robot.Constants.CuberConstants.CUBER_VELOCITIY.INTAKE_DUTYCYCLE;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
-import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
-import static frc.robot.utility.Colors.*;
+import static frc.robot.utility.Colors.PURPLE;
 
 
 public class Cuber extends SubsystemBase {
@@ -37,49 +42,62 @@ public class Cuber extends SubsystemBase {
 
     public static final ShuffleboardTab cuberTab = Shuffleboard.getTab("Cuber");
 
-    private final PIDFFController shooterPIDFFcontroller = new PIDFFController(Kp_SHOOTER, 0, Kd_SHOOTER);
-    private final PIDFFController anglePIDFFController = new PIDFFController(Kp_ANGLE, 0, Kd_ANGLE);
+    private final PIDController shooterPIDcontroller = new PIDController(Kp_SHOOTER, 0, 0);
+    private final SimpleMotorFeedforward shooterFFcontroller = new SimpleMotorFeedforward(Ks_SHOOTER, Kv_SHOOTER, Ka_SHOOTER);
 
-    public final Trigger hasCubeTrigger = new Trigger(() -> colorSensor.getIR() <= COLOR_DISTANCE_THRESHOLD).debounce(0.2)
-            .onTrue(leds.applyPatternCommand(SOLID, GREEN.color).withTimeout(0.25))
-            .onFalse(leds.applyPatternCommand(SOLID, RED.color).withTimeout(0.25));
+    private final PIDController anglePIDcontrller = new PIDController(Kp_ANGLE, 0, Kd_ANGLE);
+    private final ArmFeedforward angleFFcontrller = new ArmFeedforward(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
+
+    public final Trigger hasCubeTrigger = new Trigger(() -> colorSensor.getProximity() >= COLOR_DISTANCE_THRESHOLD).debounce(0.3);
 
     public int targetVel = 0;
-    public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.2);
+    public final Trigger isAtTargetVelTrigger = new Trigger(() -> Math.abs(targetVel - shooterEncoder.getVelocity()) < VEL_THRESHOLD).debounce(0.1);
 
-    public int targetPos = 0;
-    public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(angleEncoder.getDistance() - targetPos) < POS_THRESHOLD).debounce(0.2);
+    public int targetPos = CUBER_ANGLE.IDLE.angle;
+    public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(getCuberAngle() - targetPos) < POS_THRESHOLD).debounce(0.2);
+
+    public Trigger cuberReadyTrigger = isAtTargetVelTrigger.and(isAtTargetPosTrigger);
+    public Trigger armSafe = new Trigger(()-> getCuberAngle() <= 105);
 
     public Cuber() {
         angleMotor.restoreFactoryDefaults();
         angleMotor.clearFaults();
         angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        angleMotor.setSoftLimit(kForward, FWD_SOFT_LIMIT);
-        angleMotor.enableSoftLimit(kForward, true);
-        angleMotor.setSoftLimit(kReverse, REV_SOFT_LIMIT);
-        angleMotor.enableSoftLimit(kReverse, true);
-        angleMotor.setInverted(false);
+        angleMotor.setOpenLoopRampRate(1);
+        angleMotor.setInverted(true);
+
+        // motor soft limit
+//        angleMotor.setSoftLimit(kForward, FWD_SOFT_LIMIT);
+//        angleMotor.enableSoftLimit(kForward, true);
+//        angleMotor.setSoftLimit(kReverse, REV_SOFT_LIMIT);
+//        angleMotor.enableSoftLimit(kReverse, true);
 
         shooterMotor.restoreFactoryDefaults();
-        shooterMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        shooterMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
         shooterMotor.clearFaults();
         shooterMotor.setInverted(false);
 
+        angleEncoder.reset();
         angleEncoder.setPositionOffset(ABS_ENCODER_OFFSET);
         angleEncoder.setDistancePerRotation(360);
 
         angleRelativeEncoder.setPositionConversionFactor(ANGLE_CONVERSION_FACTOR);
-        angleRelativeEncoder.setPosition(angleEncoder.getDistance());
+        angleRelativeEncoder.setPosition(getCuberAngle());
 
-        // TODO: organize and add widgets
-        cuberTab.addDouble("colorMM", colorSensor::getProximity);
-        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger);
-        cuberTab.addDouble("cuber angle", angleEncoder::getDistance);
+        anglePIDcontrller.enableContinuousInput(0, 360);
 
-        anglePIDFFController.setArmFFconstants(Ks_ANGLE, Kg_ANGLE, Kv_ANGLE, Ka_ANGLE);
-        shooterPIDFFcontroller.setMotorFFconstants(Ks_SHOOTER, Kv_SHOOTER, Ka_SHOOTER);
+        initShuffleboardData();
+        setDefaultCommand(resetCuberCommand());
+    }
 
-        setDefaultCommand(closeCuberCommand());
+    public double getCuberAngle(){
+        double val = angleEncoder.getDistance();
+        return val < 0? 360 + val : val;
+    }
+
+    private boolean isOutsideOfLimit(){
+        double angle = getCuberAngle();
+        return angle >= FWD_LIMIT && angle <= REV_LIMIT;
     }
 
     // Servo Commands
@@ -100,12 +118,21 @@ public class Cuber extends SubsystemBase {
     }
 
     // Shooter Commands
-    private Command setShooterVelocityCommand(SHOOTER_VELOCITIY vel) {
+    private Command setShooterVelocityCommand(CUBER_VELOCITIY vel) {
         return new FunctionalCommand(
                 () -> this.targetVel = vel.velocity,
-                () -> shooterMotor.set(shooterPIDFFcontroller.calculate(shooterEncoder.getVelocity(), vel.velocity)),
+                () -> {
+                    double pid = shooterPIDcontroller.calculate(shooterEncoder.getVelocity(), vel.velocity);
+                    double ff = shooterFFcontroller.calculate(vel.velocity, 0) / 60;
+
+                    shooterMotor.setVoltage(pid + ff);//chatich
+
+                    SmartDashboard.putNumber("setpoint", vel.velocity);
+                    SmartDashboard.putNumber("velocity", shooterEncoder.getVelocity());
+                },
                 (__) -> {
                     shooterMotor.stopMotor();
+                    SmartDashboard.putNumber("setpoint", 0);
                     targetVel = 0;
                 },
                 () -> false
@@ -120,9 +147,18 @@ public class Cuber extends SubsystemBase {
     private Command setCuberAngleCommand(CUBER_ANGLE angle) {
         return new FunctionalCommand(
                 () -> targetPos = angle.angle,
-                () -> angleMotor.set(anglePIDFFController.calculate(angleEncoder.getDistance(), angle.angle)),
-                (__) -> {
+                () -> {
+                    double pid = anglePIDcontrller.calculate(getCuberAngle(), angle.angle);
+                    double ff = angleFFcontrller.calculate(Math.toRadians(angle.angle), 0);
+                    double output = pid + (ff / 60.0);
+
+                    if (isOutsideOfLimit()) {
+                        angleMotor.stopMotor();
+                        DriverStation.reportError("cuber soft limit reached!", false);
+                    }
+                    else angleMotor.setVoltage(output);
                 },
+                (__) -> angleMotor.stopMotor(),
                 () -> false
         );
     }
@@ -133,9 +169,9 @@ public class Cuber extends SubsystemBase {
         }, this);
     }
 
-    public Command closeCuberCommand() {
+    public Command resetCuberCommand() {
         return new ParallelCommandGroup(
-                setCuberAngleCommand(CUBER_ANGLE.CLOSED),
+                setCuberAngleCommand(CUBER_ANGLE.IDLE),
                 stopShooterCommand(),
                 retractServoCommand(),
                 requirement());
@@ -144,19 +180,88 @@ public class Cuber extends SubsystemBase {
     public Command intakeCommand(CUBER_ANGLE cuberAngle) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(cuberAngle),
-                setShooterVelocityCommand(SHOOTER_VELOCITIY.INTAKE),
+                setShooterDutycycleCommand(INTAKE_DUTYCYCLE.velocity / 100.0),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
-                requirement())
-                .until(hasCubeTrigger);
+                requirement()).until(hasCubeTrigger).finallyDo((__)-> confirmCubeIntake().schedule());
     }
 
-    public Command shootCubeCommand(SHOOTER_VELOCITIY vel, CUBER_ANGLE angle) {
+    public Command shootCubeCommand(CUBER_VELOCITIY vel, CUBER_ANGLE angle, Trigger confirm) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(angle),
-                setShooterVelocityCommand(vel),
-                new WaitUntilCommand(isAtTargetVelTrigger.and(isAtTargetPosTrigger)).andThen(pushCubeCommand()),
+                new WaitCommand(1).andThen(setShooterVelocityCommand(vel)),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
+                new WaitUntilCommand(isAtTargetPosTrigger.and(confirm)).andThen(pushCubeCommand()),
                 requirement())
-                .until(hasCubeTrigger.negate());
+                .until(hasCubeTrigger.negate().debounce(0.75));
+    }
+
+    public Command shootCubeToLowerCommand(Trigger confirm){
+        return new ParallelCommandGroup(
+                leds.applyPatternCommand(BLINKING, PURPLE.color),
+                setCuberAngleCommand(CUBER_ANGLE.LOW),
+                new WaitUntilCommand(confirm).andThen(setShooterDutycycleCommand(0.1).alongWith(pushCubeCommand())),
+                requirement()).until(hasCubeTrigger.negate().debounce(0.75));
+    }
+
+    public Command cannonShooterCommand(DoubleSupplier robotAngle, Trigger override){
+        return new ParallelCommandGroup(
+                setCuberAngleCommand(CUBER_ANGLE.CANNON),
+                new WaitCommand(1).andThen(setShooterDutycycleCommand(0.5)),
+                new WaitUntilCommand(new Trigger(()-> Math.abs(robotAngle.getAsDouble()) > ROBOT_ANGLE_THRESHOLD).or(override))
+                        .andThen(pushCubeCommand()),
+                requirement()).until(hasCubeTrigger.negate().debounce(0.75));
+    }
+
+    public Command confirmCubeIntake(){
+        return new ParallelCommandGroup(
+                setCuberAngleCommand(CUBER_ANGLE.IDLE),
+                setShooterDutycycleCommand(-0.2),
+                requirement()).withTimeout(0.25);
+    }
+
+    public Command toggleIdleModeCommand(){
+        return new StartEndCommand(
+                ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast),
+                ()-> angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake))
+                .ignoringDisable(true);
+    }
+
+    // raw commands
+
+    public Command angleControl(DoubleSupplier speed){
+        return new RunCommand(()-> {
+            double output = speed.getAsDouble() / 5.0;
+            if (isOutsideOfLimit()) angleMotor.stopMotor();
+            else angleMotor.set(output);
+        }, this);
+    }
+    public Command rawIntake(double speed){
+        return Commands.runEnd(()-> shooterMotor.set(speed), shooterMotor::stopMotor, this);
+    }
+
+    private Command setShooterDutycycleCommand(double dc) {
+        return Commands.startEnd(()-> shooterMotor.set(dc), shooterMotor::stopMotor);
+    }
+
+    private void initShuffleboardData(){
+        cuberTab.addDouble("servo angle", this::getServoAngle).withPosition(8, 0).withSize(4, 4)
+                .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 90));;
+        cuberTab.addDouble("colorProximity", colorSensor::getProximity).withPosition(12, 4).withSize(4, 2)
+                .withWidget("Number Slider").withProperties(Map.of("min", 85, "max", 120));
+        cuberTab.addDouble("cuber angle", this::getCuberAngle).withPosition(12, 0).withSize(4, 4)
+                .withWidget("Simple Dial").withProperties(Map.of("min", 0, "max", 180));
+
+        cuberTab.addBoolean("hasCubeTrigger", hasCubeTrigger).withPosition(8, 4).withSize(4, 2);
+        cuberTab.addBoolean("isAtTargetVel", isAtTargetVelTrigger).withPosition(8, 6).withSize(4, 2);
+        cuberTab.addBoolean("isAtTargetPos", isAtTargetPosTrigger).withPosition(12, 6).withSize(4, 2);
+
+        cuberTab.addDouble("targetPos", ()-> targetPos).withPosition(13, 8);
+
+        cuberTab.addDouble("velocity", shooterEncoder::getVelocity).withPosition(8, 8);
+        cuberTab.addDouble("targetVel", ()-> targetVel).withPosition(10, 8);
+
+        cuberTab.addDouble("applied output", shooterMotor::getAppliedOutput);
+        cuberTab.addDouble("get", shooterMotor::getAppliedOutput);
+
     }
 }

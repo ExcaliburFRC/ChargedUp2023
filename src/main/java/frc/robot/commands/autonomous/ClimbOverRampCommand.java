@@ -6,12 +6,20 @@ import frc.robot.subsystems.swerve.Swerve;
 public class ClimbOverRampCommand extends SequentialCommandGroup {
   public ClimbOverRampCommand(Swerve swerve, boolean isForward){
     super(
-          swerve.driveToRampCommand(isForward),
-          swerve.tankDriveCommand(()-> isForward? 0.3 : -0.3, ()-> 0, true)
-                  .until(()-> swerve.getRampAngle() < 0));
-          // TODO fix positive / negative gyro pitch
-//          swerve.tankDriveCommand(()-> isForward? 0.3 : -0.3, ()-> 0, true).withTimeout(3),
-//          swerve.climbCommand(!isForward)
-//    );
+            swerve.driveToRampCommand(isForward),
+            swerve.driveSwerveCommand(()-> isForward? 0.35 : -0.35, swerve::getAngleDC, () -> 0, ()-> true)
+                    .until(()-> isOverRamp(isForward, swerve.getRobotPitch())),
+            swerve.driveSwerveCommand(()-> isForward? 0.2 : -0.2, ()-> 0, swerve::getAngleDC, ()-> true).withTimeout(1.23),
+            swerve.climbCommand(!isForward, 0.1)
+    );
+  }
+
+  private static boolean isOverRamp(boolean isFwd, double pitch){
+    if (isFwd) return pitch > 10;
+    return pitch < - 10;
+  }
+
+  private static double getFwd(boolean isForward){
+    return isForward? 0 : 180;
   }
 }

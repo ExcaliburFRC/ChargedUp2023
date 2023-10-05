@@ -3,8 +3,8 @@ package frc.robot.utility;
 public enum Colors {
     OFF(new Color(0, 0, 0)),
 
-    TEAM_GOLD(new Color(255, 175, 0)),
-    TEAM_BLUE(new Color(0, 0, 255)),
+    TEAM_GOLD(new Color(255, 170, 0)),
+    TEAM_BLUE(new Color(1, 30, 202)),
 
     RED(new Color(255, 0, 0)),
     GREEN(new Color(0, 255, 0)),
@@ -17,7 +17,7 @@ public enum Colors {
     PINK(new Color(255, 0, 255)),
 
     ORANGE(new Color(255, 165, 0)),
-    PURPLE(new Color(160, 32, 240));
+    PURPLE(new Color(75, 0, 130));
 
     // TODO: add more colors
 

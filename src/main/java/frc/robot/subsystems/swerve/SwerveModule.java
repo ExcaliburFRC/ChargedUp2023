@@ -56,7 +56,7 @@ public class SwerveModule implements Sendable {
     _spinningMotor.clearFaults();
 
     _spinningMotor.setSmartCurrentLimit(20);
-    _driveMotor.setSmartCurrentLimit(60);
+    _driveMotor.setSmartCurrentLimit(65);
 
     _driveEncoder = _driveMotor.getEncoder();
     _spinningEncoder = _spinningMotor.getEncoder();
@@ -108,7 +108,7 @@ public class SwerveModule implements Sendable {
   }
 
   public void resetEncoders() {
-    _driveEncoder.setPosition(0);
+//    _driveEncoder.setPosition(0);
     _spinningEncoder.setPosition(getAbsEncoderRad());
   }
 
@@ -122,7 +122,7 @@ public class SwerveModule implements Sendable {
 
   public void setDesiredState(SwerveModuleState state) {
     if (Math.abs(state.speedMetersPerSecond) < 0.01) {
-      stop();
+      stopModule();
       return;
     }
 
@@ -145,9 +145,19 @@ public class SwerveModule implements Sendable {
     return _absEncoder.getAbsolutePosition();
   }
 
-  public void stop() {
+  public void stopModule() {
     _driveMotor.set(0);
     _spinningMotor.set(0);
+  }
+
+  public void setIdleModeCoast(){
+    _driveMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+    _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+  }
+
+  public void setIdleModebreak(){
+    _driveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
   }
 
   @Override

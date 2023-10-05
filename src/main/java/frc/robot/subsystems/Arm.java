@@ -11,18 +11,18 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.*;
 import static frc.robot.Constants.ArmConstants.Setpoints.LOCKED;
-import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
-import static frc.robot.utility.Colors.ORANGE;
 
 public class Arm extends SubsystemBase {
   private final CANSparkMax angleMotor = new CANSparkMax(ANGLE_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -30,25 +30,26 @@ public class Arm extends SubsystemBase {
   private final CANSparkMax lengthMotor = new CANSparkMax(LENGTH_MOTOR_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
 
   private final RelativeEncoder lengthEncoder = lengthMotor.getEncoder();
+  private final RelativeEncoder angleRelativeEncoder = angleMotor.getEncoder();
 
   private final DutyCycleEncoder angleEncoder = new DutyCycleEncoder(ABS_ANGLE_ENCODER_PORT);
 
   private final DigitalInput lowerLimitSwitch = new DigitalInput(CLOSED_LIMIT_SWITCH_ID);
 
   public final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
-  public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= 0.98);
+  public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= LOCKED_LENGTH_METERS - 0.02);
 
-  public final Trigger armAngleClosedTrigger = new Trigger(() -> getArmAngle() <= 100);
+  public final Trigger armAngleClosedTrigger = new Trigger(() -> getArmAngle() <= 95);
 
   public final Trigger armLockedTrigger = armAngleClosedTrigger.and(armFullyOpenedTrigger);
 
   private final SparkMaxPIDController lengthController = lengthMotor.getPIDController();
-
-  public static double floatDutyCycle = 0;
+  private TrapezoidProfile trapezoidProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0, 0), new TrapezoidProfile.State());
+  private final Timer trapozoidTimer = new Timer();
 
   public static final ShuffleboardTab armTab = Shuffleboard.getTab("Arm");
 
-  LEDs leds = LEDs.getInstance();
+  private AtomicReference<Translation2d> lastHeldSetpoint = new AtomicReference<>(new Translation2d());
 
   public Arm() {
     angleFollowerMotor.restoreFactoryDefaults();
@@ -69,26 +70,22 @@ public class Arm extends SubsystemBase {
     angleEncoder.setPositionOffset(ABS_ENCODER_OFFSET_ANGLE_DEG);
     angleEncoder.setDistancePerRotation(360);
 
+    angleMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 200f);
+    angleMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+
+    angleFollowerMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 200f);
+    angleFollowerMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+
     lengthController.setP(kP_LENGTH);
     lengthController.setI(0);
     lengthController.setD(kD_LENGTH);
 
-    armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(10, 0).withSize(4, 4)
-           .withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
-    armTab.addDouble("Arm degrees", () -> -angleEncoder.getDistance()).withPosition(6, 0).withSize(4, 4)
-          .withWidget("Simple Dial").withProperties(Map.of("min", 90, "max", 190));
-    armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(6, 4)
-          .withSize(4, 2);
-    armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(8, 6)
-          .withSize(4, 2);
+    angleMotor.setOpenLoopRampRate(1.5);
 
-    lengthMotor.setSoftLimit(CANSparkMax.SoftLimitDirection.kForward, 1.03f);
-    lengthMotor.enableSoftLimit(CANSparkMax.SoftLimitDirection.kForward, true);
+    lengthEncoder.setPosition(LOCKED_LENGTH_METERS);
 
-//    angleMotor.setOpenLoopRampRate(1.5);
-    angleMotor.setOpenLoopRampRate(0.5);
-
-    if (lengthEncoder.getPosition() < 0.1) lengthEncoder.setPosition(MAXIMAL_LENGTH_METERS);
+    initShuffleboardData();
+    setDefaultCommand(setAngleSpeed(0));
   }
 
   /**
@@ -103,8 +100,6 @@ public class Arm extends SubsystemBase {
           () -> {
             lengthMotor.set(-lengthJoystick.getAsDouble() / 2);
             angleMotor.set(-angleJoystick.getAsDouble() / 4);
-
-            floatDutyCycle = angleJoystick.getAsDouble() / 4;
           }, this);
   }
 
@@ -126,7 +121,6 @@ public class Arm extends SubsystemBase {
       }
 
       angleMotor.set(angleJoystick.getAsDouble() / 4);
-      floatDutyCycle = MathUtil.clamp(angleJoystick.getAsDouble(), -1, 0);
     }, this);
   }
 
@@ -148,56 +142,50 @@ public class Arm extends SubsystemBase {
     return MathUtil.clamp(angle, 80, 220);
   }
 
-  public Command blindCloseArmCommand(){
-    return resetLengthCommand().andThen(new RunCommand(()-> angleMotor.set(-0.2))
-            .finallyDo((__)-> moveToLengthCommand(LOCKED.setpoint).schedule()));
-  }
-
   public Command resetLengthCommand() {
     return Commands.runEnd(
-          () -> lengthMotor.set(-0.7),
-          lengthMotor::stopMotor
-    ).until(armFullyClosedTrigger);
+          () -> lengthMotor.set(-0.75),
+          lengthMotor::stopMotor, this)
+            .until(()-> !lowerLimitSwitch.get());
   }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
     return new ParallelCommandGroup(
+            updateLastSetpointCommand(setpoint),
             moveToLengthCommand(setpoint),
-            moveToAngleCommand(setpoint),
-            leds.applyPatternCommand(BLINKING, ORANGE.color)
+            moveToAngleCommand(setpoint)
     );
   }
 
+  private Command updateLastSetpointCommand(Translation2d setpoint){
+    return new InstantCommand(()-> lastHeldSetpoint.set(setpoint));
+  }
+
   public Command setAngleSpeed(double speed) {
-    return new RunCommand(() -> angleMotor.set(speed / 100), this);
+    return new RunCommand(() -> angleMotor.set(speed / 100.0), this);
   }
 
-  /**
-   * when the motor stops, gravity slowly pulls the arm down, making the arm "fade" down
-   *
-   * @return the command
-   */
-  public Command fadeArmCommand(){
-    return setAngleSpeed(0);
-  }
-
-  public Command moveToLengthCommand(Translation2d setPoint) {
-    return new ProxyCommand(
-          () -> new TrapezoidProfileCommand(
-                new TrapezoidProfile(
+  public Command moveToLengthCommand(Translation2d setpoint) {
+    return new FunctionalCommand(
+            ()-> {
+              trapozoidTimer.restart();
+              trapezoidProfile = new TrapezoidProfile(
                       new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxLinearAcceleration),
-                      new TrapezoidProfile.State(setPoint.getNorm(), 0),
-                      new TrapezoidProfile.State(lengthEncoder.getPosition(), lengthEncoder.getVelocity())),
-                state -> {
-                  double feedforward = kS_LENGTH * Math.signum(state.velocity)
+                      new TrapezoidProfile.State(setpoint.getNorm(), 0),
+                      new TrapezoidProfile.State(lengthEncoder.getPosition(), lengthEncoder.getVelocity()));
+            },
+            ()-> {
+              TrapezoidProfile.State state = trapezoidProfile.calculate(trapozoidTimer.get());
+              double feedforward = kS_LENGTH * Math.signum(state.velocity)
                         + kG_LENGTH * Math.sin(Units.degreesToRadians(getArmAngle()))
                         + kV_LENGTH * state.velocity;
 
-                  lengthController.setReference(state.position, CANSparkMax.ControlType.kPosition,
-                        0,
-                        feedforward, SparkMaxPIDController.ArbFFUnits.kVoltage);
-                }))
-          .finallyDo((__) -> lengthMotor.stopMotor());
+              lengthController.setReference(
+                      state.position, CANSparkMax.ControlType.kPosition, 0,
+                      feedforward, SparkMaxPIDController.ArbFFUnits.kVoltage);
+                },
+            (__)-> trapozoidTimer.stop(),
+            ()-> trapozoidTimer.hasElapsed(trapezoidProfile.totalTime()));
   }
 
   public Command moveToAngleCommand(Translation2d setpoint) {
@@ -214,20 +202,29 @@ public class Arm extends SubsystemBase {
     }, angleMotor::stopMotor, this);
   }
 
+
+  /**
+   * yes, this is a real command, it's meant to oscillate the arm up and down slightly,
+   * to help the driver aim the arm better, and increase our success rate in cone placement to the high node
+   * @param magnitude the magnitude of the oscillations (degrees)
+   * @return the command
+   */
+  public Command osscilateArmCommand(double magnitude) {
+    return Commands.repeatingSequence(
+            setAngleSpeed(magnitude).withTimeout(1),
+            setAngleSpeed(0).withTimeout(1)
+//            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(-magnitude))).withTimeout(3),
+//            moveToAngleCommand(baseAngle.rotateBy(Rotation2d.fromDegrees(magnitude))).withTimeout(3)
+    );
+  }
+
   private boolean angleInRange(double angleA, double angleB) {
     double tolerance = 3; // degrees
     return Math.abs(angleA - angleB) < tolerance;
   }
   private boolean lengthInRange(double lengthA, double lengthB) {
-    double tolerance = 5.0 / 100.0; // cm
-    return Math.abs(lengthA - lengthB) < tolerance;
-  }
-
-  public Command lockArmCommand(Trigger bbTrigger) {
-    return resetLengthCommand()
-          .andThen(moveToAngleCommand(LOCKED.setpoint)
-          .alongWith(moveToLengthCommand(LOCKED.setpoint).unless(bbTrigger)))
-          .until(armLockedTrigger);
+    double tolerance = 1; // cm
+    return Math.abs(lengthA - lengthB) < (tolerance / 100.0);
   }
 
   public boolean armAtSetpoint(Translation2d setpoint){
@@ -235,12 +232,65 @@ public class Arm extends SubsystemBase {
             angleInRange(setpoint.getAngle().getDegrees(), getArmAngle());
   }
 
-  public Command stopTelescopeMotors() {
+  public boolean armAtSetpoint(){
+    return armAtSetpoint(lastHeldSetpoint.get());
+  }
+
+  public Command lockArmCommand(Setpoints setpoint) {
+    return new SequentialCommandGroup(
+            resetLengthCommand(),
+            new WaitCommand(0.15),
+            moveToAngleCommand(LOCKED.setpoint).alongWith(moveToLengthCommand(setpoint.setpoint)).until(armLockedTrigger),
+            stopTelescopeMotor());
+  }
+
+  public Command forceLockArm(){
+    return new SequentialCommandGroup(
+            resetLengthCommand(),
+            new WaitCommand(0.15),
+            holdSetpointCommand(LOCKED.setpoint).until(this::armAtSetpoint))
+            .finallyDo((__)-> stopTelescopeMotor().schedule());
+  }
+
+  public Command lockArmWithSetpoint(){
+    return moveToAngleCommand(LOCKED.setpoint).withTimeout(1)
+            .andThen(holdSetpointCommand(LOCKED.setpoint))
+            .until(armLockedTrigger).finallyDo((__)-> stopTelescopeMotor().schedule());
+  }
+
+  public Command stopTelescopeMotor() {
     return new InstantCommand(lengthMotor::stopMotor);
+  }
+
+  public Command toggleIdleModeCommand(){
+    return new StartEndCommand(
+            ()-> {
+              angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+              angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+              lengthMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+            },
+            ()-> {
+              angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+              angleFollowerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+              lengthMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+            })
+            .ignoringDisable(true);
   }
 
   @Override
   public void periodic() {
     if (armFullyClosedTrigger.getAsBoolean()) lengthEncoder.setPosition(MINIMAL_LENGTH_METERS);
+    angleRelativeEncoder.setPosition(getArmAngle());
+  }
+
+  private void initShuffleboardData(){
+    armTab.addDouble("ArmLength", lengthEncoder::getPosition).withPosition(10, 0).withSize(4, 4)
+            .withWidget("Number Slider").withProperties(Map.of("min", MINIMAL_LENGTH_METERS, "max", MAXIMAL_LENGTH_METERS));
+    armTab.addDouble("Arm degrees", () -> -angleEncoder.getDistance()).withPosition(6, 0).withSize(4, 4)
+            .withWidget("Simple Dial").withProperties(Map.of("min", 90, "max", 190));
+    armTab.addBoolean("Fully closed", armFullyClosedTrigger).withPosition(6, 4)
+            .withSize(4, 2);
+    armTab.addBoolean("Arm locked", armFullyOpenedTrigger.and(armAngleClosedTrigger)).withPosition(8, 6)
+            .withSize(4, 2);
   }
 }
