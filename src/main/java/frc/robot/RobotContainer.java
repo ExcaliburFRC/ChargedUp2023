@@ -101,7 +101,8 @@ public class RobotContainer {
 
         operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
                 cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1()), cuber.armSafe));
-        operator.povLeft().toggleOnTrue(cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()));
+        operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
+                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()), cuber.armSafe));
         operator.povDown().toggleOnTrue(cuber.shootCubeToLowerCommand(driver.R1()));
 
         operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));

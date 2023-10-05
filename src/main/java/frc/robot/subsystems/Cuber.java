@@ -57,7 +57,7 @@ public class Cuber extends SubsystemBase {
     public final Trigger isAtTargetPosTrigger = new Trigger(() -> Math.abs(getCuberAngle() - targetPos) < POS_THRESHOLD).debounce(0.2);
 
     public Trigger cuberReadyTrigger = isAtTargetVelTrigger.and(isAtTargetPosTrigger);
-    public Trigger armSafe = new Trigger(()-> getCuberAngle() <= 115);
+    public Trigger armSafe = new Trigger(()-> getCuberAngle() <= 105);
 
     public Cuber() {
         angleMotor.restoreFactoryDefaults();
@@ -188,9 +188,9 @@ public class Cuber extends SubsystemBase {
     public Command shootCubeCommand(CUBER_VELOCITIY vel, CUBER_ANGLE angle, Trigger confirm) {
         return new ParallelCommandGroup(
                 setCuberAngleCommand(angle),
-                new WaitCommand(0.5).andThen(setShooterVelocityCommand(vel)),
+                new WaitCommand(1).andThen(setShooterVelocityCommand(vel)),
                 leds.applyPatternCommand(BLINKING, PURPLE.color),
-                new WaitUntilCommand(cuberReadyTrigger.and(confirm)).andThen(pushCubeCommand()),
+                new WaitUntilCommand(isAtTargetPosTrigger.and(confirm)).andThen(pushCubeCommand()),
                 requirement())
                 .until(hasCubeTrigger.negate().debounce(0.75));
     }

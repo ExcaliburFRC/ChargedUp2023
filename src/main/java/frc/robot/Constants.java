@@ -191,7 +191,7 @@ public final class Constants {
 
         public static final double ANGLE_CONVERSION_FACTOR = (1.0 / 90.0) * (35.0 / 73.0); // 1:187.7142
 
-        public static final double VEL_THRESHOLD = CUBER_VELOCITIY.HIGH.velocity * 0.125;
+        public static final double VEL_THRESHOLD = CUBER_VELOCITIY.HIGH.velocity * 0.15;
         public static final double POS_THRESHOLD = 3;
 
 
@@ -205,11 +205,11 @@ public final class Constants {
         public static final double Kd_ANGLE = 0; //053457
 
         // shooter control constants
-        public static final double Ks_SHOOTER = 0.018337;
-        public static final double Kv_SHOOTER = 0.14476;
-        public static final double Ka_SHOOTER = 0.016598;
+        public static final double Ks_SHOOTER = 0.27678;
+        public static final double Kv_SHOOTER = 0.13934;
+        public static final double Ka_SHOOTER = 0.014533;
 
-        public static final double Kp_SHOOTER = 0.00036488;
+        public static final double Kp_SHOOTER = 0.00019059;
 
         public enum SERVO_ANGLE {
             RETRACTED(0),
@@ -224,7 +224,7 @@ public final class Constants {
 
         public enum CUBER_ANGLE {
             HIGH(MAX_ANGLE_DEGREES),
-            MIDDLE(115),
+            MIDDLE(133),
             LOW(95),
             CANNON(115),
             IDLE(90),
@@ -240,12 +240,12 @@ public final class Constants {
         }
 
         public enum CUBER_VELOCITIY {
-            HIGH(1060),
-            MIDDLE(875),
+            HIGH(1000),
+            MIDDLE(715),
             LOW(700),
             CANNON(2500),
             IDLE(-300),
-            INTAKE_DUTYCYCLE(-20);
+            INTAKE_DUTYCYCLE(-15);
 
             public final int velocity;
 
