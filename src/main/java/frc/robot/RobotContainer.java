@@ -15,8 +15,6 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.LedsConstants.GamePiece;
-import frc.robot.commands.SystemTester;
-import frc.robot.subsystems.Cuber;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
@@ -27,8 +25,6 @@ import frc.robot.utility.MorseLEDs;
 
 import java.util.Map;
 
-import static frc.robot.Constants.CuberConstants.CUBER_ANGLE;
-import static frc.robot.Constants.CuberConstants.CUBER_VELOCITIY;
 import static frc.robot.subsystems.LEDs.LEDPattern.OFF;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
 import static frc.robot.utility.Colors.*;
@@ -41,12 +37,12 @@ import static frc.robot.utility.Colors.*;
  */
 public class RobotContainer {
     private final Swerve swerve = new Swerve();
-    private final Cuber cuber = new Cuber();
+    /*private final Cuber cuber = new Cuber();*/
     private final LEDs leds = LEDs.getInstance();
     private final Superstructure superstructure = new Superstructure();
 
 //    private final SwerveAuto autoBuilder = new SwerveAuto(swerve);
-    private final AutoBuilder autoBuilder = new AutoBuilder(swerve, cuber, superstructure);
+    private final AutoBuilder autoBuilder = new AutoBuilder(swerve, /*cuber,*/ superstructure);
 
     public final Trigger userButtonTrigger = new Trigger(RobotController::getUserButton);
 
@@ -92,20 +88,20 @@ public class RobotContainer {
         operator.R1().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
 //        operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
-        operator.L1().toggleOnTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
+        /*operator.L1().toggleOnTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));*/
 
         // shoot / place commands
         operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(driver.R1()));
         operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(driver.R1()));
         operator.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
-        operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
-                cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1()), cuber.armSafe));
-        operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
-                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()), cuber.armSafe));
-        operator.povDown().toggleOnTrue(cuber.shootCubeToLowerCommand(driver.R1()));
-
-        operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
+//        operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
+//                cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1()), cuber.armSafe));
+//        operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
+//                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()), cuber.armSafe));
+//        operator.povDown().toggleOnTrue(cuber.shootCubeToLowerCommand(driver.R1()));
+//
+//        operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
         // other
         operator.square().onTrue(superstructure.lockArmCommand());
@@ -153,7 +149,7 @@ public class RobotContainer {
     public Command toggleMotorsIdleMode() {
         return new ParallelCommandGroup(
                 swerve.toggleIdleModeCommand(),
-                cuber.toggleIdleModeCommand(),
+//                cuber.toggleIdleModeCommand(),
                 superstructure.arm.toggleIdleModeCommand()
         );
     }
@@ -166,9 +162,9 @@ public class RobotContainer {
         return -1;
     }
 
-    public Command SystemTester(){
-        return new SystemTester(swerve, cuber, superstructure, operator.touchpad());
-    }
+//    public Command SystemTester(){
+//        return new SystemTester(swerve, cuber, superstructure, operator.touchpad());
+//    }
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.

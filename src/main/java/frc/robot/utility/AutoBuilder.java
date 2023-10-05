@@ -4,12 +4,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.CuberConstants.CUBER_ANGLE;
-import frc.robot.Constants.CuberConstants.CUBER_VELOCITIY;
 import frc.robot.commands.autonomous.ClimbOverRampCommand;
 import frc.robot.commands.autonomous.LeaveCommunityCommand;
-import frc.robot.subsystems.Cuber;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
 
@@ -21,12 +17,12 @@ public class AutoBuilder {
     public final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
 
     private final Swerve swerve;
-    private final Cuber cuber;
+    /*private final Cuber cuber;*/
     private final Superstructure superstructure;
 
-    public AutoBuilder(Swerve swerve, Cuber cuber, Superstructure superstructure){
+    public AutoBuilder(Swerve swerve, /*Cuber cuber,*/ Superstructure superstructure){
         this.swerve = swerve;
-        this.cuber = cuber;
+        /*this.cuber = cuber;*/
         this.superstructure = superstructure;
     }
 
@@ -62,7 +58,8 @@ public class AutoBuilder {
                         // place cone / cube
                         new ConditionalCommand(
                                 superstructure.placeOnMidSequentially(),
-                                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, new Trigger(()-> true)),
+                                /*cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, new Trigger(()-> true))*/
+                                new InstantCommand(),
                                 () -> initialGamePiece.getSelected().equals(GamePiece.CONE)),
 
                         // lock arm if placed cone
