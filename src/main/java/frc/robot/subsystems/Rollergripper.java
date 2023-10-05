@@ -27,7 +27,7 @@ public class Rollergripper extends SubsystemBase {
         follower.restoreFactoryDefaults();
         follower.clearFaults();
         follower.setIdleMode(CANSparkMax.IdleMode.kBrake);
-        follower.follow(leader);
+        follower.follow(leader, true);
 
         initShuffleboardData();
         setDefaultCommand(holdConeCommand());
@@ -89,7 +89,7 @@ public class Rollergripper extends SubsystemBase {
      */
     public Command holdConeCommand() {
         return new ConditionalCommand(
-                setRollerGripperMotor(0.1).withTimeout(0.25),
+                setRollerGripperMotor(0.6).withTimeout(0.25),
                 setRollerGripperMotor(0).withTimeout(0.25),
                 beambreakTrigger)
                 .repeatedly();

@@ -122,7 +122,7 @@ public final class Constants {
             AUTO_CHECKPOINT(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(90))),
             INTAKE_CHECKPOINT(new Translation2d(0.77, Rotation2d.fromDegrees(137))),
             CONE_LOCK(new Translation2d(0.78, Rotation2d.fromDegrees(90))),
-            LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(86))),
+            LOCKED(new Translation2d(LOCKED_LENGTH_METERS, Rotation2d.fromDegrees(88))),
             MID_AUTO(new Translation2d(0.85, Rotation2d.fromDegrees(175))),
 
             CUBER_CHECKPOINT(new Translation2d(0.85, Rotation2d.fromDegrees(92))),
@@ -205,13 +205,11 @@ public final class Constants {
         public static final double Kd_ANGLE = 0; //053457
 
         // shooter control constants
-        public static final double Ks_SHOOTER = 0.15534 * 1.05;
-        public static final double Kv_SHOOTER = 0.13081 * 1.16;
-        public static final double Ka_SHOOTER = 0.0067467;
+        public static final double Ks_SHOOTER = 0.018337;
+        public static final double Kv_SHOOTER = 0.14476;
+        public static final double Ka_SHOOTER = 0.016598;
 
-        public static final double Kp_SHOOTER = 0.00020361;
-        public static final double Kd_SHOOTER = 0;
-
+        public static final double Kp_SHOOTER = 0.00036488;
 
         public enum SERVO_ANGLE {
             RETRACTED(0),
@@ -242,8 +240,8 @@ public final class Constants {
         }
 
         public enum CUBER_VELOCITIY {
-            HIGH(1450),
-            MIDDLE(950),
+            HIGH(1060),
+            MIDDLE(875),
             LOW(700),
             CANNON(2500),
             IDLE(-300),
@@ -251,8 +249,20 @@ public final class Constants {
 
             public final int velocity;
 
-            CUBER_VELOCITIY(int angle) {
-                this.velocity = angle;
+            CUBER_VELOCITIY(int vel) {
+                this.velocity = vel;
+            }
+        }
+
+        public enum CUBER_DC {
+            HIGH(0.235),
+            MIDDLE(0.165),
+            LOW(0.1);
+
+            public final double dc;
+
+            CUBER_DC(double dc) {
+                this.dc = dc;
             }
         }
     }

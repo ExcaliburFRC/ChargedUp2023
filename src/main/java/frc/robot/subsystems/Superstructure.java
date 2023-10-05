@@ -83,8 +83,8 @@ public class Superstructure {
     public Command adjustForShooterCommand(Command cuberCommand, BooleanSupplier canReturn) {
         return new SequentialCommandGroup(
                 arm.holdSetpointCommand(CUBER_CHECKPOINT.setpoint).until(arm::armAtSetpoint),
-                arm.holdSetpointCommand(CUBER.setpoint).alongWith(cuberCommand).until(cuberCommand::isFinished),
-                new WaitUntilCommand(canReturn).andThen(arm.lockArmWithSetpoint()));
+                arm.holdSetpointCommand(CUBER.setpoint).alongWith(cuberCommand).until(cuberCommand::isFinished))
+                .finallyDo((__)-> new WaitUntilCommand(canReturn).andThen(arm.lockArmWithSetpoint()).schedule());
     }
 
     public Command placeOnHeightCommand(double height) {

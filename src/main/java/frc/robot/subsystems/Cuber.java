@@ -42,7 +42,7 @@ public class Cuber extends SubsystemBase {
 
     public static final ShuffleboardTab cuberTab = Shuffleboard.getTab("Cuber");
 
-    private final PIDController shooterPIDcontroller = new PIDController(Kp_SHOOTER, 0, Kd_SHOOTER);
+    private final PIDController shooterPIDcontroller = new PIDController(Kp_SHOOTER, 0, 0);
     private final SimpleMotorFeedforward shooterFFcontroller = new SimpleMotorFeedforward(Ks_SHOOTER, Kv_SHOOTER, Ka_SHOOTER);
 
     private final PIDController anglePIDcontrller = new PIDController(Kp_ANGLE, 0, Kd_ANGLE);
