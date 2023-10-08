@@ -48,10 +48,6 @@ public class MorseLEDs {
         return builder.toString();
     }
 
-    // write a function that translates morse code into led signaling
-    // use the LEDs class to set the LEDs to the correct pattern
-
-
     public static Command textToLeds(String txt, Color ledColor) {
 //        GenericEntry shuffleboardText = Shuffleboard.getTab("driveTab").add("morse text", "").getEntry();
 
@@ -60,11 +56,6 @@ public class MorseLEDs {
         String morse = textToMorse(txt);
 
         for (int i = 0; i < morse.length(); i++) {
-//                int finalI = i;
-//                command.addCommands(new InstantCommand(()->
-//                DriverStation.reportError(String.valueOf(morse.charAt(finalI)), false)
-//                ));
-
             if (morse.charAt(i) == ' ') {
                 command.addCommands(leds.applyPatternCommand(OFF, ledColor).withTimeout(0.8)); // delay between letters
                 continue;
@@ -90,7 +81,7 @@ public class MorseLEDs {
     public static Command textToAddressableLeds(String txt, Color color){
         LEDs leds = LEDs.getInstance();
         Color[] colors = new Color[LENGTH];
-        Arrays.fill(colors, Colors.OFF.color);
+        Arrays.fill(colors, Color.Colors.OFF.color);
         int j = 0;
 
         String morse = textToMorse(txt);
@@ -100,24 +91,24 @@ public class MorseLEDs {
 
         for (int i = 0; i < revMorse.length(); i ++) {
             if (revMorse.charAt(i) == ' ') {
-                colors[j] = Colors.OFF.color;
+                colors[j] = Color.Colors.OFF.color;
             }
 
             if (revMorse.charAt(i) == '.') {
-                    colors[j] = Colors.TEAM_GOLD.color; // color
-                    colors[j + 1] = Colors.OFF.color;
+                    colors[j] = Color.Colors.TEAM_GOLD.color;
+                    colors[j + 1] = Color.Colors.OFF.color;
                     j++;
             }
 
             if (revMorse.charAt(i) == '-') {
-                colors[j] = Colors.TEAM_BLUE.color;
-                colors[j + 1] = Colors.TEAM_BLUE.color;
-                colors[j + 2] = Colors.OFF.color;
+                colors[j] = Color.Colors.TEAM_BLUE.color;
+                colors[j + 1] = Color.Colors.TEAM_BLUE.color;
+                colors[j + 2] = Color.Colors.OFF.color;
                 j += 2;
             }
 
             if (revMorse.charAt(i) == '/') {
-                colors[j] = Colors.OFF.color;
+                colors[j] = Color.Colors.OFF.color;
             }
 
             j ++;
@@ -130,10 +121,9 @@ public class MorseLEDs {
         int counter = 0;
 
         for (int i = 0; i < morse.length(); i++) {
-            if (morse.charAt(i) == ' ') counter ++;
+            if (morse.charAt(i) == ' ' || morse.charAt(i) == '/') counter ++;
             if (morse.charAt(i) == '.') counter += 2;
             if (morse.charAt(i) == '-') counter += 3;
-            if (morse.charAt(i) == '/') counter += 1;
         }
 
         return counter;

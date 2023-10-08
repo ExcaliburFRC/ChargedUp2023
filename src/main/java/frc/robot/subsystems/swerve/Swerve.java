@@ -59,6 +59,8 @@ public class Swerve extends SubsystemBase {
                     Modules.BR.ABS_ENCODER_CHANNEL,
                     Modules.BR.OFFSET_ANGLE)};
 
+    private boolean hasStraighten = false;
+
     private final AHRS _gyro = new AHRS(SPI.Port.kMXP);
 
     private final PIDController rampController = new PIDController(Constants.SwerveConstants.RAMP_BALANCE_KP, 0, RAMP_BALANCE_KD);
@@ -146,34 +148,32 @@ public class Swerve extends SubsystemBase {
                 yLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
                 spinningLimiter = new SlewRateLimiter(kTeleDriveMaxAngularAccelerationUnitsPerSecond);
 
-        return straightenModulesCommand().andThen(
-                new FunctionalCommand(
-                        () -> {
-                        },
-                        () -> {
-                            double spinning = turnToAngle.getAsDouble() == -1? spinningSpeedSupplier.getAsDouble() : getAngleDC(turnToAngle.getAsDouble());
+        return new ConditionalCommand(new InstantCommand(), straightenModulesCommand(), () -> hasStraighten)
+                .andThen(
+                        this.runEnd(
+                                () -> {
+                                    double spinning = turnToAngle.getAsDouble() == -1 ? spinningSpeedSupplier.getAsDouble() : getAngleDC(turnToAngle.getAsDouble());
 
-                            //create the speeds for x,y and spin
-                            double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
-                                    ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
-                                    spinningSpeed = spinningLimiter.calculate(spinning) * kMaxTurningSpeed * decelerator.getAsDouble();
+                                    //create the speeds for x,y and spin
+                                    double xSpeed = xLimiter.calculate(xSpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
+                                            ySpeed = yLimiter.calculate(ySpeedSupplier.getAsDouble()) * kMaxDriveSpeed * decelerator.getAsDouble(),
+                                            spinningSpeed = spinningLimiter.calculate(spinning) * kMaxTurningSpeed * decelerator.getAsDouble();
 
-                            // **all credits to the decelerator idea are for Ofir from Trigon #5990 (ohfear_ on discord)**
+                                    // **all credits to the decelerator idea are for Ofir from trigon #5990 (ohfear_ on discord)**
 
-                            // create a CassisSpeeds object and apply it the speeds
-                            ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
-                                    ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getOdometryRotation2d()) :
-                                    new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
+                                    // create a CassisSpeeds object and apply it the speeds
+                                    ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
+                                            ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getOdometryRotation2d()) :
+                                            new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
 
-                            //use the ChassisSpeedsObject to create an array of SwerveModuleStates
-                            SwerveModuleState[] moduleStates = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
+                                    //use the ChassisSpeedsObject to create an array of SwerveModuleStates
+                                    SwerveModuleState[] moduleStates = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
 
-                            //apply the array to the swerve modules of the robot
-                            setModulesStates(moduleStates);
-                        },
-                        (__) -> stopModules(),
-                        () -> false,
-                        this));
+                                    //apply the array to the swerve modules of the robot
+                                    setModulesStates(moduleStates);
+                                },
+                                this::stopModules
+                        ));
     }
 
     public Command driveSwerveCommand(
@@ -181,17 +181,30 @@ public class Swerve extends SubsystemBase {
             DoubleSupplier ySpeedSupplier,
             DoubleSupplier spinningSpeedSupplier,
             BooleanSupplier fieldOriented) {
-        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1, ()-> -1);
+        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1, () -> -1);
     }
 
     public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fieldOriented) {
         return driveSwerveCommand(speed, () -> 0, turn, () -> fieldOriented);
     }
 
+    /**
+     * an enhanced push command that allows our robot to push other robots, with much greater force,
+     * this is achieved by using a similar method to the ABS system in modern cars.
+     * where the car's brakes lock up & release very rapidly during an emergency break
+     * to prevent slipping, (or motor stalling in our case)
+     * @return the command
+     */
+    public Command enhancedPushCommand(){
+        return Commands.repeatingSequence(
+                this.run(this::stopModules).withTimeout(ENHANCED_PUSH_FREQUENCY),
+                new InstantCommand(()-> getDefaultCommand().withTimeout(ENHANCED_PUSH_FREQUENCY).schedule())
+        );
+    }
+
     public Command straightenModulesCommand() {
         return new FunctionalCommand(
-                () -> {
-                },
+                () -> hasStraighten = true,
                 () -> {
                     swerveModules[FRONT_LEFT].spinTo(0);
                     swerveModules[FRONT_RIGHT].spinTo(0);
@@ -209,26 +222,26 @@ public class Swerve extends SubsystemBase {
                 this);
     }
 
-    public Command turnToAngleCommand(double setpoint){
-        return new InstantCommand(()-> angleTeleopController.setSetpoint(setpoint)).andThen(
+    public Command turnToAngleCommand(double setpoint) {
+        return new InstantCommand(() -> angleTeleopController.setSetpoint(setpoint)).andThen(
                 driveSwerveCommand(
-                        ()-> 0, ()-> 0,
-                        ()-> angleTeleopController.calculate(getOdometryRotation2d().getDegrees(), setpoint),
-                        ()-> false).until(new Trigger(angleTeleopController::atSetpoint).debounce(0.1)));
+                        () -> 0, () -> 0,
+                        () -> angleTeleopController.calculate(getOdometryRotation2d().getDegrees(), setpoint),
+                        () -> false).until(new Trigger(angleTeleopController::atSetpoint).debounce(0.1)));
     }
 
-    public double getAngleDC(double angle){
+    public double getAngleDC(double angle) {
         return angleTeleopController.calculate(getOdometryRotation2d().getDegrees(), angle);
     }
 
-    public double getAngleDC(){
+    public double getAngleDC() {
         return getAngleDC(0);
     }
 
     // autonomous ramp climbing commands
     public Command driveToRampCommand(boolean forward) {
         final double speed = forward ? 0.45 : -0.45;
-        return driveSwerveCommand(() -> speed, () -> 0, ()-> 0, () -> true)
+        return driveSwerveCommand(() -> speed, () -> 0, () -> 0, () -> true)
                 .until(robotBalancedTrigger.negate())
                 .andThen(new InstantCommand(this::stopModules));
     }
@@ -240,22 +253,23 @@ public class Swerve extends SubsystemBase {
                 () -> 0,
                 () -> 0,
                 () -> true,
-                ()-> 0.9,
-                ()-> -1)
-          .until(robotBalancedTrigger.debounce(0.2)).andThen(new InstantCommand(this::stopModules, this));
+                () -> 0.9,
+                () -> -1)
+                .until(robotBalancedTrigger.debounce(0.2)).andThen(new InstantCommand(this::stopModules, this));
     }
 
     /**
      * runs the climb sequence <b> **Warning - if ran while robot already on ramp
      * it will jump off aggressively </b>
+     *
      * @param isForward is the ramp in front of the robot in field relative
      * @return the command
      */
     public Command climbCommand(boolean isForward, double offset) {
         return driveToRampCommand(isForward).andThen(
-                        driveSwerveCommand(() -> (isForward? 1 : -1) * (0.4 + offset), () -> 0, () -> 0, () -> true).withTimeout(1.2),
-                        new WaitCommand(0.15),
-                        balanceRampCommand());
+                driveSwerveCommand(() -> (isForward ? 1 : -1) * (0.4 + offset), () -> 0, () -> 0, () -> true).withTimeout(1.2),
+                new WaitCommand(0.15),
+                balanceRampCommand());
     }
 
     // other methods
@@ -284,16 +298,16 @@ public class Swerve extends SubsystemBase {
         };
     }
 
-    private void foreachModule(Consumer<SwerveModule> module){
+    private void foreachModule(Consumer<SwerveModule> module) {
         for (int i = 0; i < swerveModules.length; i++) {
             module.accept(swerveModules[i]);
         }
     }
 
-    public Command toggleIdleModeCommand(){
+    public Command toggleIdleModeCommand() {
         return new StartEndCommand(
-                ()-> foreachModule(SwerveModule::setIdleModeCoast),
-                ()-> foreachModule(SwerveModule::setIdleModebreak))
+                () -> foreachModule(SwerveModule::setIdleModeCoast),
+                () -> foreachModule(SwerveModule::setIdleModebreak))
                 .ignoringDisable(true);
     }
 
@@ -307,11 +321,11 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putData(field);
     }
 
-    private static double getFwd(boolean isForward){
-        return isForward? 0 : 180;
+    private static double getFwd(boolean isForward) {
+        return isForward ? 0 : 180;
     }
 
-    private void initShuffleboardData(){
+    private void initShuffleboardData() {
         var swerveTab = Shuffleboard.getTab("Swerve");
         swerveTab.add("FL", swerveModules[FRONT_LEFT]).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(4, 0).withSize(4, 4);
@@ -321,7 +335,7 @@ public class Swerve extends SubsystemBase {
                 .withPosition(4, 4).withSize(4, 4);
         swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(8, 4).withSize(4, 4);
-        swerveTab.addDouble("SwerveAngle", ()-> getOdometryRotation2d().getDegrees()).withWidget(BuiltInWidgets.kGyro)
+        swerveTab.addDouble("SwerveAngle", () -> getOdometryRotation2d().getDegrees()).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
         swerveTab.addDouble("robotPitch", this::getRobotPitch);

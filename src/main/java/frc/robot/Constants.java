@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utility.Color;
-import frc.robot.utility.Colors;
 
 import static java.lang.Math.PI;
 
@@ -65,6 +64,7 @@ public final class Constants {
 
         public static final double kTolerance = 0.05;
         public static final double kDeadband = 0.07;
+        public static final double ENHANCED_PUSH_FREQUENCY = 0.05; //seconds
 
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
@@ -272,12 +272,12 @@ public final class Constants {
         public static final int LENGTH = 139;
 
         public enum GamePiece {
-            CONE(Colors.PURPLE),
-            CUBE(Colors.ORANGE);
+            CONE(Color.Colors.PURPLE),
+            CUBE(Color.Colors.ORANGE);
 
             public Color color;
 
-            GamePiece(Colors color){
+            GamePiece(Color.Colors color){
                 this.color = color.color;
             }
         }

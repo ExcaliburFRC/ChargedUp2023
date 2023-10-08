@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
-import static frc.robot.utility.Colors.ORANGE;
+import static frc.robot.utility.Color.Colors.ORANGE;
 
 public class Superstructure {
     public final Arm arm = new Arm();
