@@ -193,13 +193,17 @@ public class Swerve extends SubsystemBase {
      * this is achieved by using a similar method to the ABS system in modern cars.
      * where the car's brakes lock up & release very rapidly during an emergency break
      * to prevent slipping, (or motor stalling in our case)
+     *
      * @return the command
      */
-    public Command enhancedPushCommand(){
+    public Command enhancedPushCommand(
+            DoubleSupplier xSpeedSupplier,
+            DoubleSupplier ySpeedSupplier,
+            DoubleSupplier spinningSpeedSupplier,
+            BooleanSupplier fieldOriented) {
         return Commands.repeatingSequence(
                 this.run(this::stopModules).withTimeout(ENHANCED_PUSH_FREQUENCY),
-                new InstantCommand(()-> getDefaultCommand().withTimeout(ENHANCED_PUSH_FREQUENCY).schedule())
-        );
+                driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented).withTimeout(ENHANCED_PUSH_FREQUENCY));
     }
 
     public Command straightenModulesCommand() {

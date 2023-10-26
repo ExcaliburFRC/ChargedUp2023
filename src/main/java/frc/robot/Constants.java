@@ -64,7 +64,7 @@ public final class Constants {
 
         public static final double kTolerance = 0.05;
         public static final double kDeadband = 0.07;
-        public static final double ENHANCED_PUSH_FREQUENCY = 0.05; //seconds
+        public static final double ENHANCED_PUSH_FREQUENCY = 0.1; //seconds
 
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
@@ -83,7 +83,7 @@ public final class Constants {
         public static final double RAMP_BALANCE_KD = 0.003;
 
         // intentional limitations
-        public static final double kSpeedPercantageLimit = 100; // %
+        public static final double kSpeedPercantageLimit = 15; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2

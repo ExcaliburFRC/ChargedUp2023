@@ -87,7 +87,11 @@ public class RobotContainer {
                         ()-> getAngleFromButtons(driver.triangle(), driver.circle(), driver.cross(), driver.square()))
         );
 
-        driver.L2().whileTrue(swerve.enhancedPushCommand());
+        driver.L2().whileTrue(swerve.enhancedPushCommand(
+                () -> Calculation.deadband(-driver.getLeftY()),
+                () -> Calculation.deadband(driver.getLeftX()),
+                () -> Calculation.deadband(driver.getRightX()),
+                ()-> false));
 
         // intake commands
         operator.R1().toggleOnTrue(superstructure.intakeFromShelfCommand());
