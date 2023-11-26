@@ -4,8 +4,14 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
+import frc.robot.Constants.CuberConstants.CUBER_ANGLE;
+import frc.robot.Constants.CuberConstants.CUBER_VELOCITIY;
 import frc.robot.commands.autonomous.ClimbOverRampCommand;
 import frc.robot.commands.autonomous.LeaveCommunityCommand;
+import frc.robot.subsystems.Cuber;
+import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
 
@@ -13,16 +19,16 @@ import static frc.robot.Constants.LedsConstants.GamePiece;
 
 public class AutoBuilder {
     public final SendableChooser<Command> autoChooser = new SendableChooser<>();
-//    public final SendableChooser<Double> heightChooser = new SendableChooser<>();
+    public final SendableChooser<Double> heightChooser = new SendableChooser<>();
     public final SendableChooser<GamePiece> initialGamePiece = new SendableChooser<>();
 
     private final Swerve swerve;
-    /*private final Cuber cuber;*/
+    private final Cuber cuber;
     private final Superstructure superstructure;
 
-    public AutoBuilder(Swerve swerve, /*Cuber cuber,*/ Superstructure superstructure){
+    public AutoBuilder(Swerve swerve, Cuber cuber, Superstructure superstructure){
         this.swerve = swerve;
-        /*this.cuber = cuber;*/
+        this.cuber = cuber;
         this.superstructure = superstructure;
     }
 
@@ -32,9 +38,9 @@ public class AutoBuilder {
         initialGamePiece.setDefaultOption("cone", GamePiece.CONE);
         initialGamePiece.addOption("cube", GamePiece.CUBE);
 
-//        heightChooser.setDefaultOption("low", 0.0);
-//        heightChooser.addOption("mid", 1.0);
-//        heightChooser.addOption("high", 2.0);
+        heightChooser.setDefaultOption("low", 0.0);
+        heightChooser.addOption("mid", 1.0);
+        heightChooser.addOption("high", 2.0);
 
         autoChooser.setDefaultOption("leave community", new LeaveCommunityCommand(swerve, getRobotHeading(initialGamePiece.getSelected())));
         autoChooser.addOption("balance ramp", swerve.climbCommand(true, 0));
@@ -52,14 +58,13 @@ public class AutoBuilder {
                 new SequentialCommandGroup(
                         //init
                         new InstantCommand(autoTimer::start),
-//                        new InstantCommand(LEDs.getInstance()::restoreLEDs),
+                        new InstantCommand(LEDs.getInstance()::restoreLEDs),
                         swerve.setOdometryAngleCommand(initialGamePiece.getSelected().equals(GamePiece.CUBE) ? 180 : 0),
 
                         // place cone / cube
                         new ConditionalCommand(
                                 superstructure.placeOnMidSequentially(),
-                                /*cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, new Trigger(()-> true))*/
-                                new InstantCommand(),
+                                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, new Trigger(()-> true)),
                                 () -> initialGamePiece.getSelected().equals(GamePiece.CONE)),
 
                         // lock arm if placed cone
