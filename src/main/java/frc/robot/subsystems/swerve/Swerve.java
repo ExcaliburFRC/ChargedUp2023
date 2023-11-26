@@ -113,7 +113,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public Rotation2d getGyroRotation2d() {
-        return Rotation2d.fromDegrees(getGyroDegrees());
+        return Rotation2d.fromDegrees(getGyroDegrees()).times(-1);
     }
 
     public Rotation2d getOdometryRotation2d() {

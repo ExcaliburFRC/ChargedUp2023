@@ -14,14 +14,10 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.CuberConstants.CUBER_ANGLE;
-import frc.robot.Constants.CuberConstants.CUBER_VELOCITIY;
 import frc.robot.Constants.LedsConstants.GamePiece;
-import frc.robot.subsystems.Cuber;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.utility.AutoBuilder;
 import frc.robot.utility.Calculation;
 import frc.robot.utility.Color;
 import frc.robot.utility.MorseLEDs;
@@ -40,12 +36,12 @@ import static frc.robot.utility.Color.Colors.*;
  */
 public class RobotContainer {
     private final Swerve swerve = new Swerve();
-    private final Cuber cuber = new Cuber();
+//    private final Cuber cuber = new Cuber();
     private final LEDs leds = LEDs.getInstance();
     private final Superstructure superstructure = new Superstructure();
 
 //    private final SwerveAuto autoBuilder = new SwerveAuto(swerve);
-    private final AutoBuilder autoBuilder = new AutoBuilder(swerve, cuber, superstructure);
+//    private final AutoBuilder autoBuilder = new AutoBuilder(swerve,  superstructure);
 
     public final Trigger userButtonTrigger = new Trigger(RobotController::getUserButton);
 
@@ -60,7 +56,7 @@ public class RobotContainer {
      */
     public RobotContainer() {
         configureBindings();
-        autoBuilder.loadAutoChoosers();
+//        autoBuilder.loadAutoChoosers();
 
         driveTab.addDouble("Remaining Time", DriverStation::getMatchTime)
                 .withSize(8, 8).withPosition(16, 0).withWidget("Simple Dial")
@@ -79,34 +75,35 @@ public class RobotContainer {
     private void configureBindings() {
         swerve.setDefaultCommand(
                 swerve.driveSwerveCommand(
-                        () -> Calculation.deadband(-driver.getLeftY()),
+                        () -> Calculation.deadband(driver.getLeftY()),
                         () -> Calculation.deadband(driver.getLeftX()),
                         () -> Calculation.deadband(driver.getRightX()),
-                        ()-> false,
+                        ()-> true,
                         () -> Calculation.getSwerveDeceleratorVal(driver.getR2Axis()),
-                        ()-> getAngleFromButtons(driver.triangle(), driver.circle(), driver.cross(), driver.square()))
+//                        ()-> getAngleFromButtons(driver.triangle(), driver.circle(), driver.cross(), driver.square()))
+                        ()-> -1)
         );
 
-        driver.L2().whileTrue(swerve.enhancedPushCommand());
+        driver.L2().whileTrue(swerve.straightenModulesCommand());
 
         // intake commands
         operator.R1().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
 //        operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
-        operator.L1().toggleOnTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
+//        operator.L1().toggleOnTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
 
         // shoot / place commands
         operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(driver.R1()));
         operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(driver.R1()));
         operator.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
-        operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
-                cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1()), cuber.armSafe));
-        operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
-                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()), cuber.armSafe));
-        operator.povDown().toggleOnTrue(cuber.shootCubeToLowerCommand(driver.R1()));
-
-        operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
+//        operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
+//                cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1()), cuber.armSafe));
+//        operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
+//                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()), cuber.armSafe));
+//        operator.povDown().toggleOnTrue(cuber.shootCubeToLowerCommand(driver.R1()));
+//
+//        operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
         // other
         operator.square().onTrue(superstructure.lockArmCommand());
@@ -115,11 +112,6 @@ public class RobotContainer {
 
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
         driver.square().whileTrue(swerve.balanceRampCommand());
-
-        driver.povUp().whileTrue(swerve.turnToAngleCommand(0));
-        driver.povRight().whileTrue(swerve.turnToAngleCommand(90));
-        driver.povDown().whileTrue(swerve.turnToAngleCommand(180));
-        driver.povLeft().whileTrue(swerve.turnToAngleCommand(270));
 
         driver.button(11).onTrue(askForGamepieceCommand(GamePiece.CONE));
         driver.button(12).onTrue(askForGamepieceCommand(GamePiece.CUBE));
@@ -152,7 +144,7 @@ public class RobotContainer {
     public Command toggleMotorsIdleMode() {
         return new ParallelCommandGroup(
                 swerve.toggleIdleModeCommand(),
-                cuber.toggleIdleModeCommand(),
+//                cuber.toggleIdleModeCommand(),
                 superstructure.arm.toggleIdleModeCommand()
         );
     }
@@ -175,7 +167,7 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return autoBuilder.getAutonomousCommand();
+        return null;
     }
 
     /*
