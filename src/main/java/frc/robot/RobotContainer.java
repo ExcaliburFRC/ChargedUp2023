@@ -14,7 +14,10 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.CuberConstants.CUBER_ANGLE;
+import frc.robot.Constants.CuberConstants.CUBER_VELOCITIY;
 import frc.robot.Constants.LedsConstants.GamePiece;
+import frc.robot.subsystems.Cuber;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.swerve.Swerve;
@@ -36,13 +39,12 @@ import static frc.robot.utility.Color.Colors.*;
  */
 public class RobotContainer {
     private final Swerve swerve = new Swerve();
-//    private final Cuber cuber = new Cuber();
+    private final Cuber cuber = new Cuber();
     private final LEDs leds = LEDs.getInstance();
     private final Superstructure superstructure = new Superstructure();
 
-//    private final SwerveAuto autoBuilder = new SwerveAuto(swerve);
-//    private final AutoBuilder autoBuilder = new AutoBuilder(swerve,  superstructure);
-
+    private final AutoBuilder autoBuilder = new AutoBuilder(swerve, cuber, superstructure);
+  
     public final Trigger userButtonTrigger = new Trigger(RobotController::getUserButton);
 
     public final CommandPS4Controller driver = new CommandPS4Controller(0);
@@ -90,20 +92,21 @@ public class RobotContainer {
         operator.R1().toggleOnTrue(superstructure.intakeFromShelfCommand());
 
 //        operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
-//        operator.L1().toggleOnTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
+        operator.L1().toggleOnTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
+
 
         // shoot / place commands
         operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(driver.R1()));
         operator.circle().toggleOnTrue(superstructure.placeOnMidCommand(driver.R1()));
         operator.cross().toggleOnTrue(superstructure.placeOnLowCommand());
 
-//        operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
-//                cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1()), cuber.armSafe));
-//        operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
-//                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()), cuber.armSafe));
-//        operator.povDown().toggleOnTrue(cuber.shootCubeToLowerCommand(driver.R1()));
-//
-//        operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
+        operator.povUp().toggleOnTrue(superstructure.adjustForShooterCommand(
+                cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, driver.R1()), cuber.armSafe));
+        operator.povLeft().toggleOnTrue(superstructure.adjustForShooterCommand(
+                cuber.shootCubeCommand(CUBER_VELOCITIY.MIDDLE, CUBER_ANGLE.MIDDLE, driver.R1()), cuber.armSafe));
+        operator.povDown().toggleOnTrue(cuber.shootCubeToLowerCommand(driver.R1()));
+
+        operator.povRight().toggleOnTrue(cuber.cannonShooterCommand(swerve::getRobotPitch, driver.R1()));
 
         // other
         operator.square().onTrue(superstructure.lockArmCommand());
@@ -169,32 +172,4 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         return null;
     }
-
-    /*
-    autos:
-
-    collect cube 5:
-    AutoBuilder.getPathpoint(new Translation2d(1.78, 4.90), -17.50, 0),
-    AutoBuilder.getPathpoint(new Translation2d(5.09, 5.85), 31.26, 43.78)
-
-
-    new ParallelDeadlineGroup(
-                autoBuilder.generatePath(List.of(
-                        AutoBuilder.getPathpoint(new Translation2d(1.77, 4.93), -13.94, 0),
-                        AutoBuilder.getPathpoint(new Translation2d(7.35, 5.28), -88.60, -62.78),
-                        AutoBuilder.getPathpoint(new Translation2d(5.35, 4.81), 168.93, 73.86),
-                        AutoBuilder.getPathpoint(new Translation2d(1.77, 4.41), -149.81, 180.00))),
-                cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND)).withTimeout(5)
-                .andThen(
-                superstructure.adjustForShooterCommand(
-                        cuber.shootCubeCommand(CUBER_VELOCITIY.HIGH, CUBER_ANGLE.HIGH, new Trigger(() -> true)), cuber.armSafe)
-        );
-
----------------------------------
-return new ParallelDeadlineGroup(
-                autoBuilder.generatePath(List.of(
-                        AutoBuilder.getPathpoint(new Translation2d(1.78, 0.50), 0, 0),
-                        AutoBuilder.getPathpoint(new Translation2d(7.08, 0.75), -5.24, 0))),
-                cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
-     */
 }
