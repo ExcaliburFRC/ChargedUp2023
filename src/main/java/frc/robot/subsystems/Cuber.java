@@ -23,7 +23,7 @@ import static com.revrobotics.CANSparkMaxLowLevel.MotorType.kBrushless;
 import static frc.robot.Constants.CuberConstants.*;
 import static frc.robot.Constants.CuberConstants.CUBER_VELOCITIY.INTAKE_DUTYCYCLE;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
-import static frc.robot.utility.Colors.PURPLE;
+import static frc.robot.utility.Color.Colors.PURPLE;
 
 
 public class Cuber extends SubsystemBase {

@@ -117,7 +117,7 @@ public class SwerveModule implements Sendable {
   }
 
   public SwerveModulePosition getPosition(){
-    return new SwerveModulePosition(getDrivePosition(), Rotation2d.fromRadians(getSpinningPosition()));
+    return new SwerveModulePosition(-getDrivePosition(), Rotation2d.fromRadians(getSpinningPosition()));
   }
 
   public void setDesiredState(SwerveModuleState state) {
@@ -134,7 +134,7 @@ public class SwerveModule implements Sendable {
 
   public void spinTo(double setpoint){
     if (Math.abs(getResetRad() - setpoint) > kTolerance) {
-      _spinningMotor.set(_spinningPIDController.calculate(setpoint, getResetRad()));
+      _spinningMotor.set(-_spinningPIDController.calculate(setpoint, getResetRad()));
     }
     else {
       _spinningMotor.set(0);

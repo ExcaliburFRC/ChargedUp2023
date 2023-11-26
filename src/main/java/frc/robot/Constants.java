@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utility.Color;
-import frc.robot.utility.Colors;
 
 import static java.lang.Math.PI;
 
@@ -31,10 +30,10 @@ public final class Constants {
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
-            FL(18, 17, 5, 0.093 + 0.25, false, false),
-            FR(12, 11, 9, 0.372 + 0.25, false, false),
-            BL(16, 15, 4, 0.05, false, false),
-            BR(14, 13, 8, 0.834, false, false);
+            FL(18, 17, 5, 0.842, false, true),
+            FR(12, 11, 9, 0.122, false, true),
+            BL(16, 15, 4, 0.55, false, true),
+            BR(14, 13, 8, 0.3339, false, true);
 
             public int DRIVE_MOTOR_ID;
             public int SPIN_MOTOR_ID;
@@ -65,15 +64,16 @@ public final class Constants {
 
         public static final double kTolerance = 0.05;
         public static final double kDeadband = 0.07;
+        public static final double ENHANCED_PUSH_FREQUENCY = 0.05; //seconds
 
         public static final double kTrackWidth = 0.56665; // m
         public static final double kWheelBase = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics =
                 new SwerveDriveKinematics(
-                        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
                         new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-                        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-                        new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
+                        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+                        new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
+                        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
 
         public static final double kPhysicalMaxSpeedMetersPerSecond = Units.feetToMeters(12); //TODO find
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * PI; //TODO find
@@ -83,7 +83,7 @@ public final class Constants {
         public static final double RAMP_BALANCE_KD = 0.003;
 
         // intentional limitations
-        public static final double kSpeedPercantageLimit = 100; // %
+        public static final double kSpeedPercantageLimit = 20; // %
         public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
         public static final double kMaxTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
         public static final double kMaxTurningAcceleration = PI / 100 * kSpeedPercantageLimit; // rad/s^2
@@ -272,12 +272,12 @@ public final class Constants {
         public static final int LENGTH = 139;
 
         public enum GamePiece {
-            CONE(Colors.PURPLE),
-            CUBE(Colors.ORANGE);
+            CONE(Color.Colors.PURPLE),
+            CUBE(Color.Colors.ORANGE);
 
             public Color color;
 
-            GamePiece(Colors color){
+            GamePiece(Color.Colors color){
                 this.color = color.color;
             }
         }

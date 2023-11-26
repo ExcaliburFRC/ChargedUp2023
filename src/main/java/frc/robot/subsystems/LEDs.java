@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.utility.Color;
-import frc.robot.utility.Colors;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -15,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.robot.Constants.LedsConstants.LEDS_PORT;
 import static frc.robot.Constants.LedsConstants.LENGTH;
-import static frc.robot.utility.Colors.*;
+import static frc.robot.utility.Color.Colors.OFF;
 
 public class LEDs extends SubsystemBase {
     private final AddressableLED LedStrip = new AddressableLED(LEDS_PORT);
@@ -31,7 +30,7 @@ public class LEDs extends SubsystemBase {
         LedStrip.setLength(LENGTH);
         LedStrip.start();
 
-        setDefaultCommand(applyPatternCommand(LEDPattern.TRAIN_CIRCLE, BLUE.color, TEAM_GOLD.color));
+//        setDefaultCommand(applyPatternCommand(LEDPattern.TRAIN_CIRCLE, BLUE.color, TEAM_GOLD.color));
     }
 
     public static LEDs getInstance() {
@@ -181,9 +180,9 @@ public class LEDs extends SubsystemBase {
     }
 
     public Color getAllianceColor() {
-        if (DriverStation.getAlliance().equals(DriverStation.Alliance.Blue)) return Colors.TEAM_BLUE.color;
-        else if (DriverStation.getAlliance().equals(DriverStation.Alliance.Red)) return Colors.RED.color;
-        else return Colors.WHITE.color;
+        if (DriverStation.getAlliance().equals(DriverStation.Alliance.Blue)) return Color.Colors.TEAM_BLUE.color;
+        else if (DriverStation.getAlliance().equals(DriverStation.Alliance.Red)) return Color.Colors.RED.color;
+        else return Color.Colors.WHITE.color;
     }
 
     private void setLedStrip(Color[] colors) {
