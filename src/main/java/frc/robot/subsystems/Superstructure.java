@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.util.Map;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ArmConstants.Setpoints.*;
 import static frc.robot.utility.Color.Colors.ORANGE;
@@ -95,5 +96,10 @@ public class Superstructure {
                         2.0, new InstantCommand(() -> {})),
                 // arm mechanics doesn't allow high cone placement in autonomous
                 () -> height);
+    }
+
+
+    public Command manualArmCOmmand(DoubleSupplier length){
+        return arm.manualLengthCommand(length);
     }
 }

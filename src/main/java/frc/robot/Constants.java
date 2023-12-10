@@ -128,29 +128,31 @@ public final class Constants {
             CUBER_CHECKPOINT(new Translation2d(0.85, Rotation2d.fromDegrees(92))),
             CUBER(new Translation2d(MINIMAL_LENGTH_METERS, Rotation2d.fromDegrees(115)));
 
-            public final Translation2d setpoint;
 
+            public final Translation2d setpoint;
             Setpoints(Translation2d setpoint) {
                 this.setpoint = setpoint;
             }
+
         }
 
         public static final int ANGLE_MOTOR_ID = 21;
         public static final int ANGLE_FOLLOWER_MOTOR_ID = 22;
         public static final int LENGTH_MOTOR_ID = 23;
+        public static final double LENGTH_CURRENT_STALL = 45;
 
         public static final int CLOSED_LIMIT_SWITCH_ID = 1;
 
         public static final int ABS_ANGLE_ENCODER_PORT = 7;
 
-        public static final double MINIMAL_LENGTH_METERS = 0.71;// m
+        public static final double MINIMAL_LENGTH_METERS = 0.7;// m
         public static final double MAXIMAL_LENGTH_METERS = 1.08; // m
         public static final double LOCKED_LENGTH_METERS = 1.02; // m
         public static final double ROT_TO_METER = 1.0 / 242.5;
         public static final double RPM_TO_METER_PER_SEC = ROT_TO_METER / 60; //https://brainly.in/question/3238411
 
         public static final double ANGLE_CONVERSION_FACTOR = 1 / 57.857;
-        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.4234 + 0.5; // NOT IN DEGREES -- IN DUTY CYCLE
+        public static final double ABS_ENCODER_OFFSET_ANGLE_DEG = 0.9234; // NOT IN DEGREES -- IN DUTY CYCLE
 
         // Angle control
         public static final double kS_ANGLE = -0.048742;
@@ -169,10 +171,10 @@ public final class Constants {
         public static final double kD_LENGTH = 3.6247;
         public static final double kMaxLinearVelocity = 0.75;
         public static final double kMaxLinearAcceleration = 0.75;
+
     }
-
-
     public static final class CuberConstants {
+
         public static final int ANGLE_MOTOR_ID = 41;
         public static final int ROLLERS_MOTOR_ID = 42;
 

@@ -43,8 +43,7 @@ public class RobotContainer {
     private final LEDs leds = LEDs.getInstance();
     private final Superstructure superstructure = new Superstructure();
 
-    private final AutoBuilder autoBuilder = new AutoBuilder(swerve, cuber, superstructure);
-  
+
     public final Trigger userButtonTrigger = new Trigger(RobotController::getUserButton);
 
     public final CommandPS4Controller driver = new CommandPS4Controller(0);
@@ -94,6 +93,10 @@ public class RobotContainer {
 //        operator.L2().whileTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_GROUND));
         operator.L1().toggleOnTrue(cuber.intakeCommand(CUBER_ANGLE.INTAKE_SLIDE));
 
+
+        superstructure.arm.setDefaultCommand(
+                superstructure.manualArmCOmmand(operator::getRightY)
+        );
 
         // shoot / place commands
         operator.triangle().toggleOnTrue(superstructure.placeOnHighCommand(driver.R1()));
