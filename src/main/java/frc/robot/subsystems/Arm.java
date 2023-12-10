@@ -37,6 +37,7 @@ public class Arm extends SubsystemBase {
   private final DigitalInput lowerLimitSwitch = new DigitalInput(CLOSED_LIMIT_SWITCH_ID);
 
   public final Trigger armFullyClosedTrigger = new Trigger(() -> !lowerLimitSwitch.get());
+  public final Trigger armFullyClosedTriggerEncoder = new Trigger(() -> lengthEncoder.getPosition() <= MINIMAL_LENGTH_METERS);
   public final Trigger armFullyOpenedTrigger = new Trigger(() -> lengthEncoder.getPosition() >= LOCKED_LENGTH_METERS - 0.02);
 
   public final Trigger armAngleClosedTrigger = new Trigger(() -> getArmAngle() <= 95);
@@ -123,7 +124,18 @@ public class Arm extends SubsystemBase {
       angleMotor.set(angleJoystick.getAsDouble() / 4);
     }, this);
   }
-
+  public Command resetLengthEncoderCommand() {
+    return Commands.runEnd(
+        () -> lengthMotor.set(-0.75),
+        lengthMotor::stopMotor, this)
+      .until(armFullyClosedTriggerEncoder);
+  }
+  public Command resetLengthCommand() {
+    return Commands.runEnd(
+          () -> lengthMotor.set(-0.75),
+          lengthMotor::stopMotor, this)
+            .until(()-> !lowerLimitSwitch.get());
+  }
   /**
    * moves the arm's length in a given speed
    *
@@ -142,12 +154,6 @@ public class Arm extends SubsystemBase {
     return MathUtil.clamp(angle, 80, 220);
   }
 
-  public Command resetLengthCommand() {
-    return Commands.runEnd(
-          () -> lengthMotor.set(-0.75),
-          lengthMotor::stopMotor, this)
-            .until(()-> !lowerLimitSwitch.get());
-  }
 
   public Command holdSetpointCommand(Translation2d setpoint) {
     return new ParallelCommandGroup(
